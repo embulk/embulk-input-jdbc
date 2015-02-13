@@ -4,15 +4,15 @@ JDBC input plugins for Embulk loads records to databases using JDBC drivers.
 
 ## MySQL
 
-See [embulk-input-mysql/README.md](embulk-input-mysql/).
+See [embulk-input-mysql](embulk-input-mysql/).
 
 ## PostgreSQL
 
-See [embulk-input-postgresql/README.md](embulk-input-postgresql/).
+See [embulk-input-postgresql](embulk-input-postgresql/).
 
 ## Redshift
 
-See [embulk-input-redshift/README.md](embulk-input-redshift/).
+See [embulk-input-redshift](embulk-input-redshift/).
 
 ## Generic
 
