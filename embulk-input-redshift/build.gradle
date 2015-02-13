@@ -1,0 +1,6 @@
+dependencies {
+    compile project(':embulk-input-jdbc')
+    compile project(':embulk-input-postgresql')
+
+    testCompile project(':embulk-input-jdbc').sourceSets.test.output
+}

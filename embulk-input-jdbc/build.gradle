@@ -1,0 +1,6 @@
+sourceSets {
+    main.resources {
+        // TODO
+        //srcDirs '../lib'
+    }
+}

@@ -1,0 +1,78 @@
+
+plugins {
+    id 'com.jfrog.bintray' version '1.1'
+    id 'com.github.jruby-gradle.base' version '0.1.5'
+    id 'java'
+}
+import com.github.jrubygradle.JRubyExec
+
+allprojects {
+    group = 'org.embulk.input.jdbc'
+    version = '0.1.0'
+}
+
+subprojects {
+    apply plugin: 'maven'  // install jar files to the local repo: $ gradle install
+    apply plugin: 'java'
+    //apply plugin: 'findbugs'
+    //apply plugin: 'jacoco'
+    apply plugin: 'com.github.jruby-gradle.base'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        jcenter()
+    }
+
+    configurations {
+        provided
+    }
+
+    dependencies {
+        compile  'org.embulk:embulk-core:0.4.0'
+        provided 'org.embulk:embulk-core:0.4.0'
+        testCompile 'junit:junit:4.+'
+    }
+
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" //<< "-Xlint:deprecation"
+        }
+    }
+
+    task classpath(type: Copy, dependsOn: ["jar"]) {
+        doFirst { file('classpath').deleteDir() }
+        from (configurations.runtime - configurations.provided + files(jar.archivePath))
+        into 'classpath'
+    }
+    clean { delete 'classpath' }
+
+    task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath']) {
+        jrubyArgs '-rrubygems/gem_runner', "-eGem::GemRunner.new.run(ARGV)", 'build'
+        script "${project.projectDir.absolutePath}/build/gemspec"
+        doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "${parent.projectDir}/pkg") }
+    }
+
+    task gemspec << {
+        file('build').mkdirs();
+        file('build/gemspec').write($/
+Gem::Specification.new do |spec|
+  spec.name          = "${project.name}"
+  spec.version       = "${project.version}"
+  spec.authors       = ["FURUHASHI Sadayuki"]
+  spec.summary       = %[JDBC input plugin for Embulk]
+  spec.description   = %[JDBC input plugin is an Embulk plugin that loads records from JDBC so that any output plugins can receive the records. Search the output plugins by "embulk-output" keyword.]
+  spec.email         = ["frsyuki@users.sourceforge.jp"]
+  spec.license       = "Apache 2.0"
+  spec.homepage      = "https://github.com/embulk/embulk-input-jdbc"
+
+  spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]
+  spec.test_files    = spec.files.grep(%r"^(test|spec)/")
+  spec.require_paths = ["lib"]
+
+  spec.add_development_dependency 'bundler', ['~> 1.0']
+  spec.add_development_dependency 'rake', ['>= 10.0']
+end
+/$)
+    }
+}
