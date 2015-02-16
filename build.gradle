@@ -8,7 +8,7 @@ import com.github.jrubygradle.JRubyExec
 
 allprojects {
     group = 'org.embulk.input.jdbc'
-    version = '0.1.0'
+    version = '0.2.0'
 }
 
 subprojects {
@@ -50,6 +50,13 @@ subprojects {
         jrubyArgs '-rrubygems/gem_runner', "-eGem::GemRunner.new.run(ARGV)", 'build'
         script "${project.projectDir.absolutePath}/build/gemspec"
         doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "${parent.projectDir}/pkg") }
+    }
+
+    task gempush << {
+        "gem push pkg/embulk-input-jdbc-${project.versoin}.gem".execute()
+        "gem push pkg/embulk-input-mysql-${project.versoin}.gem".execute()
+        "gem push pkg/embulk-input-postgresql-${project.versoin}.gem".execute()
+        "gem push pkg/embulk-input-redshift-${project.versoin}.gem".execute()
     }
 
     task gemspec << {
