@@ -52,13 +52,6 @@ subprojects {
         doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "${parent.projectDir}/pkg") }
     }
 
-    task gempush << {
-        "gem push pkg/embulk-input-jdbc-${project.versoin}.gem".execute()
-        "gem push pkg/embulk-input-mysql-${project.versoin}.gem".execute()
-        "gem push pkg/embulk-input-postgresql-${project.versoin}.gem".execute()
-        "gem push pkg/embulk-input-redshift-${project.versoin}.gem".execute()
-    }
-
     task gemspec << {
         file('build').mkdirs();
         file('build/gemspec').write($/
@@ -78,4 +71,11 @@ Gem::Specification.new do |spec|
 end
 /$)
     }
+}
+
+task gempush << {
+    "gem push pkg/embulk-input-jdbc-${project.version}.gem".execute().waitFor()
+    "gem push pkg/embulk-input-mysql-${project.version}.gem".execute().waitFor()
+    "gem push pkg/embulk-input-postgresql-${project.version}.gem".execute().waitFor()
+    "gem push pkg/embulk-input-redshift-${project.version}.gem".execute().waitFor()
 }
