@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Properties;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.slf4j.Logger;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -29,6 +30,8 @@ import org.embulk.input.jdbc.JdbcInputConnection.BatchSelect;
 public abstract class AbstractJdbcInputPlugin
         implements InputPlugin
 {
+    private final Logger logger = Exec.getLogger(getClass());
+
     public interface PluginTask extends Task
     {
         @Config("host")
@@ -260,12 +263,19 @@ public abstract class AbstractJdbcInputPlugin
         }
 
         List<Column> columns = pageBuilder.getSchema().getColumns();
+        long rows = 0;
+        long reportRows = 500;
         do {
             for (int i=0; i < getters.size(); i++) {
                 int index = i + 1;  // JDBC column index begins from 1
                 getters.get(i).getAndSet(result, index, pageBuilder, columns.get(i));
             }
             pageBuilder.addRecord();
+            rows++;
+            if (rows % reportRows == 0) {
+                logger.info(String.format("Fetched %,d rows.", rows));
+                reportRows *= 2;
+            }
         } while (result.next());
         return true;
     }

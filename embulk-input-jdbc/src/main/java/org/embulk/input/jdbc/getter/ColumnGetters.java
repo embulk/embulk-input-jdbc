@@ -86,14 +86,11 @@ public class ColumnGetters
         public void getAndSet(ResultSet from, int fromIndex,
                 PageBuilder to, Column toColumn) throws SQLException
         {
-            System.out.println("string column from "+fromIndex+" to "+toColumn);
             String v = from.getString(fromIndex);
             if (from.wasNull()) {
                 to.setNull(toColumn);
-                System.out.println("> was null");
             } else {
                 to.setString(toColumn, v);
-                System.out.println("> "+v);
             }
         }
 
