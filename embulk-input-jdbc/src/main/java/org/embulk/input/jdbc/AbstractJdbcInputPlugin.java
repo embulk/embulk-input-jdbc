@@ -145,7 +145,6 @@ public abstract class AbstractJdbcInputPlugin
         } catch (SQLException ex) {
             throw Throwables.propagate(ex);
         }
-        System.out.println("schema: "+schema);
 
         return buildNextConfigDiff(task, control.run(task.dump(), schema, 1));
     }
@@ -221,7 +220,6 @@ public abstract class AbstractJdbcInputPlugin
                     while (true) {
                         // TODO run fetch() in another thread asynchronously
                         // TODO retry fetch() if it failed (maybe order_by is required and unique_column(s) option is also required)
-                        System.out.println("fetch....");
                         boolean cont = fetch(cursor, getters, pageBuilder);
                         if (!cont) {
                             break;
@@ -261,14 +259,10 @@ public abstract class AbstractJdbcInputPlugin
             return false;
         }
 
-        System.out.println("res: "+result);
-
         List<Column> columns = pageBuilder.getSchema().getColumns();
         do {
-            System.out.println("record.");
             for (int i=0; i < getters.size(); i++) {
                 int index = i + 1;  // JDBC column index begins from 1
-                System.out.println("getters "+i+" "+getters.get(i));
                 getters.get(i).getAndSet(result, index, pageBuilder, columns.get(i));
             }
             pageBuilder.addRecord();
