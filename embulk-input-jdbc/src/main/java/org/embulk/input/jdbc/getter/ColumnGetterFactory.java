@@ -9,6 +9,7 @@ import org.embulk.input.jdbc.getter.ColumnGetters.StringColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetters.DateColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetters.TimeColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetters.TimestampColumnGetter;
+import org.embulk.input.jdbc.getter.ColumnGetters.BigDecimalToDoubleColumnGetter;
 
 public class ColumnGetterFactory
 {
@@ -68,11 +69,10 @@ public class ColumnGetterFactory
         //case Types.NULL:
         //    return new NullColumnGetter();
 
-        // TODO
-        //// BigDecimal
-        //case Types.NUMERIC:
-        //case Types.DECIMAL:
-        //    return new BigDecimalColumnGetter();
+        // getBigDecimal
+        case Types.NUMERIC:
+        case Types.DECIMAL:
+            return new BigDecimalToDoubleColumnGetter();
 
         // others
         case Types.ARRAY:  // array
