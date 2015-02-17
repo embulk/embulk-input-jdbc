@@ -22,18 +22,18 @@ public class ColumnGetterFactory
         case Types.BIGINT:
             return new LongColumnGetter();
 
-        // setDouble
+        // getDouble
         case Types.DOUBLE:
         case Types.FLOAT:
         case Types.REAL:
             return new DoubleColumnGetter();
 
-        // setBool
+        // getBool
         case Types.BOOLEAN:
         case Types.BIT:  // JDBC BIT is boolean, unlike SQL-92
             return new BooleanColumnGetter();
 
-        // setString, Clob
+        // getString, Clob
         case Types.CHAR:
         case Types.VARCHAR:
         case Types.LONGVARCHAR:
@@ -44,7 +44,7 @@ public class ColumnGetterFactory
             return new StringColumnGetter();
 
         // TODO
-        //// setBytes Blob
+        //// getBytes Blob
         //case Types.BINARY:
         //case Types.VARBINARY:
         //case Types.LONGVARBINARY:
