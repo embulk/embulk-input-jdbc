@@ -24,7 +24,10 @@ public class MySQLInputPlugin
         props.setProperty("user", task.getUser());
         props.setProperty("password", task.getPassword());
 
-        props.setProperty("rewriteBatchedStatements", "true");
+        // convert 0000-00-00 to NULL to avoid this exceptoin:
+        //   java.sql.SQLException: Value '0000-00-00' can not be represented as java.sql.Date
+        props.setProperty("zeroDateTimeBehavior", "convertToNull");
+
         props.setProperty("useCompression", "true");
 
         props.setProperty("connectTimeout", "300000"); // milliseconds
