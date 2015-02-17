@@ -92,8 +92,7 @@ public class ColumnGetterFactory
     private static UnsupportedOperationException unsupportedOperationException(JdbcColumn column)
     {
         throw new UnsupportedOperationException(
-                String.format("Unsupported type %s (sqlType=%d)",
-                    column.getTypeName(), column.getSqlType()));
+                String.format("Unsupported type %s (sqlType=%d) of '%s' column. Please exclude the column from 'select:' option.",
+                    column.getTypeName(), column.getSqlType(), column.getName()));
     }
 }
-
