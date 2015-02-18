@@ -2,6 +2,7 @@ package org.embulk.input.jdbc.getter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.math.BigDecimal;
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.Column;
@@ -167,6 +168,30 @@ public class ColumnGetters
         public Type getToType()
         {
             return Types.TIMESTAMP.withFormat("%Y-%m-%d %H:%M:%S");
+        }
+    }
+
+    public static class BigDecimalToDoubleColumnGetter
+            implements ColumnGetter
+    {
+        @Override
+        public void getAndSet(ResultSet from, int fromIndex,
+                PageBuilder to, Column toColumn) throws SQLException
+        {
+            BigDecimal v = from.getBigDecimal(fromIndex);
+            if (from.wasNull()) {
+                to.setNull(toColumn);
+            } else {
+                // rounded value could be Double.NEGATIVE_INFINITY or Double.POSITIVE_INFINITY.
+                double rounded = v.doubleValue();
+                to.setDouble(toColumn, rounded);
+            }
+        }
+
+        @Override
+        public Type getToType()
+        {
+            return Types.DOUBLE;
         }
     }
 }
