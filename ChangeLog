@@ -1,0 +1,8 @@
+Release 0.2.1 2015-02-17
+
+* Added support for DECIMAL type. DECIMAL is converted to double type
+  (@shun0102++)
+* output-mysql sets zeroDateTimeBehavior=convertToNull to the connection
+  parameter to avoid 'SQLException: Value '0000-00-00' can not be represented
+  as java.sql.Date' exception (@shun0102++)
+
