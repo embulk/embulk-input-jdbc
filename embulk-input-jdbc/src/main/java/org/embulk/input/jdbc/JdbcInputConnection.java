@@ -15,7 +15,8 @@ import org.embulk.spi.Exec;
 public class JdbcInputConnection
         implements AutoCloseable
 {
-    private final Logger logger = Exec.getLogger(JdbcInputConnection.class);
+    protected final Logger logger = Exec.getLogger(getClass());
+
     protected final Connection connection;
     protected final String schemaName;
     protected final DatabaseMetaData databaseMetaData;

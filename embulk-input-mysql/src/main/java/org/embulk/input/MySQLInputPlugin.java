@@ -6,6 +6,7 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import com.google.common.base.Throwables;
 import org.embulk.config.Config;
+import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.mysql.MySQLInputConnection;
 
@@ -52,6 +53,15 @@ public class MySQLInputPlugin
         //    props.setProperty("verifyServerCertificate", "true");
         //    break;
         //}
+
+        if (task.getFetchRows() == 1) {
+            logger.info("Fetch size is 1. Fetching rows one by one.");
+        } else if (task.getFetchRows() <= 0) {
+            logger.info("Fetch size is set to -1. Fetching all rows at once.");
+        } else {
+            logger.info("Fetch size is {}. Using server-side prepared statement.", task.getFetchRows());
+            props.setProperty("useCursorFetch", "true");
+        }
 
         props.putAll(task.getOptions());
 

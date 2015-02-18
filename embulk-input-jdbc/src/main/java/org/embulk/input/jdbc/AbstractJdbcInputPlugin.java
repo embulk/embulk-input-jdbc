@@ -30,7 +30,7 @@ import org.embulk.input.jdbc.JdbcInputConnection.BatchSelect;
 public abstract class AbstractJdbcInputPlugin
         implements InputPlugin
 {
-    private final Logger logger = Exec.getLogger(getClass());
+    protected final Logger logger = Exec.getLogger(getClass());
 
     public interface PluginTask extends Task
     {
