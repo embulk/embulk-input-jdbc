@@ -170,7 +170,7 @@ public abstract class AbstractJdbcInputPlugin
 
     @Override
     public ConfigDiff resume(TaskSource taskSource,
-            Schema schema, int processorCount,
+            Schema schema, int taskCount,
             InputPlugin.Control control)
     {
         PluginTask task = taskSource.loadTask(getTaskClass());
@@ -179,7 +179,7 @@ public abstract class AbstractJdbcInputPlugin
         //      is necessary to resume. transaction() gets the range of order_by
         //      colum and set it to WHERE condition to make the operation deterministic
 
-        return buildNextConfigDiff(task, control.run(taskSource, schema, processorCount));
+        return buildNextConfigDiff(task, control.run(taskSource, schema, taskCount));
     }
 
     protected ConfigDiff buildNextConfigDiff(PluginTask task, List<CommitReport> reports)
@@ -196,7 +196,7 @@ public abstract class AbstractJdbcInputPlugin
 
     @Override
     public void cleanup(TaskSource taskSource,
-            Schema schema, int processorCount,
+            Schema schema, int taskCount,
             List<CommitReport> successCommitReports)
     {
         // do nothing
@@ -204,7 +204,7 @@ public abstract class AbstractJdbcInputPlugin
 
     @Override
     public CommitReport run(TaskSource taskSource,
-            Schema schema, int processorIndex,
+            Schema schema, int taskIndex,
             PageOutput output)
     {
         PluginTask task = taskSource.loadTask(getTaskClass());
