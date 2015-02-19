@@ -1,4 +1,15 @@
-Release 0.2.1 2015-02-17
+Release 0.2.2 - 2015-02-17
+
+* output/mysql: enhanced fetch_rows handling.
+  If fetch_rows > 1, set useCursorFetch=true which enables server-side
+  prepared statements. It fetches rows by chunks.
+  If fetch_rows = 1, set Integer.MIN_VALUE to Statement.setFetchSize. It
+  fetches rows one by one.
+  If fetch_rows < 0, don't set anything. It fetches all rows at once
+  to memory.
+
+
+Release 0.2.1 - 2015-02-17
 
 * Added support for DECIMAL type. DECIMAL is converted to double type
   (@shun0102++)
