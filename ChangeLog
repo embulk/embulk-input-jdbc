@@ -1,3 +1,9 @@
+Release 0.2.3 - 2015-02-25
+
+* Upgraded embulk to v0.4.8
+* Added guess method, which does nothing
+
+
 Release 0.2.2 - 2015-02-17
 
 * output/mysql: enhanced fetch_rows handling.
