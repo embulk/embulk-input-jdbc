@@ -58,7 +58,7 @@ subprojects {
 Gem::Specification.new do |spec|
   spec.name          = "${project.name}"
   spec.version       = "${project.version}"
-  spec.authors       = ["FURUHASHI Sadayuki"]
+  spec.authors       = ["Sadayuki Furuhashi"]
   spec.summary       = %[JDBC input plugin for Embulk]
   spec.description   = %[Selects records from a table.]
   spec.email         = ["frsyuki@gmail.com"]
