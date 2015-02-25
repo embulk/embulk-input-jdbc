@@ -28,8 +28,8 @@ subprojects {
     }
 
     dependencies {
-        compile  'org.embulk:embulk-core:0.4.4'
-        provided 'org.embulk:embulk-core:0.4.4'
+        compile  'org.embulk:embulk-core:0.4.8'
+        provided 'org.embulk:embulk-core:0.4.8'
         testCompile 'junit:junit:4.+'
     }
 
@@ -60,9 +60,9 @@ Gem::Specification.new do |spec|
   spec.version       = "${project.version}"
   spec.authors       = ["FURUHASHI Sadayuki"]
   spec.summary       = %[JDBC input plugin for Embulk]
-  spec.description   = %[JDBC input plugin is an Embulk plugin that loads records from JDBC so that any output plugins can receive the records. Search the output plugins by "embulk-output" keyword.]
-  spec.email         = ["frsyuki@users.sourceforge.jp"]
-  spec.license       = "Apache 2.0"
+  spec.description   = %[Selects records from a table.]
+  spec.email         = ["frsyuki@gmail.com"]
+  spec.licenses      = ["Apache 2.0"]
   spec.homepage      = "https://github.com/embulk/embulk-input-jdbc"
 
   spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]

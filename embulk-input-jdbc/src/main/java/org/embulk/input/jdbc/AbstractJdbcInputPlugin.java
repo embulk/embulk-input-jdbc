@@ -182,6 +182,11 @@ public abstract class AbstractJdbcInputPlugin
         return buildNextConfigDiff(task, control.run(taskSource, schema, taskCount));
     }
 
+    public ConfigDiff guess(ConfigSource config)
+    {
+        return Exec.newConfigDiff();
+    }
+
     protected ConfigDiff buildNextConfigDiff(PluginTask task, List<CommitReport> reports)
     {
         ConfigDiff next = Exec.newConfigDiff();
