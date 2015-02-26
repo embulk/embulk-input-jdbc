@@ -1,17 +1,25 @@
 package org.embulk.input;
 
+import java.nio.file.Paths;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import org.embulk.config.Config;
+import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.spi.PluginClassLoader;
 
 public class JdbcInputPlugin
         extends AbstractJdbcInputPlugin
 {
+    private final static Set<String> loadedJarGlobs = new HashSet<String>();
+
     public interface GenericPluginTask extends PluginTask
     {
         @Config("driver_name")
@@ -19,6 +27,10 @@ public class JdbcInputPlugin
 
         @Config("driver_class")
         public String getDriverClass();
+
+        @Config("driver_path")
+        @ConfigDefault("null")
+        public Optional<String> getDriverPath();
     }
 
     @Override
@@ -32,12 +44,22 @@ public class JdbcInputPlugin
     {
         GenericPluginTask g = (GenericPluginTask) task;
 
+        if (g.getDriverPath().isPresent()) {
+            synchronized (loadedJarGlobs) {
+                String glob = g.getDriverPath().get();
+                if (!loadedJarGlobs.contains(glob)) {
+                    loadDriverJar(glob);
+                    loadedJarGlobs.add(glob);
+                }
+            }
+        }
+
         String url;
         if (g.getPort().isPresent()) {
             url = String.format("jdbc:%s://%s:%d/%s",
                     g.getDriverName(), g.getHost(), g.getPort().get(), g.getDatabase());
         } else {
-            url = String.format("jdbc:%s://%s:%d/%s",
+            url = String.format("jdbc:%s://%s/%s",
                     g.getDriverName(), g.getHost(), g.getDatabase());
         }
 
@@ -66,5 +88,13 @@ public class JdbcInputPlugin
                 con.close();
             }
         }
+    }
+
+    private void loadDriverJar(String glob)
+    {
+        // TODO match glob
+        PluginClassLoader loader = (PluginClassLoader) getClass().getClassLoader();
+        System.out.println("Adding jar: "+glob);
+        loader.addPath(Paths.get(glob));
     }
 }
