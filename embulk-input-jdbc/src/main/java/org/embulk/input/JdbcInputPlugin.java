@@ -20,17 +20,30 @@ public class JdbcInputPlugin
 {
     private final static Set<String> loadedJarGlobs = new HashSet<String>();
 
-    public interface GenericPluginTask extends PluginTask
+    public interface GenericPluginTask
+            extends PluginTask
     {
-        @Config("driver_name")
-        public String getDriverName();
+        @Config("driver_path")
+        @ConfigDefault("null")
+        public Optional<String> getDriverPath();
 
         @Config("driver_class")
         public String getDriverClass();
 
-        @Config("driver_path")
+        @Config("url")
+        public String getUrl();
+
+        @Config("user")
         @ConfigDefault("null")
-        public Optional<String> getDriverPath();
+        public Optional<String> getUser();
+
+        @Config("password")
+        @ConfigDefault("null")
+        public Optional<String> getPassword();
+
+        @Config("schema")
+        @ConfigDefault("null")
+        public Optional<String> getSchema();
     }
 
     @Override
@@ -42,11 +55,11 @@ public class JdbcInputPlugin
     @Override
     protected JdbcInputConnection newConnection(PluginTask task) throws SQLException
     {
-        GenericPluginTask g = (GenericPluginTask) task;
+        GenericPluginTask t = (GenericPluginTask) task;
 
-        if (g.getDriverPath().isPresent()) {
+        if (t.getDriverPath().isPresent()) {
             synchronized (loadedJarGlobs) {
-                String glob = g.getDriverPath().get();
+                String glob = t.getDriverPath().get();
                 if (!loadedJarGlobs.contains(glob)) {
                     loadDriverJar(glob);
                     loadedJarGlobs.add(glob);
@@ -54,33 +67,28 @@ public class JdbcInputPlugin
             }
         }
 
-        String url;
-        if (g.getPort().isPresent()) {
-            url = String.format("jdbc:%s://%s:%d/%s",
-                    g.getDriverName(), g.getHost(), g.getPort().get(), g.getDatabase());
-        } else {
-            url = String.format("jdbc:%s://%s/%s",
-                    g.getDriverName(), g.getHost(), g.getDatabase());
+        Properties props = new Properties();
+        if (t.getUser().isPresent()) {
+            props.setProperty("user", t.getUser().get());
+        }
+        if (t.getPassword().isPresent()) {
+            props.setProperty("password", t.getPassword().get());
         }
 
-        Properties props = new Properties();
-        props.setProperty("user", g.getUser());
-        props.setProperty("password", g.getPassword());
-
-        props.putAll(g.getOptions());
+        props.putAll(t.getOptions());
 
         Driver driver;
         try {
             // TODO check Class.forName(driverClass) is a Driver before newInstance
             //      for security
-            driver = (Driver) Class.forName(g.getDriverClass()).newInstance();
+            driver = (Driver) Class.forName(t.getDriverClass()).newInstance();
         } catch (Exception ex) {
             throw Throwables.propagate(ex);
         }
 
-        Connection con = driver.connect(url, props);
+        Connection con = driver.connect(t.getUrl(), props);
         try {
-            JdbcInputConnection c = new JdbcInputConnection(con, g.getSchema().orNull());
+            JdbcInputConnection c = new JdbcInputConnection(con, t.getSchema().orNull());
             con = null;
             return c;
         } finally {

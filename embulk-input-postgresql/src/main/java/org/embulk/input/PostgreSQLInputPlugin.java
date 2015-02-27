@@ -6,26 +6,57 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import com.google.common.base.Throwables;
 import org.embulk.config.Config;
+import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.postgresql.PostgreSQLInputConnection;
 
 public class PostgreSQLInputPlugin
         extends AbstractJdbcInputPlugin
 {
-    private static final String DEFAULT_SCHEMA = "public";
-    private static final int DEFAULT_PORT = 5432;
-
     private static final Driver driver = new org.postgresql.Driver();
+
+    public interface PostgreSQLPluginTask
+            extends PluginTask
+    {
+        @Config("host")
+        public String getHost();
+
+        @Config("port")
+        @ConfigDefault("5432")
+        public int getPort();
+
+        @Config("user")
+        public String getUser();
+
+        @Config("password")
+        @ConfigDefault("\"\"")
+        public String getPassword();
+
+        @Config("database")
+        public String getDatabase();
+
+        @Config("schema")
+        @ConfigDefault("\"public\"")
+        public String getSchema();
+    }
+
+    @Override
+    protected Class<? extends PluginTask> getTaskClass()
+    {
+        return PostgreSQLPluginTask.class;
+    }
 
     @Override
     protected PostgreSQLInputConnection newConnection(PluginTask task) throws SQLException
     {
+        PostgreSQLPluginTask t = (PostgreSQLPluginTask) task;
+
         String url = String.format("jdbc:postgresql://%s:%d/%s",
-                task.getHost(), task.getPort().or(DEFAULT_PORT), task.getDatabase());
+                t.getHost(), t.getPort(), t.getDatabase());
 
         Properties props = new Properties();
-        props.setProperty("user", task.getUser());
-        props.setProperty("password", task.getPassword());
+        props.setProperty("user", t.getUser());
+        props.setProperty("password", t.getPassword());
         props.setProperty("loginTimeout",   "300"); // seconds
         props.setProperty("socketTimeout", "1800"); // seconds
 
@@ -34,7 +65,7 @@ public class PostgreSQLInputPlugin
         props.setProperty("tcpKeepAlive", "true");
 
         // TODO
-        //switch task.getSssl() {
+        //switch t.getSssl() {
         //when "disable":
         //    break;
         //when "enable":
@@ -44,11 +75,11 @@ public class PostgreSQLInputPlugin
         //    break;
         //}
 
-        props.putAll(task.getOptions());
+        props.putAll(t.getOptions());
 
         Connection con = driver.connect(url, props);
         try {
-            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, task.getSchema().or(DEFAULT_SCHEMA));
+            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema());
             con = null;
             return c;
         } finally {

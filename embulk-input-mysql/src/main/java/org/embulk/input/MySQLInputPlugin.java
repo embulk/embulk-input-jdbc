@@ -13,17 +13,44 @@ import org.embulk.input.mysql.MySQLInputConnection;
 public class MySQLInputPlugin
         extends AbstractJdbcInputPlugin
 {
-    private static final int DEFAULT_PORT = 3306;
+    public interface MySQLPluginTask
+            extends PluginTask
+    {
+        @Config("host")
+        public String getHost();
+
+        @Config("port")
+        @ConfigDefault("3306")
+        public int getPort();
+
+        @Config("user")
+        public String getUser();
+
+        @Config("password")
+        @ConfigDefault("\"\"")
+        public String getPassword();
+
+        @Config("database")
+        public String getDatabase();
+    }
+
+    @Override
+    protected Class<? extends PluginTask> getTaskClass()
+    {
+        return MySQLPluginTask.class;
+    }
 
     @Override
     protected MySQLInputConnection newConnection(PluginTask task) throws SQLException
     {
+        MySQLPluginTask t = (MySQLPluginTask) task;
+
         String url = String.format("jdbc:mysql://%s:%d/%s",
-                task.getHost(), task.getPort().or(DEFAULT_PORT), task.getDatabase());
+                t.getHost(), t.getPort(), t.getDatabase());
 
         Properties props = new Properties();
-        props.setProperty("user", task.getUser());
-        props.setProperty("password", task.getPassword());
+        props.setProperty("user", t.getUser());
+        props.setProperty("password", t.getPassword());
 
         // convert 0000-00-00 to NULL to avoid this exceptoin:
         //   java.sql.SQLException: Value '0000-00-00' can not be represented as java.sql.Date
@@ -54,16 +81,16 @@ public class MySQLInputPlugin
         //    break;
         //}
 
-        if (task.getFetchRows() == 1) {
+        if (t.getFetchRows() == 1) {
             logger.info("Fetch size is 1. Fetching rows one by one.");
-        } else if (task.getFetchRows() <= 0) {
+        } else if (t.getFetchRows() <= 0) {
             logger.info("Fetch size is set to -1. Fetching all rows at once.");
         } else {
-            logger.info("Fetch size is {}. Using server-side prepared statement.", task.getFetchRows());
+            logger.info("Fetch size is {}. Using server-side prepared statement.", t.getFetchRows());
             props.setProperty("useCursorFetch", "true");
         }
 
-        props.putAll(task.getOptions());
+        props.putAll(t.getOptions());
 
         Driver driver;
         try {

@@ -34,30 +34,9 @@ public abstract class AbstractJdbcInputPlugin
 
     public interface PluginTask extends Task
     {
-        @Config("host")
-        public String getHost();
-
-        @Config("port")
-        @ConfigDefault("null")
-        public Optional<Integer> getPort();
-
-        @Config("user")
-        public String getUser();
-
-        @Config("password")
-        @ConfigDefault("\"\"")
-        public String getPassword();
-
         @Config("options")
         @ConfigDefault("{}")
         public Properties getOptions();
-
-        @Config("database")
-        public String getDatabase();
-
-        @Config("schema")
-        @ConfigDefault("null")
-        public Optional<String> getSchema();
 
         @Config("table")
         public String getTable();
