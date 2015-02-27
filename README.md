@@ -42,7 +42,7 @@ in:
   type: jdbc
   driver_path: /opt/oracle/ojdbc6.jar
   driver_class: oracle.jdbc.driver.OracleDriver
-  url: jdbc:oracle:thin:@myhost:1521:mydb
+  url: jdbc:oracle:thin:@127.0.0.1:1521:mydb
   user: myuser
   password: "mypassword"
   select: "col1, col2, col3"

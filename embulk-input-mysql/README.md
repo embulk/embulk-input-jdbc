@@ -14,7 +14,7 @@ MySQL input plugins for Embulk loads records from MySQL.
 - **user**: database login user name (string, required)
 - **password**: database login password (string, default: "")
 - **database**: destination database name (string, required)
-- **table**: destination name (string, required)
+- **table**: destination table name (string, required)
 - **select**: comma-separated list of columns to select (string, default: "*")
 - **where**: WHERE condition to filter the rows (string, default: no-condition)
 - **fetch_rows**: number of rows to fetch one time (integer, default: 10000)
