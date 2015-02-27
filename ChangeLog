@@ -1,3 +1,9 @@
+Release 0.2.4 - 2015-02-26
+
+* Upgraded embulk to v0.4.10.
+* jdbc: added driver_path parameter to load jar file dynamically.
+
+
 Release 0.2.3 - 2015-02-25
 
 * Upgraded embulk to v0.4.8
