@@ -9,11 +9,11 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import org.embulk.spi.PluginClassLoader;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
-import org.embulk.spi.PluginClassLoader;
 
 public class JdbcInputPlugin
         extends AbstractJdbcInputPlugin
@@ -94,7 +94,6 @@ public class JdbcInputPlugin
     {
         // TODO match glob
         PluginClassLoader loader = (PluginClassLoader) getClass().getClassLoader();
-        System.out.println("Adding jar: "+glob);
         loader.addPath(Paths.get(glob));
     }
 }

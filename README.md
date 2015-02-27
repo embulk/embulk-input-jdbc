@@ -35,7 +35,8 @@ See [embulk-input-redshift](embulk-input-redshift/).
 - **fetch_rows**: number of rows to fetch one time (integer, default: 10000)
 - **options**: extra JDBC properties (hash, default: {})
 - **driver_name**: name of the JDBC driver used in connection url (e.g. 'sqlite') (string, required)
-- **driver_name**: class name of the JDBC driver (e.g. 'org.sqlite.JDBC') (string, required)
+- **driver_class**: class name of the JDBC driver (e.g. 'org.sqlite.JDBC') (string, required)
+- **driver_path**: path to the jar file of the JDBC driver (e.g. 'sqlite-jdbc-3.8.7.jar') (string, optional)
 
 ### Example
 
@@ -54,6 +55,7 @@ in:
   where: "col4 != 'a'"
   driver_name: oracle
   driver_class: oracle.jdbc.driver.OracleDriver
+  driver_path: /opt/oracle/ojdbc6.jar
 ```
 
 ### Build
