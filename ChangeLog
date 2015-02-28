@@ -1,3 +1,22 @@
+Release 0.3.0 - 2015-02-27
+
+* jdbc: url parameter replaced driver_name, host, port, and database
+parameters. If you are using jdbc input plugin, you need to rewrite config
+file as following:
+
+Old configuration:
+
+  driver_class: com.ibm.db2.jcc.DB2Driver
+  driver_name: db2
+  host: localhost
+  port: 50000
+  database: mydb
+
+New configuration:
+
+  driver_class: com.ibm.db2.jcc.DB2Driver
+  url: jdbc:db2://localhost:50000/mydb
+
 Release 0.2.4 - 2015-02-26
 
 * Upgraded embulk to v0.4.10.
