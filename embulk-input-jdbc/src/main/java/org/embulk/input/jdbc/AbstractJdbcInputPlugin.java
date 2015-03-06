@@ -10,6 +10,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import org.embulk.config.CommitReport;
 import org.embulk.config.Config;
+import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigInject;
@@ -39,7 +40,12 @@ public abstract class AbstractJdbcInputPlugin
         public Properties getOptions();
 
         @Config("table")
-        public String getTable();
+        @ConfigDefault("null")
+        public Optional<String> getTable();
+
+        @Config("query")
+        @ConfigDefault("null")
+        public Optional<String> getQuery();
 
         @Config("select")
         @ConfigDefault("null")
@@ -134,7 +140,7 @@ public abstract class AbstractJdbcInputPlugin
     private Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
     {
         // build SELECT query and gets schema of its result
-        JdbcSchema querySchema = con.getSchemaOfQuery(task.getTable(), task.getSelect(), task.getWhere(), task.getOrderBy());
+        JdbcSchema querySchema = con.getSchemaOfQuery(getQuery(task, con));
         task.setQuerySchema(querySchema);
 
         ColumnGetterFactory factory = newColumnGetterFactory(task);
@@ -145,6 +151,22 @@ public abstract class AbstractJdbcInputPlugin
                     factory.newColumnGetter(querySchema.getColumn(i)).getToType()));
         }
         return new Schema(columns.build());
+    }
+
+    private String getQuery(PluginTask task, JdbcInputConnection con)
+    {
+        if (task.getQuery().isPresent()) {
+            if (task.getTable().isPresent() || task.getSelect().isPresent() ||
+                    task.getWhere().isPresent() || task.getOrderBy().isPresent()) {
+                throw new ConfigException("'table', 'select', 'where' and 'order_by' parameters are unnecessary if 'query' parameter is set.");
+            }
+            return task.getQuery().get();
+        } else if (task.getTable().isPresent()) {
+            return con.buildSelectQuery(task.getTable().get(), task.getSelect(),
+                    task.getWhere(), task.getOrderBy());
+        } else {
+            throw new ConfigException("'table' parameter is required (if 'query' parameter is not set)");
+        }
     }
 
     @Override
@@ -201,9 +223,7 @@ public abstract class AbstractJdbcInputPlugin
             List<ColumnGetter> getters = newColumnGetters(task, querySchema);
 
             try (JdbcInputConnection con = newConnection(task)) {
-                try (BatchSelect cursor = con.newSelectCursor(
-                            task.getTable(), task.getSelect(), task.getWhere(),
-                            task.getOrderBy(), task.getFetchRows())) {
+                try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows())) {
                     while (true) {
                         // TODO run fetch() in another thread asynchronously
                         // TODO retry fetch() if it failed (maybe order_by is required and unique_column(s) option is also required)

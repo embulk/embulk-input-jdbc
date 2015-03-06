@@ -14,9 +14,12 @@ MySQL input plugins for Embulk loads records from MySQL.
 - **user**: database login user name (string, required)
 - **password**: database login password (string, default: "")
 - **database**: destination database name (string, required)
-- **table**: destination table name (string, required)
-- **select**: comma-separated list of columns to select (string, default: "*")
-- **where**: WHERE condition to filter the rows (string, default: no-condition)
+- If you write SQL directly,
+  - **query**: SQL to run (string)
+- If **query** is not set,
+  - **table**: destination table name (string, required)
+  - **select**: comma-separated list of columns to select (string, default: "*")
+  - **where**: WHERE condition to filter the rows (string, default: no-condition)
 - **fetch_rows**: number of rows to fetch one time (integer, default: 10000)
   - If this value is set to > 1:
     - It uses a server-side prepared statement and fetches rows by chunks.
@@ -41,6 +44,20 @@ in:
   table: my_table
   select: "col1, col2, col3"
   where: "col4 != 'a'"
+```
+
+```yaml
+in:
+  type: mysql
+  host: localhost
+  user: myuser
+  password: ""
+  database: my_database
+  query: |
+    SELECT t1.id, t1.name, t2.id AS t2_id, t2.name AS t2_name
+    FROM table1 AS t1
+    LEFT JOIN table2 AS t2
+      ON t1.id = t2.t1_id
 ```
 
 ## Build

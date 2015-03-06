@@ -41,31 +41,8 @@ public class JdbcInputConnection
         executeUpdate(sql);
     }
 
-    protected String buildSelectQuery(String tableName,
-            Optional<String> selectColumnList, Optional<String> whereCondition,
-            Optional<String> orderByColumn)
+    public JdbcSchema getSchemaOfQuery(String query) throws SQLException
     {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("SELECT ");
-        sb.append(selectColumnList.or("*"));
-        sb.append(" FROM ").append(quoteIdentifierString(tableName));
-        if (whereCondition.isPresent()) {
-            sb.append(" WHERE ").append(whereCondition.get());
-        }
-        if (orderByColumn.isPresent()) {
-            sb.append("ORDER BY ").append(quoteIdentifierString(orderByColumn.get())).append(" ASC");
-        }
-
-        return sb.toString();
-    }
-
-    public JdbcSchema getSchemaOfQuery(String tableName,
-            Optional<String> selectColumnList, Optional<String> whereCondition,
-            Optional<String> orderByColumn) throws SQLException
-    {
-        String query = buildSelectQuery(tableName, selectColumnList, whereCondition,
-                orderByColumn);
         PreparedStatement stmt = connection.prepareStatement(query);
         try {
             return getSchemaOfResultMetadata(stmt.getMetaData());
@@ -89,18 +66,15 @@ public class JdbcInputConnection
         return new JdbcSchema(columns.build());
     }
 
-    public BatchSelect newSelectCursor(String tableName,
-            Optional<String> selectColumnList, Optional<String> whereCondition,
-            Optional<String> orderByColumn, int fetchRows) throws SQLException
+    public BatchSelect newSelectCursor(String query, int fetchRows) throws SQLException
     {
-        String select = buildSelectQuery(tableName, selectColumnList, whereCondition, orderByColumn);
-        return newBatchSelect(select, fetchRows);
+        return newBatchSelect(query, fetchRows);
     }
 
-    protected BatchSelect newBatchSelect(String select, int fetchRows) throws SQLException
+    protected BatchSelect newBatchSelect(String query, int fetchRows) throws SQLException
     {
-        logger.info("SQL: " + select);
-        PreparedStatement stmt = connection.prepareStatement(select);
+        logger.info("SQL: " + query);
+        PreparedStatement stmt = connection.prepareStatement(query);
         stmt.setFetchSize(fetchRows);
         return new SingleSelect(stmt);
     }
@@ -168,5 +142,24 @@ public class JdbcInputConnection
     protected String quoteIdentifierString(String str)
     {
         return identifierQuoteString + str + identifierQuoteString;
+    }
+
+    public String buildSelectQuery(String tableName,
+            Optional<String> selectColumnList, Optional<String> whereCondition,
+            Optional<String> orderByColumn)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("SELECT ");
+        sb.append(selectColumnList.or("*"));
+        sb.append(" FROM ").append(quoteIdentifierString(tableName));
+        if (whereCondition.isPresent()) {
+            sb.append(" WHERE ").append(whereCondition.get());
+        }
+        if (orderByColumn.isPresent()) {
+            sb.append("ORDER BY ").append(quoteIdentifierString(orderByColumn.get())).append(" ASC");
+        }
+
+        return sb.toString();
     }
 }
