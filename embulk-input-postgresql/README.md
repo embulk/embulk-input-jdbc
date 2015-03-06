@@ -38,6 +38,8 @@ in:
   where: "col4 != 'a'"
 ```
 
+If you need a complex SQL,
+
 ```yaml
 in:
   type: postgresql

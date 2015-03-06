@@ -1,3 +1,8 @@
+Release 0.4.0 - 2015-03-05
+
+* added support for 'query' parameter.
+* If 'query' parameter is set, 'table', 'select', 'where' and 'order_by' parameters are invaid.
+
 Release 0.3.0 - 2015-02-27
 
 * jdbc: url parameter replaced driver_name, host, port, and database
