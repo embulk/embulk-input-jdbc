@@ -56,7 +56,7 @@ public class JdbcInputConnection
         ImmutableList.Builder<JdbcColumn> columns = ImmutableList.builder();
         for (int i=0; i < metadata.getColumnCount(); i++) {
             int index = i + 1;  // JDBC column index begins from 1
-            String name = metadata.getColumnName(index);
+            String name = metadata.getColumnLabel(index);
             String typeName = metadata.getColumnTypeName(index);
             int sqlType = metadata.getColumnType(index);
             //String scale = metadata.getScale(index)
