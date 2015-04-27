@@ -9,7 +9,9 @@ import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.oracle.OracleInputConnection;
+import org.embulk.input.oracle.getter.OracleColumnGetterFactory;
 
 import com.google.common.base.Optional;
 
@@ -100,6 +102,12 @@ public class OracleInputPlugin
                 con.close();
             }
         }
+    }
+
+    @Override
+    protected ColumnGetterFactory newColumnGetterFactory(PluginTask task) throws SQLException
+    {
+        return new OracleColumnGetterFactory();
     }
 
 }

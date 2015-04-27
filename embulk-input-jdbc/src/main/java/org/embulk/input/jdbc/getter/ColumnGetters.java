@@ -3,9 +3,9 @@ package org.embulk.input.jdbc.getter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.math.BigDecimal;
+
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
-import org.embulk.spi.Column;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
@@ -168,6 +168,25 @@ public class ColumnGetters
         public Type getToType()
         {
             return Types.TIMESTAMP.withFormat("%Y-%m-%d %H:%M:%S");
+        }
+    }
+
+    public static class HighPrecisionTimestampColumnGetter extends TimestampColumnGetter
+    {
+        private final int fractionalSecondsPrecision;
+
+        public HighPrecisionTimestampColumnGetter(int fractionalSecondsPrecision)
+        {
+            if (fractionalSecondsPrecision <= 0) {
+                throw new IllegalArgumentException("fractionalSecondsPrecision must be greater than 0");
+            }
+            this.fractionalSecondsPrecision = fractionalSecondsPrecision;
+        }
+
+        @Override
+        public Type getToType()
+        {
+            return Types.TIMESTAMP.withFormat("%Y-%m-%d %H:%M:%S.%" + fractionalSecondsPrecision + "N");
         }
     }
 
