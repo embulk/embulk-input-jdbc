@@ -78,4 +78,5 @@ task gempush << {
     "gem push pkg/embulk-input-mysql-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-postgresql-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-redshift-${project.version}.gem".execute().waitFor()
+    "gem push pkg/embulk-input-oracle-${project.version}.gem".execute().waitFor()
 }
