@@ -10,6 +10,10 @@ See [embulk-input-mysql](embulk-input-mysql/).
 
 See [embulk-input-postgresql](embulk-input-postgresql/).
 
+## Oracle
+
+See [embulk-input-oracle](embulk-input-oracle/).
+
 ## Redshift
 
 See [embulk-input-redshift](embulk-input-redshift/).
