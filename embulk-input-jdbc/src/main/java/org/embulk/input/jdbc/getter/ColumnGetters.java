@@ -1,11 +1,10 @@
 package org.embulk.input.jdbc.getter;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.math.BigDecimal;
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
-import org.embulk.spi.Column;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
@@ -15,11 +14,16 @@ public class ColumnGetters
     private ColumnGetters() { }
 
     public static class BooleanColumnGetter
-            implements ColumnGetter
+            extends AbstractColumnGetter
     {
+        public BooleanColumnGetter(PageBuilder to)
+        {
+            super(to);
+        }
+
         @Override
         public void getAndSet(ResultSet from, int fromIndex,
-                PageBuilder to, Column toColumn) throws SQLException
+                Column toColumn) throws SQLException
         {
             boolean v = from.getBoolean(fromIndex);
             if (from.wasNull()) {
@@ -37,11 +41,16 @@ public class ColumnGetters
     }
 
     public static class LongColumnGetter
-            implements ColumnGetter
+            extends AbstractColumnGetter
     {
+        public LongColumnGetter(PageBuilder to)
+        {
+            super(to);
+        }
+
         @Override
         public void getAndSet(ResultSet from, int fromIndex,
-                PageBuilder to, Column toColumn) throws SQLException
+                Column toColumn) throws SQLException
         {
             long v = from.getLong(fromIndex);
             if (from.wasNull()) {
@@ -59,11 +68,16 @@ public class ColumnGetters
     }
 
     public static class DoubleColumnGetter
-            implements ColumnGetter
+            extends AbstractColumnGetter
     {
+        public DoubleColumnGetter(PageBuilder to)
+        {
+            super(to);
+        }
+
         @Override
         public void getAndSet(ResultSet from, int fromIndex,
-                PageBuilder to, Column toColumn) throws SQLException
+                Column toColumn) throws SQLException
         {
             double v = from.getDouble(fromIndex);
             if (from.wasNull()) {
@@ -81,11 +95,16 @@ public class ColumnGetters
     }
 
     public static class StringColumnGetter
-            implements ColumnGetter
+            extends AbstractColumnGetter
     {
+        public StringColumnGetter(PageBuilder to)
+        {
+            super(to);
+        }
+
         @Override
         public void getAndSet(ResultSet from, int fromIndex,
-                PageBuilder to, Column toColumn) throws SQLException
+                Column toColumn) throws SQLException
         {
             String v = from.getString(fromIndex);
             if (from.wasNull()) {
@@ -103,11 +122,16 @@ public class ColumnGetters
     }
 
     public static class DateColumnGetter
-            implements ColumnGetter
+            extends AbstractColumnGetter
     {
+        public DateColumnGetter(PageBuilder to)
+        {
+            super(to);
+        }
+
         @Override
         public void getAndSet(ResultSet from, int fromIndex,
-                PageBuilder to, Column toColumn) throws SQLException
+                Column toColumn) throws SQLException
         {
             java.sql.Date v = from.getDate(fromIndex);
             if (from.wasNull()) {
@@ -126,11 +150,16 @@ public class ColumnGetters
     }
 
     public static class TimeColumnGetter
-            implements ColumnGetter
+            extends AbstractColumnGetter
     {
+        public TimeColumnGetter(PageBuilder to)
+        {
+            super(to);
+        }
+
         @Override
         public void getAndSet(ResultSet from, int fromIndex,
-                PageBuilder to, Column toColumn) throws SQLException
+                Column toColumn) throws SQLException
         {
             java.sql.Time v = from.getTime(fromIndex);
             if (from.wasNull()) {
@@ -149,11 +178,16 @@ public class ColumnGetters
     }
 
     public static class TimestampColumnGetter
-            implements ColumnGetter
+            extends AbstractColumnGetter
     {
+        public TimestampColumnGetter(PageBuilder to)
+        {
+            super(to);
+        }
+
         @Override
         public void getAndSet(ResultSet from, int fromIndex,
-                PageBuilder to, Column toColumn) throws SQLException
+                Column toColumn) throws SQLException
         {
             java.sql.Timestamp v = from.getTimestamp(fromIndex);
             if (from.wasNull()) {
@@ -172,11 +206,16 @@ public class ColumnGetters
     }
 
     public static class BigDecimalToDoubleColumnGetter
-            implements ColumnGetter
+            extends AbstractColumnGetter
     {
+        public BigDecimalToDoubleColumnGetter(PageBuilder to)
+        {
+            super(to);
+        }
+
         @Override
         public void getAndSet(ResultSet from, int fromIndex,
-                PageBuilder to, Column toColumn) throws SQLException
+                Column toColumn) throws SQLException
         {
             BigDecimal v = from.getBigDecimal(fromIndex);
             if (from.wasNull()) {

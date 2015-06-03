@@ -2,17 +2,25 @@ package org.embulk.input.jdbc.getter;
 
 import java.sql.Types;
 import org.embulk.input.jdbc.JdbcColumn;
+import org.embulk.input.jdbc.getter.ColumnGetters.BigDecimalToDoubleColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetters.BooleanColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.LongColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.DoubleColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.StringColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetters.DateColumnGetter;
+import org.embulk.input.jdbc.getter.ColumnGetters.DoubleColumnGetter;
+import org.embulk.input.jdbc.getter.ColumnGetters.LongColumnGetter;
+import org.embulk.input.jdbc.getter.ColumnGetters.StringColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetters.TimeColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetters.TimestampColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.BigDecimalToDoubleColumnGetter;
+import org.embulk.spi.PageBuilder;
 
 public class ColumnGetterFactory
 {
+    private final PageBuilder to;
+
+    public ColumnGetterFactory(PageBuilder to)
+    {
+        this.to = to;
+    }
+
     public ColumnGetter newColumnGetter(JdbcColumn column)
     {
         switch(column.getSqlType()) {
@@ -21,18 +29,18 @@ public class ColumnGetterFactory
         case Types.SMALLINT:
         case Types.INTEGER:
         case Types.BIGINT:
-            return new LongColumnGetter();
+            return new LongColumnGetter(to);
 
         // getDouble
         case Types.DOUBLE:
         case Types.FLOAT:
         case Types.REAL:
-            return new DoubleColumnGetter();
+            return new DoubleColumnGetter(to);
 
         // getBool
         case Types.BOOLEAN:
         case Types.BIT:  // JDBC BIT is boolean, unlike SQL-92
-            return new BooleanColumnGetter();
+            return new BooleanColumnGetter(to);
 
         // getString, Clob
         case Types.CHAR:
@@ -42,7 +50,7 @@ public class ColumnGetterFactory
         case Types.NCHAR:
         case Types.NVARCHAR:
         case Types.LONGNVARCHAR:
-            return new StringColumnGetter();
+            return new StringColumnGetter(to);
 
         // TODO
         //// getBytes Blob
@@ -54,15 +62,15 @@ public class ColumnGetterFactory
 
         // getDate
         case Types.DATE:
-            return new DateColumnGetter(); // TODO
+            return new DateColumnGetter(to); // TODO
 
         // getTime
         case Types.TIME:
-            return new TimeColumnGetter(); // TODO
+            return new TimeColumnGetter(to); // TODO
 
         // getTimestamp
         case Types.TIMESTAMP:
-            return new TimestampColumnGetter();
+            return new TimestampColumnGetter(to);
 
         // TODO
         //// Null
@@ -72,7 +80,7 @@ public class ColumnGetterFactory
         // getBigDecimal
         case Types.NUMERIC:
         case Types.DECIMAL:
-            return new BigDecimalToDoubleColumnGetter();
+            return new BigDecimalToDoubleColumnGetter(to);
 
         // others
         case Types.ARRAY:  // array

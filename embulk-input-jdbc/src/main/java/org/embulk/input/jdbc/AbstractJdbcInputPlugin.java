@@ -112,11 +112,6 @@ public abstract class AbstractJdbcInputPlugin
 
     protected abstract JdbcInputConnection newConnection(PluginTask task) throws SQLException;
 
-    protected ColumnGetterFactory newColumnGetterFactory(PluginTask task) throws SQLException
-    {
-        return new ColumnGetterFactory();
-    }
-
     @Override
     public ConfigDiff transaction(ConfigSource config,
             InputPlugin.Control control)
@@ -143,7 +138,7 @@ public abstract class AbstractJdbcInputPlugin
         JdbcSchema querySchema = con.getSchemaOfQuery(getQuery(task, con));
         task.setQuerySchema(querySchema);
 
-        ColumnGetterFactory factory = newColumnGetterFactory(task);
+        ColumnGetterFactory factory = new ColumnGetterFactory(null);
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
             columns.add(new Column(i,
@@ -220,7 +215,7 @@ public abstract class AbstractJdbcInputPlugin
         PageBuilder pageBuilder = new PageBuilder(allocator, schema, output);
 
         try {
-            List<ColumnGetter> getters = newColumnGetters(task, querySchema);
+            List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
 
             try (JdbcInputConnection con = newConnection(task)) {
                 try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows())) {
@@ -248,9 +243,10 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
-    private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema) throws SQLException
+    private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
+            throws SQLException
     {
-        ColumnGetterFactory factory = newColumnGetterFactory(task);
+        ColumnGetterFactory factory = new ColumnGetterFactory(pageBuilder);
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
             getters.add(factory.newColumnGetter(c));
@@ -272,7 +268,7 @@ public abstract class AbstractJdbcInputPlugin
         do {
             for (int i=0; i < getters.size(); i++) {
                 int index = i + 1;  // JDBC column index begins from 1
-                getters.get(i).getAndSet(result, index, pageBuilder, columns.get(i));
+                getters.get(i).getAndSet(result, index, columns.get(i));
             }
             pageBuilder.addRecord();
             rows++;
