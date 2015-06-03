@@ -1,15 +1,8 @@
 package org.embulk.input.jdbc.getter;
 
 import java.sql.Types;
+
 import org.embulk.input.jdbc.JdbcColumn;
-import org.embulk.input.jdbc.getter.ColumnGetters.BigDecimalToDoubleColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.BooleanColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.DateColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.DoubleColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.LongColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.StringColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.TimeColumnGetter;
-import org.embulk.input.jdbc.getter.ColumnGetters.TimestampColumnGetter;
 import org.embulk.spi.PageBuilder;
 
 public class ColumnGetterFactory
@@ -80,7 +73,7 @@ public class ColumnGetterFactory
         // getBigDecimal
         case Types.NUMERIC:
         case Types.DECIMAL:
-            return new BigDecimalToDoubleColumnGetter(to);
+            return new BigDecimalColumnGetter(to);
 
         // others
         case Types.ARRAY:  // array
