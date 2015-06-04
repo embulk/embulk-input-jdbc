@@ -37,6 +37,16 @@ See [embulk-input-redshift](embulk-input-redshift/).
   - **table**: destination table name (string, required)
   - **select**: comma-separated list of columns to select (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
+- **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
+- **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
+  - **type**: Column values is converted to this embulk type.
+  Available values options are: `boolean`, `long`, `double`, `string`, `timestamp`).
+  By default, the embulk type is determined according to the sql type of the column.
+  - **timestamp_format**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted by this timestamp_format. And if the embulk type is `timestamp`, this timestamp_format will be used in the output plugin. (string, default : `%Y-%m-%d` for `date`, `%H:%M:%S` for `time`, `%Y-%m-%d %H:%M:%S` for `timestamp`)
+  - **timezone**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this timezone.
+(string, value of default_timezone option is used by default)
+
+
 
 ### Example
 
@@ -68,6 +78,25 @@ in:
     FROM table1 AS t1
     LEFT JOIN table2 AS t2
       ON t1.id = t2.t1_id
+```
+
+Advanced configuration:
+
+```yaml
+in:
+  type: jdbc
+  driver_path: /opt/oracle/ojdbc6.jar
+  driver_class: oracle.jdbc.driver.OracleDriver
+  url: jdbc:oracle:thin:@127.0.0.1:1521:mydb
+  user: myuser
+  password: "mypassword"
+  select: "col1, col2, col3"
+  table: "my_table"
+  where: "col4 != 'a'"
+  column_options:
+    col1: {type: long}
+    col3: {type: string, timestamp_format: '%Y/%m/%d', timezone: '+0900'}
+
 ```
 
 ### Build
