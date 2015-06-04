@@ -90,7 +90,7 @@ public class MySQLInputPluginTest
                         + "1.234567890123,"
                         + "-1234,"
                         + "123456789012345678.12,"
-                        + "'abcd',"
+                        + "'5678',"
                         + "'xy',"
                         + "'2015-06-04',"
                         + "'2015-06-04 12:34:56',"
@@ -115,7 +115,7 @@ public class MySQLInputPluginTest
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
-                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,abcd,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
                     read("mysql-input.000.00.csv"));
         }
     }
@@ -129,7 +129,49 @@ public class MySQLInputPluginTest
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
-                    "99,9999,-99999999,-9999999999999999,1.2345,1.234567890123,-1234,123456789012345678.12,abcd,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    "99,9999,-99999999,-9999999999999999,1.2345,1.234567890123,-1234,123456789012345678.12,5678,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
+    @Test
+    public void testBoolean() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input-boolean.yml"));
+            assertEquals(Arrays.asList(
+                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "true,true,false,false,true,true,false,true,,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
+    @Test
+    public void testLong() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input-long.yml"));
+            assertEquals(Arrays.asList(
+                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "99,9999,-99999999,-9999999999999999,1,1,-1234,123456789012345678,5678,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
+    @Test
+    public void testDouble() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input-double.yml"));
+            assertEquals(Arrays.asList(
+                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "99.0,9999.0,-9.9999999E7,-1.0E16,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678.0,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
                     read("mysql-input.000.00.csv"));
         }
     }

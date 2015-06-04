@@ -1,0 +1,26 @@
+in:
+  type: mysql
+  host: localhost
+  database: TESTDB
+  user: TEST_USER
+  password: test_pw
+  table: test1
+  select: "*"
+  column_options:
+    c1: {type: boolean}
+    c2: {type: boolean}
+    c3: {type: boolean}
+    c4: {type: boolean}
+    c5: {type: boolean}
+    c6: {type: boolean}
+    c7: {type: boolean}
+    c8: {type: boolean}
+    c9: {type: boolean}
+    c10: {type: boolean}
+
+out:
+  type: file
+  path_prefix: mysql-input
+  file_ext: .csv
+  formatter:
+    type: csv
