@@ -2,6 +2,7 @@ package org.embulk.input.jdbc.getter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Type;
@@ -30,21 +31,29 @@ public class StringColumnGetter
     }
 
     @Override
-    public void booleanColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void longColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        long l;
+        try {
+            l = Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            super.longColumn(column);
+            return;
+        }
+        to.setLong(column, l);
     }
 
     @Override
     public void doubleColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        double d;
+        try {
+            d = Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            super.doubleColumn(column);
+            return;
+        }
+        to.setDouble(column, d);
     }
 
     @Override
@@ -53,9 +62,4 @@ public class StringColumnGetter
         to.setString(column, value);
     }
 
-    @Override
-    public void timestampColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
-    }
 }

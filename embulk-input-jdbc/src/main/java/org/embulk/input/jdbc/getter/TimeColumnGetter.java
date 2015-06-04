@@ -32,24 +32,6 @@ public class TimeColumnGetter
     }
 
     @Override
-    public void booleanColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void longColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void doubleColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void stringColumn(Column column)
     {
         throw new UnsupportedOperationException();

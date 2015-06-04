@@ -1,0 +1,136 @@
+package org.embulk.input.mysql;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
+
+import org.embulk.input.MySQLInputPlugin;
+import org.embulk.spi.InputPlugin;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class MySQLInputPluginTest
+{
+    private static boolean prepared = false;
+
+    @BeforeClass
+    public static void prepare() throws SQLException
+    {
+        Connection connection;
+        try {
+            connection = DriverManager.getConnection("jdbc:mysql://localhost/TESTDB", "TEST_USER", "test_pw");
+        } catch (SQLException e) {
+            System.err.println(e);
+            System.err.println("Warning: prepare a schema on MySQL (database = 'TESTDB', user = 'TEST_USER', password = 'test_pw').");
+            return;
+        }
+
+        try {
+            try (Statement statement = connection.createStatement()) {
+                String drop = "drop table if exists test1";
+                statement.execute(drop);
+
+                String create =
+                        "create table test1 ("
+                        + "c1  tinyint,"
+                        + "c2  smallint,"
+                        + "c3  int,"
+                        + "c4  bigint,"
+                        + "c5  float,"
+                        + "c6  double,"
+                        + "c7  decimal(4,0),"
+                        + "c8  decimal(20,2),"
+                        + "c9  char(4),"
+                        + "c10 varchar(4),"
+                        + "c11 date,"
+                        + "c12 datetime,"
+                        + "c13 timestamp,"
+                        + "c14 time,"
+                        + "c15 datetime(6));";
+                statement.execute(create);
+
+                String insert1 =
+                        "insert into test1 values("
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "null,"
+                        + "'2015-06-04 23:45:06',"
+                        + "null,"
+                        + "null);";
+                statement.executeUpdate(insert1);
+
+                String insert2 =
+                        "insert into test1 values("
+                        + "99,"
+                        + "9999,"
+                        + "-99999999,"
+                        + "-9999999999999999,"
+                        + "1.234567,"
+                        + "1.234567890123,"
+                        + "-1234,"
+                        + "123456789012345678.12,"
+                        + "'abcd',"
+                        + "'xy',"
+                        + "'2015-06-04',"
+                        + "'2015-06-04 12:34:56',"
+                        + "'2015-06-04 23:45:06',"
+                        + "'08:04:02',"
+                        + "'2015-06-04 01:02:03.123456');";
+                statement.executeUpdate(insert2);
+            }
+
+        } finally {
+            connection.close();
+            prepared = true;
+        }
+    }
+
+    @Test
+    public void test() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input.yml"));
+            assertEquals(Arrays.asList(
+                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "99,9999,-99999999,-9999999999999999,1.2345670461654663,1.234567890123,-1234.0,1.2345678901234568E17,abcd,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
+    private List<String> read(String path) throws IOException
+    {
+        FileSystem fs = FileSystems.getDefault();
+        return Files.readAllLines(fs.getPath(path), Charset.defaultCharset());
+    }
+
+    private String convertPath(String name) throws URISyntaxException
+    {
+        if (getClass().getResource(name) == null) {
+            return name;
+        }
+        return new File(getClass().getResource(name).toURI()).getAbsolutePath();
+    }
+}

@@ -1,0 +1,15 @@
+in:
+  type: mysql
+  host: localhost
+  database: TESTDB
+  user: TEST_USER
+  password: test_pw
+  table: test1
+  select: "*"
+
+out:
+  type: file
+  path_prefix: mysql-input
+  file_ext: .csv
+  formatter:
+    type: csv

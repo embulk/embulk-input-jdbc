@@ -3,6 +3,7 @@ package org.embulk.input.jdbc.getter;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Type;
@@ -33,13 +34,13 @@ public class BigDecimalColumnGetter
     @Override
     public void booleanColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setBoolean(column, value.signum() > 0);
     }
 
     @Override
     public void longColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setLong(column, value.longValue());
     }
 
     @Override
@@ -53,12 +54,7 @@ public class BigDecimalColumnGetter
     @Override
     public void stringColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setString(column, value.toPlainString());
     }
 
-    @Override
-    public void timestampColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
-    }
 }

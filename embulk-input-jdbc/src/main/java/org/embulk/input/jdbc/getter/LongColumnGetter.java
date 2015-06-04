@@ -32,7 +32,7 @@ public class LongColumnGetter
     @Override
     public void booleanColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setBoolean(column, value > 0L);
     }
 
     @Override
@@ -44,18 +44,13 @@ public class LongColumnGetter
     @Override
     public void doubleColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setDouble(column, value);
     }
 
     @Override
     public void stringColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setString(column, Long.toString(value));
     }
 
-    @Override
-    public void timestampColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
-    }
 }

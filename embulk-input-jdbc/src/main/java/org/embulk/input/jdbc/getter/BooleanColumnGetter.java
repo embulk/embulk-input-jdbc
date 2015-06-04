@@ -38,24 +38,19 @@ public class BooleanColumnGetter
     @Override
     public void longColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setLong(column, value ? 1L : 0L);
     }
 
     @Override
     public void doubleColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setDouble(column, value ? 1.0 : 0.0);
     }
 
     @Override
     public void stringColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setString(column, Boolean.toString(value));
     }
 
-    @Override
-    public void timestampColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
-    }
 }

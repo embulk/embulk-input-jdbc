@@ -1,11 +1,15 @@
 package org.embulk.input.jdbc.getter;
 
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
+
+import com.google.common.math.DoubleMath;
 
 public class DoubleColumnGetter
         extends AbstractColumnGetter
@@ -32,13 +36,22 @@ public class DoubleColumnGetter
     @Override
     public void booleanColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        to.setBoolean(column, value > 0.0);
     }
 
     @Override
     public void longColumn(Column column)
     {
-        throw new UnsupportedOperationException();
+        long l;
+        try {
+            // TODO configurable rounding mode
+            l = DoubleMath.roundToLong(value, RoundingMode.HALF_UP);
+        } catch (ArithmeticException e) {
+            // NaN / Infinite / -Infinite
+            super.longColumn(column);
+            return;
+        }
+        to.setLong(column, l);
     }
 
     @Override
@@ -50,12 +63,6 @@ public class DoubleColumnGetter
     @Override
     public void stringColumn(Column column)
     {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void timestampColumn(Column column)
-    {
-        throw new UnsupportedOperationException();
+        to.setString(column, Double.toString(value));
     }
 }

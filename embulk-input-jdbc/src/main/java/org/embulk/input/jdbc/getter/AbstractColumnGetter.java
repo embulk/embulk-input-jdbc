@@ -30,4 +30,34 @@ public abstract class AbstractColumnGetter implements ColumnGetter, ColumnVisito
 
     protected abstract void fetch(ResultSet from, int fromIndex) throws SQLException;
 
+    @Override
+    public void booleanColumn(Column column)
+    {
+        to.setNull(column);
+    }
+
+    @Override
+    public void longColumn(Column column)
+    {
+        to.setNull(column);
+    }
+
+    @Override
+    public void doubleColumn(Column column)
+    {
+        to.setNull(column);
+    }
+
+    @Override
+    public void stringColumn(Column column)
+    {
+        to.setNull(column);
+    }
+
+    @Override
+    public void timestampColumn(Column column)
+    {
+        to.setNull(column);
+    }
+
 }
