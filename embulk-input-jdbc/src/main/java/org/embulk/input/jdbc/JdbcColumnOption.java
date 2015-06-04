@@ -8,7 +8,6 @@ import org.embulk.spi.time.TimestampFormat;
 import org.embulk.spi.type.Type;
 import org.joda.time.DateTimeZone;
 import org.jruby.embed.ScriptingContainer;
-
 import com.google.common.base.Optional;
 
 public interface JdbcColumnOption
@@ -19,8 +18,8 @@ public interface JdbcColumnOption
     public Optional<Type> getType();
 
     @Config("timestamp_format")
-    @ConfigDefault("\"%Y-%m-%d %H:%M:%S.%6N\"")
-    public TimestampFormat getTimestampFormat();
+    @ConfigDefault("null")
+    public Optional<TimestampFormat> getTimestampFormat();
 
     @Config("timezone")
     @ConfigDefault("null")

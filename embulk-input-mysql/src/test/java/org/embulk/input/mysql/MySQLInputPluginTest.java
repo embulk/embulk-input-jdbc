@@ -176,6 +176,48 @@ public class MySQLInputPluginTest
         }
     }
 
+    @Test
+    public void testTimestamp1() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input-timestamp1.yml"));
+            assertEquals(Arrays.asList(
+                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    ",,,,,,,,,,,,2015/06/04 14:45:06,,",
+                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/03,2015/06/04 03:34:56,2015/06/04 14:45:06,23-04-02,2015/06/03 16:02:03.123456"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
+    @Test
+    public void testTimestamp2() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input-timestamp2.yml"));
+            assertEquals(Arrays.asList(
+                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    ",,,,,,,,,,,,2015/06/04 23:45:06,,",
+                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/03,2015/06/04 03:34:56,2015/06/04 23:45:06,08-04-02,2015/06/03 16:02:03.123456"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
+    @Test
+    public void testTimestamp3() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input-timestamp3.yml"));
+            assertEquals(Arrays.asList(
+                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    ",,,,,,,,,,,,2015/06/04 23:45:06,,",
+                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/04,2015/06/04 12:34:56,2015/06/04 23:45:06,02-04-02,2015/06/04 01:02:03.123456"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
     private List<String> read(String path) throws IOException
     {
         FileSystem fs = FileSystems.getDefault();

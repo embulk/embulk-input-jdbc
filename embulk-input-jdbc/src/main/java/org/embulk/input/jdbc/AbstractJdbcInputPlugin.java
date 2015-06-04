@@ -32,6 +32,7 @@ import org.embulk.spi.Exec;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.JdbcInputConnection.BatchSelect;
+import org.joda.time.DateTimeZone;
 
 public abstract class AbstractJdbcInputPlugin
         implements InputPlugin
@@ -106,6 +107,10 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("{}")
         public Map<String, JdbcColumnOption> getColumnOptions();
 
+        @Config("default_timezone")
+        @ConfigDefault("\"UTC\"")
+        public DateTimeZone getDefaultTimeZone();
+
         public JdbcSchema getQuerySchema();
         public void setQuerySchema(JdbcSchema schema);
 
@@ -147,7 +152,7 @@ public abstract class AbstractJdbcInputPlugin
         JdbcSchema querySchema = con.getSchemaOfQuery(getQuery(task, con));
         task.setQuerySchema(querySchema);
 
-        ColumnGetterFactory factory = new ColumnGetterFactory(null);
+        ColumnGetterFactory factory = new ColumnGetterFactory(null, task.getDefaultTimeZone());
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
             JdbcColumn column = querySchema.getColumn(i);
@@ -257,7 +262,7 @@ public abstract class AbstractJdbcInputPlugin
     private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
             throws SQLException
     {
-        ColumnGetterFactory factory = new ColumnGetterFactory(pageBuilder);
+        ColumnGetterFactory factory = new ColumnGetterFactory(pageBuilder, task.getDefaultTimeZone());
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), c);

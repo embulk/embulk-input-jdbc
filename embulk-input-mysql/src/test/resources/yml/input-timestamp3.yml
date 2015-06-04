@@ -1,0 +1,22 @@
+in:
+  type: mysql
+  host: localhost
+  database: TESTDB
+  user: TEST_USER
+  password: test_pw
+  table: test1
+  select: "*"
+  default_timezone: '+0900'
+  column_options:
+    c11: {type: string, timestamp_format: '%Y/%m/%d'}
+    c12: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S'}
+    c13: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S'}
+    c14: {type: string, timestamp_format: '%H-%M-%S', timezone: '+0300'}
+    c15: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S.%6N'}
+
+out:
+  type: file
+  path_prefix: mysql-input
+  file_ext: .csv
+  formatter:
+    type: csv

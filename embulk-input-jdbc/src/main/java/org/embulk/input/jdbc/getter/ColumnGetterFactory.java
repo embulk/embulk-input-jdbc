@@ -4,20 +4,25 @@ import java.sql.Types;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.spi.PageBuilder;
+import org.embulk.spi.time.TimestampFormatter;
+import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
+import org.joda.time.DateTimeZone;
 
 public class ColumnGetterFactory
 {
     private final PageBuilder to;
+    private final DateTimeZone defaultTimeZone;
 
-    public ColumnGetterFactory(PageBuilder to)
+    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
     {
         this.to = to;
+        this.defaultTimeZone = defaultTimeZone;
     }
 
-    public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption columnOption)
+    public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
     {
-        Type toType = getToType(columnOption);
+        Type toType = getToType(option);
         switch(column.getSqlType()) {
         // getLong
         case Types.TINYINT:
@@ -60,15 +65,15 @@ public class ColumnGetterFactory
 
         // getDate
         case Types.DATE:
-            return new DateColumnGetter(to, toType); // TODO
+            return new DateColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
 
         // getTime
         case Types.TIME:
-            return new TimeColumnGetter(to, toType); // TODO
+            return new TimeColumnGetter(to, toType, newTimestampFormatter(option, TimeColumnGetter.DEFAULT_FORMAT));
 
         // getTimestamp
         case Types.TIMESTAMP:
-            return new TimestampColumnGetter(to, toType);
+            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, TimestampColumnGetter.DEFAULT_FORMAT));
 
         // TODO
         //// Null
@@ -95,12 +100,24 @@ public class ColumnGetterFactory
         }
     }
 
-    private Type getToType(JdbcColumnOption columnOption)
+    private Type getToType(JdbcColumnOption option)
     {
-        if (!columnOption.getType().isPresent()) {
+        if (!option.getType().isPresent()) {
             return null;
         }
-        return columnOption.getType().get();
+        Type toType = option.getType().get();
+        if (toType instanceof TimestampType && option.getTimestampFormat().isPresent()) {
+            toType = ((TimestampType)toType).withFormat(option.getTimestampFormat().get().getFormat());
+        }
+        return toType;
+    }
+
+    private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat)
+    {
+        return new TimestampFormatter(
+                option.getJRuby(),
+                option.getTimestampFormat().isPresent() ? option.getTimestampFormat().get().getFormat() : defaultTimestampFormat,
+                option.getTimeZone().or(defaultTimeZone));
     }
 
     private static UnsupportedOperationException unsupportedOperationException(JdbcColumn column)
