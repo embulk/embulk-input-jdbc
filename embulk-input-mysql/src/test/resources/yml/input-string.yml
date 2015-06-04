@@ -1,0 +1,26 @@
+in:
+  type: mysql
+  host: localhost
+  database: TESTDB
+  user: TEST_USER
+  password: test_pw
+  table: test1
+  select: "*"
+  column_options:
+    c1: {type: string}
+    c2: {type: string}
+    c3: {type: string}
+    c4: {type: string}
+    c5: {type: string}
+    c6: {type: string}
+    c7: {type: string}
+    c8: {type: string}
+    c9: {type: string}
+    c10: {type: string}
+
+out:
+  type: file
+  path_prefix: mysql-input
+  file_ext: .csv
+  formatter:
+    type: csv

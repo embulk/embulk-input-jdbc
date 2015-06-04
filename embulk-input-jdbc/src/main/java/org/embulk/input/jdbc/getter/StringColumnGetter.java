@@ -13,9 +13,9 @@ public class StringColumnGetter
 {
     private String value;
 
-    public StringColumnGetter(PageBuilder to)
+    public StringColumnGetter(PageBuilder to, Type toType)
     {
-        super(to);
+        super(to, toType);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class StringColumnGetter
     }
 
     @Override
-    public Type getToType()
+    protected Type getDefaultToType()
     {
         return Types.STRING;
     }

@@ -1,9 +1,10 @@
 package org.embulk.input.jdbc.getter;
 
 import java.sql.Types;
-
 import org.embulk.input.jdbc.JdbcColumn;
+import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.spi.PageBuilder;
+import org.embulk.spi.type.Type;
 
 public class ColumnGetterFactory
 {
@@ -14,26 +15,30 @@ public class ColumnGetterFactory
         this.to = to;
     }
 
-    public ColumnGetter newColumnGetter(JdbcColumn column)
+    public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption columnOption)
     {
+        Type toType = getToType(columnOption);
         switch(column.getSqlType()) {
         // getLong
         case Types.TINYINT:
         case Types.SMALLINT:
         case Types.INTEGER:
         case Types.BIGINT:
-            return new LongColumnGetter(to);
+            return new LongColumnGetter(to, toType);
+
+        // getFloat
+        case Types.FLOAT:
+        case Types.REAL:
+            return new FloatColumnGetter(to, toType);
 
         // getDouble
         case Types.DOUBLE:
-        case Types.FLOAT:
-        case Types.REAL:
-            return new DoubleColumnGetter(to);
+            return new DoubleColumnGetter(to, toType);
 
         // getBool
         case Types.BOOLEAN:
         case Types.BIT:  // JDBC BIT is boolean, unlike SQL-92
-            return new BooleanColumnGetter(to);
+            return new BooleanColumnGetter(to, toType);
 
         // getString, Clob
         case Types.CHAR:
@@ -43,7 +48,7 @@ public class ColumnGetterFactory
         case Types.NCHAR:
         case Types.NVARCHAR:
         case Types.LONGNVARCHAR:
-            return new StringColumnGetter(to);
+            return new StringColumnGetter(to, toType);
 
         // TODO
         //// getBytes Blob
@@ -55,15 +60,15 @@ public class ColumnGetterFactory
 
         // getDate
         case Types.DATE:
-            return new DateColumnGetter(to); // TODO
+            return new DateColumnGetter(to, toType); // TODO
 
         // getTime
         case Types.TIME:
-            return new TimeColumnGetter(to); // TODO
+            return new TimeColumnGetter(to, toType); // TODO
 
         // getTimestamp
         case Types.TIMESTAMP:
-            return new TimestampColumnGetter(to);
+            return new TimestampColumnGetter(to, toType);
 
         // TODO
         //// Null
@@ -73,7 +78,7 @@ public class ColumnGetterFactory
         // getBigDecimal
         case Types.NUMERIC:
         case Types.DECIMAL:
-            return new BigDecimalColumnGetter(to);
+            return new BigDecimalColumnGetter(to, toType);
 
         // others
         case Types.ARRAY:  // array
@@ -88,6 +93,14 @@ public class ColumnGetterFactory
         default:
             throw unsupportedOperationException(column);
         }
+    }
+
+    private Type getToType(JdbcColumnOption columnOption)
+    {
+        if (!columnOption.getType().isPresent()) {
+            return null;
+        }
+        return columnOption.getType().get();
     }
 
     private static UnsupportedOperationException unsupportedOperationException(JdbcColumn column)

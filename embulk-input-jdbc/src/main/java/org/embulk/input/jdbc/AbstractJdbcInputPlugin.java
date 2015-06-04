@@ -1,13 +1,18 @@
 package org.embulk.input.jdbc;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import org.slf4j.Logger;
+
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+
 import org.embulk.config.CommitReport;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigException;
@@ -97,6 +102,10 @@ public abstract class AbstractJdbcInputPlugin
 
         // TODO parallel execution using "partition_by" config
 
+        @Config("column_options")
+        @ConfigDefault("{}")
+        public Map<String, JdbcColumnOption> getColumnOptions();
+
         public JdbcSchema getQuerySchema();
         public void setQuerySchema(JdbcSchema schema);
 
@@ -141,9 +150,11 @@ public abstract class AbstractJdbcInputPlugin
         ColumnGetterFactory factory = new ColumnGetterFactory(null);
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
+            JdbcColumn column = querySchema.getColumn(i);
+            JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), column);
             columns.add(new Column(i,
-                    querySchema.getColumnName(i),
-                    factory.newColumnGetter(querySchema.getColumn(i)).getToType()));
+                    column.getName(),
+                    factory.newColumnGetter(column, columnOption).getToType()));
         }
         return new Schema(columns.build());
     }
@@ -249,9 +260,23 @@ public abstract class AbstractJdbcInputPlugin
         ColumnGetterFactory factory = new ColumnGetterFactory(pageBuilder);
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
-            getters.add(factory.newColumnGetter(c));
+            JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), c);
+            getters.add(factory.newColumnGetter(c, columnOption));
         }
         return getters.build();
+    }
+
+    private static JdbcColumnOption columnOptionOf(Map<String, JdbcColumnOption> columnOptions, JdbcColumn targetColumn)
+    {
+        return Optional.fromNullable(columnOptions.get(targetColumn.getName())).or(
+                    // default column option
+                    new Supplier<JdbcColumnOption>()
+                    {
+                        public JdbcColumnOption get()
+                        {
+                            return Exec.newConfigSource().loadConfig(JdbcColumnOption.class);
+                        }
+                    });
     }
 
     private boolean fetch(BatchSelect cursor,

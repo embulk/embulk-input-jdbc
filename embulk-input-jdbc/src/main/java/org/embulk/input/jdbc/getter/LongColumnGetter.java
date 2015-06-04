@@ -12,9 +12,9 @@ public class LongColumnGetter
 {
     private long value;
 
-    public LongColumnGetter(PageBuilder to)
+    public LongColumnGetter(PageBuilder to, Type toType)
     {
-        super(to);
+        super(to, toType);
     }
 
     @Override
@@ -24,7 +24,7 @@ public class LongColumnGetter
     }
 
     @Override
-    public Type getToType()
+    protected Type getDefaultToType()
     {
         return Types.LONG;
     }

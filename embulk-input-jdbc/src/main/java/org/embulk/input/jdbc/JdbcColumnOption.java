@@ -1,0 +1,32 @@
+package org.embulk.input.jdbc;
+
+import org.embulk.config.Config;
+import org.embulk.config.ConfigDefault;
+import org.embulk.config.ConfigInject;
+import org.embulk.config.Task;
+import org.embulk.spi.time.TimestampFormat;
+import org.embulk.spi.type.Type;
+import org.joda.time.DateTimeZone;
+import org.jruby.embed.ScriptingContainer;
+
+import com.google.common.base.Optional;
+
+public interface JdbcColumnOption
+        extends Task
+{
+    @Config("type")
+    @ConfigDefault("null")
+    public Optional<Type> getType();
+
+    @Config("timestamp_format")
+    @ConfigDefault("\"%Y-%m-%d %H:%M:%S.%6N\"")
+    public TimestampFormat getTimestampFormat();
+
+    @Config("timezone")
+    @ConfigDefault("null")
+    public Optional<DateTimeZone> getTimeZone();
+
+    // required by TimestampFormatter
+    @ConfigInject
+    public ScriptingContainer getJRuby();
+}

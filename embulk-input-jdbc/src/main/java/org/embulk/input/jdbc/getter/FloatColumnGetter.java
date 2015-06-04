@@ -11,12 +11,12 @@ import org.embulk.spi.type.Types;
 
 import com.google.common.math.DoubleMath;
 
-public class DoubleColumnGetter
+public class FloatColumnGetter
         extends AbstractColumnGetter
 {
-    private double value;
+    private float value;
 
-    public DoubleColumnGetter(PageBuilder to, Type toType)
+    public FloatColumnGetter(PageBuilder to, Type toType)
     {
         super(to, toType);
     }
@@ -24,7 +24,7 @@ public class DoubleColumnGetter
     @Override
     protected void fetch(ResultSet from, int fromIndex) throws SQLException
     {
-        value = from.getDouble(fromIndex);
+        value = from.getFloat(fromIndex);
     }
 
     @Override
@@ -63,6 +63,6 @@ public class DoubleColumnGetter
     @Override
     public void stringColumn(Column column)
     {
-        to.setString(column, Double.toString(value));
+        to.setString(column, Float.toString(value));
     }
 }

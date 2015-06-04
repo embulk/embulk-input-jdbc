@@ -6,14 +6,17 @@ import java.sql.SQLException;
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
 import org.embulk.spi.PageBuilder;
+import org.embulk.spi.type.Type;
 
 public abstract class AbstractColumnGetter implements ColumnGetter, ColumnVisitor
 {
     protected final PageBuilder to;
+    private final Type toType;
 
-    public AbstractColumnGetter(PageBuilder to)
+    public AbstractColumnGetter(PageBuilder to, Type toType)
     {
         this.to = to;
+        this.toType = toType;
     }
 
     @Override
@@ -59,5 +62,16 @@ public abstract class AbstractColumnGetter implements ColumnGetter, ColumnVisito
     {
         to.setNull(column);
     }
+
+    @Override
+    public Type getToType()
+    {
+        if (toType == null) {
+            return getDefaultToType();
+        }
+        return toType;
+    }
+
+    protected abstract Type getDefaultToType();
 
 }

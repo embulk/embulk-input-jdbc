@@ -14,9 +14,9 @@ public class DateColumnGetter
 {
     private Date value;
 
-    public DateColumnGetter(PageBuilder to)
+    public DateColumnGetter(PageBuilder to, Type toType)
     {
-        super(to);
+        super(to, toType);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class DateColumnGetter
     }
 
     @Override
-    public Type getToType()
+    protected Type getDefaultToType()
     {
         return Types.TIMESTAMP.withFormat("%Y-%m-%d");
     }

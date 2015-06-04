@@ -14,9 +14,9 @@ public class BigDecimalColumnGetter
 {
     private BigDecimal value;
 
-    public BigDecimalColumnGetter(PageBuilder to)
+    public BigDecimalColumnGetter(PageBuilder to, Type toType)
     {
-        super(to);
+        super(to, toType);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class BigDecimalColumnGetter
     }
 
     @Override
-    public Type getToType()
+    protected Type getDefaultToType()
     {
         return Types.DOUBLE;
     }

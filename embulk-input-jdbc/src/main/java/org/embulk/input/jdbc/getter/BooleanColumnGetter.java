@@ -12,9 +12,9 @@ public class BooleanColumnGetter
 {
     private boolean value;
 
-    public BooleanColumnGetter(PageBuilder to)
+    public BooleanColumnGetter(PageBuilder to, Type toType)
     {
-        super(to);
+        super(to, toType);
     }
 
     @Override
@@ -24,7 +24,7 @@ public class BooleanColumnGetter
     }
 
     @Override
-    public Type getToType()
+    protected Type getDefaultToType()
     {
         return Types.BOOLEAN;
     }

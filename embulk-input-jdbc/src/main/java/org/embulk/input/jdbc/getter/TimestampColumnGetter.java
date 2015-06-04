@@ -13,9 +13,9 @@ public class TimestampColumnGetter
 {
     private java.sql.Timestamp value;
 
-    public TimestampColumnGetter(PageBuilder to)
+    public TimestampColumnGetter(PageBuilder to, Type toType)
     {
-        super(to);
+        super(to, toType);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class TimestampColumnGetter
     }
 
     @Override
-    public Type getToType()
+    protected Type getDefaultToType()
     {
         return Types.TIMESTAMP.withFormat("%Y-%m-%d %H:%M:%S");
     }

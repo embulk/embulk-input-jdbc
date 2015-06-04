@@ -14,9 +14,9 @@ public class TimeColumnGetter
 {
     private Time value;
 
-    public TimeColumnGetter(PageBuilder to)
+    public TimeColumnGetter(PageBuilder to, Type toType)
     {
-        super(to);
+        super(to, toType);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class TimeColumnGetter
     }
 
     @Override
-    public Type getToType()
+    protected Type getDefaultToType()
     {
         return Types.TIMESTAMP.withFormat("%H:%M:%S");
     }
