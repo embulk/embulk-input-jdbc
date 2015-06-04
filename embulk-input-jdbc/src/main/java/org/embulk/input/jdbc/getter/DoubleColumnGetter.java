@@ -3,12 +3,10 @@ package org.embulk.input.jdbc.getter;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
-
 import com.google.common.math.DoubleMath;
 
 public class DoubleColumnGetter

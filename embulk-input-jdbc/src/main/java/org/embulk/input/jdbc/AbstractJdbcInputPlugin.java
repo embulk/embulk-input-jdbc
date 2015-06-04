@@ -5,14 +5,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import org.slf4j.Logger;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-
 import org.embulk.config.CommitReport;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigException;

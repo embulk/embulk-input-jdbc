@@ -2,7 +2,6 @@ package org.embulk.input.jdbc.getter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
 import org.embulk.spi.PageBuilder;
