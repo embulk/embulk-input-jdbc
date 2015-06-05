@@ -24,10 +24,15 @@ public class ColumnGetterFactory
 
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
     {
+        return newColumnGetter(column, option, option.getValueType());
+    }
+
+    private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
+    {
         Type toType = getToType(option);
-        switch(option.getValueType()) {
+        switch(valueType) {
         case "coalesce":
-            return newCoalesceColumnGetter(column, option);
+            return newColumnGetter(column, option, sqlTypeToValueType(column, column.getSqlType()));
         case "long":
             return new LongColumnGetter(to, toType);
         case "float":
@@ -51,30 +56,29 @@ public class ColumnGetterFactory
         }
     }
 
-    private ColumnGetter newCoalesceColumnGetter(JdbcColumn column, JdbcColumnOption option)
+    private String sqlTypeToValueType(JdbcColumn column, int sqlType)
     {
-        Type toType = getToType(option);
-        switch(column.getSqlType()) {
+        switch(sqlType) {
         // getLong
         case Types.TINYINT:
         case Types.SMALLINT:
         case Types.INTEGER:
         case Types.BIGINT:
-            return new LongColumnGetter(to, toType);
+            return "long";
 
         // getFloat
         case Types.FLOAT:
         case Types.REAL:
-            return new FloatColumnGetter(to, toType);
+            return "float";
 
         // getDouble
         case Types.DOUBLE:
-            return new DoubleColumnGetter(to, toType);
+            return "double";
 
         // getBool
         case Types.BOOLEAN:
         case Types.BIT:  // JDBC BIT is boolean, unlike SQL-92
-            return new BooleanColumnGetter(to, toType);
+            return "boolean";
 
         // getString, Clob
         case Types.CHAR:
@@ -84,7 +88,7 @@ public class ColumnGetterFactory
         case Types.NCHAR:
         case Types.NVARCHAR:
         case Types.LONGNVARCHAR:
-            return new StringColumnGetter(to, toType);
+            return "string";
 
         // TODO
         //// getBytes Blob
@@ -96,15 +100,15 @@ public class ColumnGetterFactory
 
         // getDate
         case Types.DATE:
-            return new DateColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
+            return "date";
 
         // getTime
         case Types.TIME:
-            return new TimeColumnGetter(to, toType, newTimestampFormatter(option, TimeColumnGetter.DEFAULT_FORMAT));
+            return "time";
 
         // getTimestamp
         case Types.TIMESTAMP:
-            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, TimestampColumnGetter.DEFAULT_FORMAT));
+            return "timestamp";
 
         // TODO
         //// Null
@@ -114,7 +118,7 @@ public class ColumnGetterFactory
         // getBigDecimal
         case Types.NUMERIC:
         case Types.DECIMAL:
-            return new BigDecimalColumnGetter(to, toType);
+            return "decimal";
 
         // others
         case Types.ARRAY:  // array
