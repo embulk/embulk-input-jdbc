@@ -1,0 +1,17 @@
+in:
+  type: mysql
+  host: localhost
+  database: TESTDB
+  user: TEST_USER
+  password: test_pw
+  table: test2
+  select: "*"
+  column_options:
+    c1: {value_type: decimal}
+
+out:
+  type: file
+  path_prefix: mysql-input
+  file_ext: .csv
+  formatter:
+    type: csv

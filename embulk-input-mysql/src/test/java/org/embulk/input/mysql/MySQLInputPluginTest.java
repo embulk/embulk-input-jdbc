@@ -39,10 +39,10 @@ public class MySQLInputPluginTest
 
         try {
             try (Statement statement = connection.createStatement()) {
-                String drop = "drop table if exists test1";
-                statement.execute(drop);
+                String drop1 = "drop table if exists test1";
+                statement.execute(drop1);
 
-                String create =
+                String create1 =
                         "create table test1 ("
                         + "c1  tinyint,"
                         + "c2  smallint,"
@@ -59,7 +59,7 @@ public class MySQLInputPluginTest
                         + "c13 timestamp,"
                         + "c14 time,"
                         + "c15 datetime(6));";
-                statement.execute(create);
+                statement.execute(create1);
 
                 String insert1 =
                         "insert into test1 values("
@@ -98,6 +98,15 @@ public class MySQLInputPluginTest
                         + "'08:04:02',"
                         + "'2015-06-04 01:02:03.123456');";
                 statement.executeUpdate(insert2);
+
+                String drop2 = "drop table if exists test2";
+                statement.execute(drop2);
+
+                String create2 = "create table test2 (c1 bigint unsigned);";
+                statement.execute(create2);
+
+                String insert3 = "insert into test2 values(18446744073709551615)";
+                statement.executeUpdate(insert3);
             }
 
         } finally {
@@ -214,6 +223,32 @@ public class MySQLInputPluginTest
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015/06/04 23:45:06,,",
                     "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/04,2015/06/04 12:34:56,2015/06/04 23:45:06,02-04-02,2015/06/04 01:02:03.123456"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
+    @Test
+    public void testValueTypeString() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input-valuetype-string.yml"));
+            assertEquals(Arrays.asList(
+                    "c1",
+                    "18446744073709551615"),
+                    read("mysql-input.000.00.csv"));
+        }
+    }
+
+    @Test
+    public void testValueTypeDecimal() throws Exception
+    {
+        if (prepared) {
+            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+            tester.run(convertPath("/yml/input-valuetype-decimal.yml"));
+            assertEquals(Arrays.asList(
+                    "c1",
+                    "1.8446744073709552E19"),
                     read("mysql-input.000.00.csv"));
         }
     }

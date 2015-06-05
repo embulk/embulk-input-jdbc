@@ -8,11 +8,16 @@ import org.embulk.spi.time.TimestampFormat;
 import org.embulk.spi.type.Type;
 import org.joda.time.DateTimeZone;
 import org.jruby.embed.ScriptingContainer;
+
 import com.google.common.base.Optional;
 
 public interface JdbcColumnOption
         extends Task
 {
+    @Config("value_type")
+    @ConfigDefault("\"coalesce\"")
+    public String getValueType();
+
     @Config("type")
     @ConfigDefault("null")
     public Optional<Type> getType();
