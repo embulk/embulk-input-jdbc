@@ -25,7 +25,6 @@ public class TimestampColumnGetter
         if (timestamp != null) {
             value = Timestamp.ofEpochSecond(timestamp.getTime() / 1000, timestamp.getNanos());
         }
-
     }
 
     @Override
