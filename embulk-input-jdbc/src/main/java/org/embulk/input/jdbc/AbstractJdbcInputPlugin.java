@@ -2,12 +2,16 @@ package org.embulk.input.jdbc;
 
 import java.util.List;
 import java.util.Properties;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import org.slf4j.Logger;
+
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+
 import org.embulk.config.CommitReport;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigException;
@@ -22,6 +26,7 @@ import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.InputPlugin;
 import org.embulk.spi.PageOutput;
+import org.embulk.spi.PluginClassLoader;
 import org.embulk.spi.Schema;
 import org.embulk.spi.Exec;
 import org.embulk.input.jdbc.getter.ColumnGetter;
@@ -320,4 +325,11 @@ public abstract class AbstractJdbcInputPlugin
     //        pages = ImmutableList.builder();
     //    }
     //}
+
+    protected void loadDriverJar(String glob)
+    {
+        // TODO match glob
+        PluginClassLoader loader = (PluginClassLoader) getClass().getClassLoader();
+        loader.addPath(Paths.get(glob));
+    }
 }

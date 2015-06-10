@@ -1,6 +1,5 @@
 package org.embulk.input;
 
-import java.nio.file.Paths;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Properties;
@@ -9,7 +8,6 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import org.embulk.spi.PluginClassLoader;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
@@ -98,10 +96,4 @@ public class JdbcInputPlugin
         }
     }
 
-    private void loadDriverJar(String glob)
-    {
-        // TODO match glob
-        PluginClassLoader loader = (PluginClassLoader) getClass().getClassLoader();
-        loader.addPath(Paths.get(glob));
-    }
 }
