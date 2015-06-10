@@ -149,6 +149,9 @@ public abstract class AbstractJdbcInputPlugin
         JdbcSchema querySchema = con.getSchemaOfQuery(getQuery(task, con));
         task.setQuerySchema(querySchema);
 
+        // validate column_options
+        newColumnGetters(task, querySchema, null);
+
         ColumnGetterFactory factory = new ColumnGetterFactory(null, task.getDefaultTimeZone());
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
