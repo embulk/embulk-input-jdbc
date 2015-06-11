@@ -31,7 +31,7 @@ public class ColumnGetterFactory
     {
         Type toType = getToType(option);
         switch(valueType) {
-        case "coerce":
+        case "coalesce":
             return newColumnGetter(column, option, sqlTypeToValueType(column, column.getSqlType()));
         case "long":
             return new LongColumnGetter(to, toType);
