@@ -18,7 +18,7 @@ See [embulk-input-oracle](embulk-input-oracle/).
 
 See [embulk-input-redshift](embulk-input-redshift/).
 
-## Oracle
+## SQL Server
 
 See [embulk-input-sqlserver](embulk-input-sqlserver/).
 
