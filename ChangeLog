@@ -1,3 +1,10 @@
+Release 0.6.0 - 2015-07-06
+
+* Upgraded embulk to v0.6.16
+* Added support for SQL Server - embulk-input-sqlserver
+* options: option accepts 'true', 'false' and integers without double quotes
+
+
 Release 0.5.0 - 2015-06-17
 
 * Upgraded embulk to v0.6.11
