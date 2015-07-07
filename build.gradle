@@ -73,10 +73,11 @@ end
     }
 }
 
-task gempush << {
+task gemPush << {
     "gem push pkg/embulk-input-jdbc-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-mysql-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-postgresql-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-redshift-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-oracle-${project.version}.gem".execute().waitFor()
+    "gem push pkg/embulk-input-sqlserver-${project.version}.gem".execute().waitFor()
 }
