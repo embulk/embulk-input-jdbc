@@ -12,6 +12,6 @@ in:
 out:
   type: file
   path_prefix: mysql-input
-  file_ext: .csv
+  file_ext: csv
   formatter:
     type: csv
