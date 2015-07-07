@@ -13,3 +13,9 @@ out:
   file_ext: csv
   formatter:
     type: csv
+    column_options:
+      c11: {format: '%Y-%m-%d'}
+      c12: {format: '%Y-%m-%d %H:%M:%S'}
+      c13: {format: '%Y-%m-%d %H:%M:%S'}
+      c14: {format: '%H:%M:%S'}
+      c15: {format: '%Y-%m-%d %H:%M:%S'}
