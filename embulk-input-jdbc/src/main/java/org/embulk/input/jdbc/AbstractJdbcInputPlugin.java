@@ -45,7 +45,7 @@ public abstract class AbstractJdbcInputPlugin
     {
         @Config("options")
         @ConfigDefault("{}")
-        public Properties getOptions();
+        public ToStringMap getOptions();
 
         @Config("table")
         @ConfigDefault("null")
