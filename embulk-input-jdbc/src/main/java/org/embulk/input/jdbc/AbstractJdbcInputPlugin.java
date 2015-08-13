@@ -97,6 +97,14 @@ public abstract class AbstractJdbcInputPlugin
         //@ConfigDefault("null")
         //public Optional<Integer> getLimitRows();
 
+        @Config("connect_timeout")
+        @ConfigDefault("300")
+        public int getConnectTimeout();
+
+        @Config("socket_timeout")
+        @ConfigDefault("1800")
+        public int getSocketTimeout();
+
         @Config("fetch_rows")
         @ConfigDefault("10000")
         // TODO set minimum number

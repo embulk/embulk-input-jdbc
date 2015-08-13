@@ -4,7 +4,6 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import com.google.common.base.Throwables;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
@@ -58,8 +57,8 @@ public class MySQLInputPlugin
 
         props.setProperty("useCompression", "true");
 
-        props.setProperty("connectTimeout", "300000"); // milliseconds
-        props.setProperty("socketTimeout", "1800000"); // smillieconds
+        props.setProperty("connectTimeout", String.valueOf(t.getConnectTimeout() * 1000)); // milliseconds
+        props.setProperty("socketTimeout", String.valueOf(t.getSocketTimeout() * 1000)); // milliseconds
 
         // Enable keepalive based on tcp_keepalive_time, tcp_keepalive_intvl and tcp_keepalive_probes kernel parameters.
         // Socket options TCP_KEEPCNT, TCP_KEEPIDLE, and TCP_KEEPINTVL are not configurable.
