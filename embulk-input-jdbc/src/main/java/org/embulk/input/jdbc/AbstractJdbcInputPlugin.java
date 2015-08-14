@@ -246,7 +246,7 @@ public abstract class AbstractJdbcInputPlugin
             List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
 
             try (JdbcInputConnection con = newConnection(task)) {
-                try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows())) {
+                try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows(), task.getSocketTimeout())) {
                     while (true) {
                         // TODO run fetch() in another thread asynchronously
                         // TODO retry fetch() if it failed (maybe order_by is required and unique_column(s) option is also required)

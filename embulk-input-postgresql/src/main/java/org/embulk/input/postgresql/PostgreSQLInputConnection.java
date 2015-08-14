@@ -20,11 +20,12 @@ public class PostgreSQLInputConnection
     }
 
     @Override
-    protected CursorSelect newBatchSelect(String select, int fetchRows) throws SQLException
+    protected CursorSelect newBatchSelect(String select, int fetchRows, int queryTimeout) throws SQLException
     {
         executeUpdate("DECLARE cur NO SCROLL CURSOR FOR "+select);
 
         String fetchSql = "FETCH FORWARD "+fetchRows+" FROM cur";
+        // Because socketTimeout is set in Connection, don't need to set quertyTimeout.
         return new CursorSelect(fetchSql, connection.prepareStatement(fetchSql));
     }
 
