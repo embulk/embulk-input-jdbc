@@ -16,6 +16,8 @@ PostgreSQL input plugins for Embulk loads records from PostgreSQL.
 - **database**: destination database name (string, required)
 - **schema**: destination schema name (string, default: "public")
 - **fetch_rows**: number of rows to fetch one time (used for java.sql.Statement#setFetchSize) (integer, default: 10000)
+- **connect_timeout**: timeout for establishment of a database connection. (integer (seconds), default: 300)
+- **socket_timeout**: timeout for socket read operations. 0 means no timeout. (integer (seconds), default: 1800)
 - **options**: extra JDBC properties (hash, default: {})
 - If you write SQL directly,
   - **query**: SQL to run (string)
