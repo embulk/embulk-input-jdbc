@@ -2,19 +2,14 @@ package org.embulk.input.mysql;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.embulk.EmbulkService;
-import org.embulk.config.ConfigLoader;
+import org.embulk.EmbulkEmbed;
+import org.embulk.EmbulkEmbed.Bootstrap;
 import org.embulk.config.ConfigSource;
-import org.embulk.exec.BulkLoader;
-import org.embulk.exec.ExecutionResult;
 import org.embulk.plugin.InjectedPluginSource;
-import org.embulk.spi.ExecSession;
 
 import com.google.inject.Binder;
-import com.google.inject.Injector;
 import com.google.inject.Module;
 
 public class EmbulkPluginTester
@@ -37,7 +32,7 @@ public class EmbulkPluginTester
 
     private final List<PluginDefinition> plugins = new ArrayList<PluginDefinition>();
 
-
+    private EmbulkEmbed embulk;
 
     public EmbulkPluginTester()
     {
@@ -55,30 +50,29 @@ public class EmbulkPluginTester
 
     public void run(String ymlPath) throws Exception
     {
-        EmbulkService service = new EmbulkService(new EmptyConfigSource()) {
-            @Override
-            protected Iterable<? extends Module> getAdditionalModules(ConfigSource systemConfig)
+        if (embulk == null) {
+            Bootstrap bootstrap = new EmbulkEmbed.Bootstrap();
+            bootstrap.addModules(new Module()
             {
-                return Arrays.asList(new Module()
+                @Override
+                public void configure(Binder binder)
                 {
-                    @Override
-                    public void configure(Binder binder)
-                    {
-                        for (PluginDefinition plugin : plugins) {
-                            InjectedPluginSource.registerPluginTo(binder, plugin.iface, plugin.name, plugin.impl);
-                        }
+                    for (PluginDefinition plugin : plugins) {
+                        InjectedPluginSource.registerPluginTo(binder, plugin.iface, plugin.name, plugin.impl);
                     }
-                });
-            }
-        };
-        Injector injector = service.getInjector();
-        ConfigSource config = injector.getInstance(ConfigLoader.class).fromYamlFile(new File(ymlPath));
-        ExecSession session = new ExecSession(injector, config);
-        try {
-            BulkLoader loader = injector.getInstance(BulkLoader.class);
-            ExecutionResult result = loader.run(session, config);
-        } finally {
-            session.cleanup();
+                }
+            });
+            embulk = bootstrap.initializeCloseable();
+        }
+
+        ConfigSource config = embulk.newConfigLoader().fromYamlFile(new File(ymlPath));
+        embulk.run(config);
+    }
+
+    public void destroy() {
+        if (embulk != null) {
+            embulk.destroy();
+            embulk = null;
         }
     }
 
