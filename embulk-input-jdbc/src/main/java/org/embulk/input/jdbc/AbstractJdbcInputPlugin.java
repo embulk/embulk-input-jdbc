@@ -13,7 +13,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
-import org.embulk.config.CommitReport;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigDefault;
@@ -21,6 +20,7 @@ import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigInject;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
+import org.embulk.config.TaskReport;
 import org.embulk.config.TaskSource;
 import org.embulk.plugin.PluginClassLoader;
 import org.embulk.spi.BufferAllocator;
@@ -203,7 +203,7 @@ public abstract class AbstractJdbcInputPlugin
         return Exec.newConfigDiff();
     }
 
-    protected ConfigDiff buildNextConfigDiff(PluginTask task, List<CommitReport> reports)
+    protected ConfigDiff buildNextConfigDiff(PluginTask task, List<TaskReport> reports)
     {
         ConfigDiff next = Exec.newConfigDiff();
         // TODO
@@ -218,13 +218,13 @@ public abstract class AbstractJdbcInputPlugin
     @Override
     public void cleanup(TaskSource taskSource,
             Schema schema, int taskCount,
-            List<CommitReport> successCommitReports)
+            List<TaskReport> successTaskReports)
     {
         // do nothing
     }
 
     @Override
-    public CommitReport run(TaskSource taskSource,
+    public TaskReport run(TaskSource taskSource,
             Schema schema, int taskIndex,
             PageOutput output)
     {
@@ -255,7 +255,7 @@ public abstract class AbstractJdbcInputPlugin
         }
         pageBuilder.finish();
 
-        CommitReport report = Exec.newCommitReport();
+        TaskReport report = Exec.newTaskReport();
         // TODO
         //if (orderByColumn != null) {
         //    report.set("last_value", lastValue);
