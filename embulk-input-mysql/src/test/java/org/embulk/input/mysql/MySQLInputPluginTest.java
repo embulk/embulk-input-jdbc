@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.embulk.input.MySQLInputPlugin;
 import org.embulk.spi.InputPlugin;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -24,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 public class MySQLInputPluginTest
 {
     private static boolean prepared = false;
+    private static EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
 
     @BeforeClass
     public static void prepare() throws SQLException
@@ -115,11 +117,16 @@ public class MySQLInputPluginTest
         }
     }
 
+    @AfterClass
+    public static void dispose()
+    {
+        tester.destroy();
+    }
+
     @Test
     public void test() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
@@ -133,7 +140,6 @@ public class MySQLInputPluginTest
     public void testString() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-string.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
@@ -147,7 +153,6 @@ public class MySQLInputPluginTest
     public void testBoolean() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-boolean.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
@@ -161,7 +166,6 @@ public class MySQLInputPluginTest
     public void testLong() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-long.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
@@ -175,7 +179,6 @@ public class MySQLInputPluginTest
     public void testDouble() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-double.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
@@ -189,7 +192,6 @@ public class MySQLInputPluginTest
     public void testTimestamp1() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-timestamp1.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
@@ -203,7 +205,6 @@ public class MySQLInputPluginTest
     public void testTimestamp2() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-timestamp2.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
@@ -217,7 +218,6 @@ public class MySQLInputPluginTest
     public void testTimestamp3() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-timestamp3.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
@@ -231,7 +231,6 @@ public class MySQLInputPluginTest
     public void testValueTypeString() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-valuetype-string.yml"));
             assertEquals(Arrays.asList(
                     "c1",
@@ -244,7 +243,6 @@ public class MySQLInputPluginTest
     public void testValueTypeDecimal() throws Exception
     {
         if (prepared) {
-            EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
             tester.run(convertPath("/yml/input-valuetype-decimal.yml"));
             assertEquals(Arrays.asList(
                     "c1",
