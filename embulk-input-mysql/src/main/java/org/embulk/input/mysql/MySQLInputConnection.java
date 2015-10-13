@@ -16,7 +16,7 @@ public class MySQLInputConnection
     }
 
     @Override
-    protected BatchSelect newBatchSelect(String select, int fetchRows) throws SQLException
+    protected BatchSelect newBatchSelect(String select, int fetchRows, int queryTimeout) throws SQLException
     {
         logger.info("SQL: " + select);
         PreparedStatement stmt = connection.prepareStatement(select, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);  // TYPE_FORWARD_ONLY and CONCUR_READ_ONLY are default
@@ -30,6 +30,7 @@ public class MySQLInputConnection
             // useCursorFetch=true is enabled. MySQL creates temporary table and uses multiple select statements to fetch rows.
             stmt.setFetchSize(fetchRows);
         }
+        // Because socketTimeout is set in Connection, don't need to set quertyTimeout.
         return new SingleSelect(stmt);
     }
 }

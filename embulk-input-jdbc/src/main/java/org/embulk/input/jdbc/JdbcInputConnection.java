@@ -66,16 +66,17 @@ public class JdbcInputConnection
         return new JdbcSchema(columns.build());
     }
 
-    public BatchSelect newSelectCursor(String query, int fetchRows) throws SQLException
+    public BatchSelect newSelectCursor(String query, int fetchRows, int queryTimeout) throws SQLException
     {
-        return newBatchSelect(query, fetchRows);
+        return newBatchSelect(query, fetchRows, queryTimeout);
     }
 
-    protected BatchSelect newBatchSelect(String query, int fetchRows) throws SQLException
+    protected BatchSelect newBatchSelect(String query, int fetchRows, int queryTimeout) throws SQLException
     {
         logger.info("SQL: " + query);
         PreparedStatement stmt = connection.prepareStatement(query);
         stmt.setFetchSize(fetchRows);
+        stmt.setQueryTimeout(queryTimeout);
         return new SingleSelect(stmt);
     }
 

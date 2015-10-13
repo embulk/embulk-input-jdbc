@@ -78,6 +78,8 @@ public class OracleInputPlugin
         Properties props = new Properties();
         props.setProperty("user", oracleTask.getUser());
         props.setProperty("password", oracleTask.getPassword());
+        props.setProperty("oracle.net.CONNECT_TIMEOUT", String.valueOf(oracleTask.getConnectTimeout() * 1000)); // milliseconds
+        props.setProperty("oracle.jdbc.ReadTimeout", String.valueOf(oracleTask.getSocketTimeout() * 1000)); // milliseconds
         props.putAll(oracleTask.getOptions());
 
         if (oracleTask.getDriverPath().isPresent()) {

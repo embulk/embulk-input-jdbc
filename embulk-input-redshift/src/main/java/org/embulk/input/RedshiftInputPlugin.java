@@ -4,10 +4,10 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import com.google.common.base.Throwables;
+
+
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
-import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.postgresql.PostgreSQLInputConnection;
 
@@ -58,8 +58,8 @@ public class RedshiftInputPlugin
         Properties props = new Properties();
         props.setProperty("user", t.getUser());
         props.setProperty("password", t.getPassword());
-        props.setProperty("loginTimeout",   "300"); // seconds
-        props.setProperty("socketTimeout", "1800"); // seconds
+        props.setProperty("loginTimeout", String.valueOf(t.getConnectTimeout())); // seconds
+        props.setProperty("socketTimeout", String.valueOf(t.getSocketTimeout())); // seconds
 
         // Enable keepalive based on tcp_keepalive_time, tcp_keepalive_intvl and tcp_keepalive_probes kernel parameters.
         // Socket options TCP_KEEPCNT, TCP_KEEPIDLE, and TCP_KEEPINTVL are not configurable.

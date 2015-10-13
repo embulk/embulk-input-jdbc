@@ -30,6 +30,8 @@ MySQL input plugins for Embulk loads records from MySQL.
   - If this value is set to -1:
     - It uses a client-side built statement and fetches all rows at once. This may cause OutOfMemoryError.
     - Internally, `useCursorFetch=false` is used and `java.sql.Statement.setFetchSize` is not set.
+- **connect_timeout**: timeout for socket connect. 0 means no timeout. (integer (seconds), default: 300)
+- **socket_timeout**: timeout on network socket operations. 0 means no timeout. (integer (seconds), default: 1800)
 - **options**: extra JDBC properties (hash, default: {})
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
