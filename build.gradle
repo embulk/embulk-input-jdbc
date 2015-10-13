@@ -4,18 +4,23 @@ plugins {
     id 'com.github.jruby-gradle.base' version '0.1.5'
     id 'java'
 }
+
 import com.github.jrubygradle.JRubyExec
 
 allprojects {
     group = 'org.embulk.input.jdbc'
     version = '0.6.0'
+
+    apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = '0.7.1.201405082137'
+    }
 }
 
 subprojects {
     apply plugin: 'maven'  // install jar files to the local repo: $ gradle install
     apply plugin: 'java'
     //apply plugin: 'findbugs'
-    //apply plugin: 'jacoco'
     apply plugin: 'com.github.jruby-gradle.base'
 
     repositories {
@@ -31,6 +36,17 @@ subprojects {
         compile  'org.embulk:embulk-core:0.7.4'
         provided 'org.embulk:embulk-core:0.7.4'
         testCompile 'junit:junit:4.+'
+    }
+
+    jacocoTestReport {
+        additionalSourceDirs = files(sourceSets.main.allSource.srcDirs)
+        sourceDirectories = files(sourceSets.main.allSource.srcDirs)
+        classDirectories =  files(sourceSets.main.output)
+        reports {
+            html.enabled = true
+            xml.enabled = true
+            csv.enabled = false
+        }
     }
 
     gradle.projectsEvaluated {
@@ -70,6 +86,27 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 end
 /$)
+    }
+}
+
+task jacocoRootReport(type: JacocoReport) {
+    dependsOn = subprojects.test
+    additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories =  files(subprojects.sourceSets.main.output)
+    executionData = files(subprojects.jacocoTestReport.executionData)
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
+    onlyIf = {
+        true
+    }
+    doFirst {
+        executionData = files(executionData.findAll {
+            it.exists()
+        })
     }
 }
 
