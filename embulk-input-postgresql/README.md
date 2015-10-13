@@ -90,3 +90,18 @@ in:
 ```
 $ ./gradlew gem
 ```
+
+## Test
+
+```
+$ ./gradlew test
+```
+
+To run integration tests, we need to configure the following environment variables.
+
+```
+POSTGRESQL_TEST_HOST
+POSTGRESQL_TEST_USER
+POSTGRESQL_TEST_PASSWORD
+POSTGRESQL_TEST_DATABASE
+```

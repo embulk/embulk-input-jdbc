@@ -97,3 +97,18 @@ in:
 ```
 $ ./gradlew gem
 ```
+
+## Test
+
+```
+$ ./gradlew test
+```
+
+To run integration tests, we need to configure the following environment variables.
+
+```
+MYSQL_TEST_HOST
+MYSQL_TEST_USER
+MYSQL_TEST_PASSWORD
+MYSQL_TEST_DATABASE
+```

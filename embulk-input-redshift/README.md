@@ -90,3 +90,18 @@ in:
 ```
 $ ./gradlew gem
 ```
+
+## Test
+
+```
+$ ./gradlew test
+```
+
+To run integration tests, we need to configure the following environment variables.
+
+```
+REDSHIFT_TEST_HOST
+REDSHIFT_TEST_USER
+REDSHIFT_TEST_PASSWORD
+REDSHIFT_TEST_DATABASE
+```
