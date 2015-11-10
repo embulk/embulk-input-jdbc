@@ -4,6 +4,8 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+
+import com.google.common.base.Optional;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
@@ -37,6 +39,14 @@ public class PostgreSQLInputPlugin
         @Config("schema")
         @ConfigDefault("\"public\"")
         public String getSchema();
+
+        @Config("ssl")
+        @ConfigDefault("false")
+        public boolean getSsl();
+
+        @Config("sslfactory")
+        @ConfigDefault("null")
+        public Optional<String> getSslfactory();
     }
 
     @Override
@@ -63,16 +73,12 @@ public class PostgreSQLInputPlugin
         // Socket options TCP_KEEPCNT, TCP_KEEPIDLE, and TCP_KEEPINTVL are not configurable.
         props.setProperty("tcpKeepAlive", "true");
 
-        // TODO
-        //switch t.getSssl() {
-        //when "disable":
-        //    break;
-        //when "enable":
-        //    props.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");  // disable server-side validation
-        //when "verify":
-        //    props.setProperty("ssl", "true");
-        //    break;
-        //}
+        if(t.getSsl()) {
+            props.setProperty("ssl", "true");
+        }
+        if(t.getSslfactory().isPresent()) {
+            props.setProperty("sslfactory", t.getSslfactory().get());
+        }
 
         props.putAll(t.getOptions());
 
