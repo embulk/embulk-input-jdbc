@@ -1,9 +1,9 @@
-package org.embulk.intput.postgresql.integration;
+package org.embulk.intput;
 
 import com.google.common.collect.ImmutableList;
 import org.embulk.config.ConfigSource;
 import org.embulk.input.PostgreSQLInputPlugin;
-import org.embulk.input.jdbc.integration.AbstractJdbcInputPluginTest;
+import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.spi.Schema;
 import org.embulk.spi.TestPageBuilderReader.MockPageOutput;
 import org.embulk.spi.type.Types;

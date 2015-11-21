@@ -1,4 +1,4 @@
-package org.embulk.input.jdbc.integration;
+package org.embulk.input;
 
 import com.google.common.base.Throwables;
 import org.embulk.EmbulkTestRuntime;
