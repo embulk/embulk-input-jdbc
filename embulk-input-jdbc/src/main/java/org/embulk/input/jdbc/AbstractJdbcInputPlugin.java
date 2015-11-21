@@ -149,7 +149,7 @@ public abstract class AbstractJdbcInputPlugin
         try (JdbcInputConnection con = newConnection(task)) {
             schema = setupTask(con, task);
         } catch (SQLException ex) {
-            throw Throwables.propagate(ex);
+            throw new ConfigException(ex);
         }
 
         return buildNextConfigDiff(task, control.run(task.dump(), schema, 1));
