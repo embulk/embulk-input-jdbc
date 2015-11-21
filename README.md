@@ -38,6 +38,8 @@ See [embulk-input-sqlserver](embulk-input-sqlserver/).
 - **password**: database login password (string, default: optional)
 - **schema**: destination schema name (string, default: use the default schema)
 - **fetch_rows**: number of rows to fetch one time (integer, default: 10000)
+- **connect_timeout**: not supported.
+- **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
 - **options**: extra JDBC properties (hash, default: {})
 - If you write SQL directly,
   - **query**: SQL to run (string)

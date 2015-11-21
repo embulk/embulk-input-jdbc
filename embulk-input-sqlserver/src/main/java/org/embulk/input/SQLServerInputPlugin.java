@@ -118,6 +118,7 @@ public class SQLServerInputPlugin
         if (sqlServerTask.getPassword().isPresent()) {
             props.setProperty("password", sqlServerTask.getPassword().get());
         }
+        props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
         props.putAll(sqlServerTask.getOptions());
 
         if (sqlServerTask.getDriverPath().isPresent()) {

@@ -1,7 +1,7 @@
 dependencies {
     compile project(':embulk-input-jdbc')
 
-    compile 'org.postgresql:postgresql:9.4-1200-jdbc41'
+    compile 'org.postgresql:postgresql:9.4-1205-jdbc41'
 
     testCompile project(':embulk-input-jdbc').sourceSets.test.output
 }

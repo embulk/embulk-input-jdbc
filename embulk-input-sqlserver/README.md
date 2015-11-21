@@ -29,6 +29,8 @@ embulk "-J-Djava.library.path=C:\drivers" run input-sqlserver.yml
   - **select**: comma-separated list of columns to select (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
 - **fetch_rows**: number of rows to fetch one time (used for java.sql.Statement#setFetchSize) (integer, default: 10000)
+- **connect_timeout**: timeout for the driver to connect. 0 means the default of SQL Server (15 by default). (integer (seconds), default: 300)
+- **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
 - **options**: extra JDBC properties (hash, default: {})
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.

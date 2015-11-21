@@ -97,6 +97,14 @@ public abstract class AbstractJdbcInputPlugin
         //@ConfigDefault("null")
         //public Optional<Integer> getLimitRows();
 
+        @Config("connect_timeout")
+        @ConfigDefault("300")
+        public int getConnectTimeout();
+
+        @Config("socket_timeout")
+        @ConfigDefault("1800")
+        public int getSocketTimeout();
+
         @Config("fetch_rows")
         @ConfigDefault("10000")
         // TODO set minimum number
@@ -238,7 +246,7 @@ public abstract class AbstractJdbcInputPlugin
             List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
 
             try (JdbcInputConnection con = newConnection(task)) {
-                try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows())) {
+                try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows(), task.getSocketTimeout())) {
                     while (true) {
                         // TODO run fetch() in another thread asynchronously
                         // TODO retry fetch() if it failed (maybe order_by is required and unique_column(s) option is also required)

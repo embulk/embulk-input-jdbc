@@ -35,7 +35,21 @@ subprojects {
     dependencies {
         compile  'org.embulk:embulk-core:0.7.4'
         provided 'org.embulk:embulk-core:0.7.4'
+
         testCompile 'junit:junit:4.+'
+        testCompile "org.embulk:embulk-standards:0.7.4"
+        testCompile "org.embulk:embulk-core:0.7.4:tests"
+    }
+
+    jacocoTestReport {
+        additionalSourceDirs = files(sourceSets.main.allSource.srcDirs)
+        sourceDirectories = files(sourceSets.main.allSource.srcDirs)
+        classDirectories =  files(sourceSets.main.output)
+        reports {
+            html.enabled = true
+            xml.enabled = true
+            csv.enabled = false
+        }
     }
 
     jacocoTestReport {

@@ -4,7 +4,6 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import com.google.common.base.Throwables;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
@@ -38,6 +37,10 @@ public class PostgreSQLInputPlugin
         @Config("schema")
         @ConfigDefault("\"public\"")
         public String getSchema();
+
+        @Config("ssl")
+        @ConfigDefault("false")
+        public boolean getSsl();
     }
 
     @Override
@@ -57,23 +60,20 @@ public class PostgreSQLInputPlugin
         Properties props = new Properties();
         props.setProperty("user", t.getUser());
         props.setProperty("password", t.getPassword());
-        props.setProperty("loginTimeout",   "300"); // seconds
-        props.setProperty("socketTimeout", "1800"); // seconds
+        props.setProperty("loginTimeout", String.valueOf(t.getConnectTimeout())); // seconds
+        props.setProperty("socketTimeout", String.valueOf(t.getSocketTimeout())); // seconds
 
         // Enable keepalive based on tcp_keepalive_time, tcp_keepalive_intvl and tcp_keepalive_probes kernel parameters.
         // Socket options TCP_KEEPCNT, TCP_KEEPIDLE, and TCP_KEEPINTVL are not configurable.
         props.setProperty("tcpKeepAlive", "true");
 
-        // TODO
-        //switch t.getSssl() {
-        //when "disable":
-        //    break;
-        //when "enable":
-        //    props.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");  // disable server-side validation
-        //when "verify":
-        //    props.setProperty("ssl", "true");
-        //    break;
-        //}
+        if (t.getSsl()) {
+            // TODO add ssl_verify (boolean) option to allow users to verify certification.
+            //      see embulk-input-ftp for SSL implementation.
+            props.setProperty("ssl", "true");
+            props.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");  // disable server-side validation
+        }
+        // setting ssl=false enables SSL. See org.postgresql.core.v3.openConnectionImpl.
 
         props.putAll(t.getOptions());
 
