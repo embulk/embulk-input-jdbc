@@ -2,8 +2,6 @@ package org.embulk.input;
 
 import com.google.common.collect.ImmutableList;
 import org.embulk.config.ConfigSource;
-import org.embulk.input.RedshiftInputPlugin;
-import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.spi.Schema;
 import org.embulk.spi.TestPageBuilderReader.MockPageOutput;
 import org.embulk.spi.type.Types;
