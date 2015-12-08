@@ -1,3 +1,11 @@
+Release 0.6.1 - 2015-12-08
+
+This release requires embulk >= 0.7.1.
+
+* Add connect_timeout and socket_timeout to config.
+* Support SSL in PostrgreSQL (@kamatama41++).
+
+
 Release 0.6.0 - 2015-07-06
 
 * Upgraded embulk to v0.6.16
