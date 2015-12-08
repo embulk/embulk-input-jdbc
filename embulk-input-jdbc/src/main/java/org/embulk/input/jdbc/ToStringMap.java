@@ -6,7 +6,6 @@ import java.util.Properties;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 
 // TODO copied from embulk-output-jdbc. Move this class to embulk-core spi.unit.
 public class ToStringMap
