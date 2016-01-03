@@ -35,6 +35,10 @@ public class OracleInputPlugin
         @ConfigDefault("null")
         public Optional<String> getDatabase();
 
+        @Config("schema")
+        @ConfigDefault("null")
+        public Optional<String> getSchema();
+
         @Config("url")
         @ConfigDefault("null")
         public Optional<String> getUrl();
@@ -94,7 +98,7 @@ public class OracleInputPlugin
 
         Connection con = DriverManager.getConnection(url, props);
         try {
-            OracleInputConnection c = new OracleInputConnection(con, oracleTask.getUser());
+            OracleInputConnection c = new OracleInputConnection(con, oracleTask.getSchema().orNull());
             con = null;
             return c;
         } finally {
