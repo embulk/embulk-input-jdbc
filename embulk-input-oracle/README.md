@@ -15,6 +15,7 @@ Oracle input plugins for Embulk loads records from Oracle.
 - **user**: database login user name (string, required)
 - **password**: database login password (string, default: "")
 - **database**: destination database name (string, required if url is not set)
+- **schema**: destination schema name (string, default: use the default schema). old Oracle JDBC driver (ojdbc6.jar) doesn't support.
 - **url**: URL of the JDBC connection (string, optional)
 - If you write SQL directly,
   - **query**: SQL to run (string)

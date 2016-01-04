@@ -15,7 +15,7 @@ public class OracleInputConnection extends JdbcInputConnection {
     @Override
     protected void setSearchPath(String schema) throws SQLException
     {
-        // NOP
+        connection.setSchema(schema);
     }
 
 }
