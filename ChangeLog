@@ -1,3 +1,8 @@
+Release 0.6.2 - 2016-01-04
+
+* Support schema in Oracle.
+
+
 Release 0.6.1 - 2015-12-08
 
 This release requires embulk >= 0.7.1.
