@@ -158,7 +158,9 @@ public abstract class AbstractJdbcInputPlugin
     private Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
     {
         // build SELECT query and gets schema of its result
-        JdbcSchema querySchema = con.getSchemaOfQuery(getQuery(task, con));
+    	String query = getQuery(task, con);
+        logger.info("SQL: " + query);
+        JdbcSchema querySchema = con.getSchemaOfQuery(query);
         task.setQuerySchema(querySchema);
 
         // validate column_options
