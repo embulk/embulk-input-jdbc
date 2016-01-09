@@ -145,6 +145,11 @@ public class JdbcInputConnection
         return identifierQuoteString + str + identifierQuoteString;
     }
 
+    protected String buildTableName(String tableName)
+    {
+    	return quoteIdentifierString(tableName);
+    }
+
     public String buildSelectQuery(String tableName,
             Optional<String> selectColumnList, Optional<String> whereCondition,
             Optional<String> orderByColumn)
@@ -153,7 +158,7 @@ public class JdbcInputConnection
 
         sb.append("SELECT ");
         sb.append(selectColumnList.or("*"));
-        sb.append(" FROM ").append(quoteIdentifierString(tableName));
+        sb.append(" FROM ").append(buildTableName(tableName));
         if (whereCondition.isPresent()) {
             sb.append(" WHERE ").append(whereCondition.get());
         }
