@@ -3,6 +3,7 @@ plugins {
     id 'com.jfrog.bintray' version '1.1'
     id 'com.github.jruby-gradle.base' version '0.1.5'
     id 'java'
+    id 'checkstyle'
 }
 import com.github.jrubygradle.JRubyExec
 
@@ -27,9 +28,12 @@ subprojects {
         provided
     }
 
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
     dependencies {
-        compile  'org.embulk:embulk-core:0.7.10'
-        provided 'org.embulk:embulk-core:0.7.10'
+        compile  'org.embulk:embulk-core:0.8.0'
+        provided 'org.embulk:embulk-core:0.8.0'
         testCompile 'junit:junit:4.+'
     }
 
@@ -45,6 +49,23 @@ subprojects {
         into 'classpath'
     }
     clean { delete 'classpath' }
+
+    checkstyle {
+        configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+        toolVersion = '6.14.1'
+    }
+    checkstyleMain {
+        configFile = file("${project.rootDir}/config/checkstyle/default.xml")
+        ignoreFailures = true
+    }
+    checkstyleTest {
+        configFile = file("${project.rootDir}/config/checkstyle/default.xml")
+        ignoreFailures = true
+    }
+    task checkstyle(type: Checkstyle) {
+        classpath = sourceSets.main.output + sourceSets.test.output
+        source = sourceSets.main.allJava + sourceSets.test.allJava
+    }
 
     task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath']) {
         jrubyArgs '-rrubygems/gem_runner', "-eGem::GemRunner.new.run(ARGV)", 'build'
