@@ -73,7 +73,6 @@ public class JdbcInputConnection
 
     protected BatchSelect newBatchSelect(String query, int fetchRows, int queryTimeout) throws SQLException
     {
-        logger.info("SQL: " + query);
         PreparedStatement stmt = connection.prepareStatement(query);
         stmt.setFetchSize(fetchRows);
         stmt.setQueryTimeout(queryTimeout);
