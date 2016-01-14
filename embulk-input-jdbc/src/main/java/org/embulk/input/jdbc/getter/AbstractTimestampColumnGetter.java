@@ -26,6 +26,11 @@ public abstract class AbstractTimestampColumnGetter
     }
 
     @Override
+    public void jsonColumn(Column column) {
+        throw new UnsupportedOperationException("This plugin doesn't support json type. Please try to upgrade version of the plugin using 'embulk gem update' command. If the latest version still doesn't support json type, please contact plugin developers, or change configuration of input plugin not to use json type.");
+    }
+
+    @Override
     public void timestampColumn(Column column)
     {
         to.setTimestamp(column, value);
