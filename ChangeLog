@@ -1,3 +1,9 @@
+Release 0.6.3 - 2016-01-13
+
+* Upgraded embulk version to 0.8.0.
+  JSON type support will be added at a later major version.
+
+
 Release 0.6.2 - 2016-01-04
 
 * Support schema in Oracle.
