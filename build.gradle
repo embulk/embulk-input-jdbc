@@ -15,7 +15,7 @@ allprojects {
 subprojects {
     apply plugin: 'maven'  // install jar files to the local repo: $ gradle install
     apply plugin: 'java'
-    //apply plugin: 'findbugs'
+    apply plugin: 'findbugs'
     //apply plugin: 'jacoco'
     apply plugin: 'com.github.jruby-gradle.base'
 
@@ -37,10 +37,18 @@ subprojects {
         testCompile 'junit:junit:4.+'
     }
 
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            options.compilerArgs << "-Xlint:unchecked" //<< "-Xlint:deprecation"
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" //<< "-Xlint:deprecation"
+    }
+    tasks.withType(FindBugs) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
         }
+    }
+
+    findbugs {
+        ignoreFailures = true
     }
 
     task classpath(type: Copy, dependsOn: ["jar"]) {
