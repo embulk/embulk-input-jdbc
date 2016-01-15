@@ -94,7 +94,7 @@ public class JdbcInputConnection
         private final PreparedStatement fetchStatement;
         private boolean fetched = false;
 
-        public SingleSelect(PreparedStatement fetchStatement) throws SQLException
+        public SingleSelect(PreparedStatement fetchStatement)
         {
             this.fetchStatement = fetchStatement;
         }
