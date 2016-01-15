@@ -1,3 +1,8 @@
+Release 0.6.4 - 2016-01-15
+
+* Support schema in SQL Server.
+* Log query SQL before it is used for the first time, so that the SQL is logged even if it is invalid.
+
 Release 0.6.3 - 2016-01-13
 
 * Upgraded embulk version to 0.8.0.
