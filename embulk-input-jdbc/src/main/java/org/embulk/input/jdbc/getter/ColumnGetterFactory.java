@@ -43,6 +43,8 @@ public class ColumnGetterFactory
             return new BooleanColumnGetter(to, toType);
         case "string":
             return new StringColumnGetter(to, toType);
+        case "json":
+            return new JsonColumnGetter(to, toType);
         case "date":
             return new DateColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
         case "time":
@@ -56,7 +58,7 @@ public class ColumnGetterFactory
         }
     }
 
-    private String sqlTypeToValueType(JdbcColumn column, int sqlType)
+    protected String sqlTypeToValueType(JdbcColumn column, int sqlType)
     {
         switch(sqlType) {
         // getLong

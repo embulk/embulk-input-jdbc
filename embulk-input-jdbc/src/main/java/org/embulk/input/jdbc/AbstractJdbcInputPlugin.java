@@ -166,7 +166,7 @@ public abstract class AbstractJdbcInputPlugin
         // validate column_options
         newColumnGetters(task, querySchema, null);
 
-        ColumnGetterFactory factory = new ColumnGetterFactory(null, task.getDefaultTimeZone());
+        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone());
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
             JdbcColumn column = querySchema.getColumn(i);
@@ -273,10 +273,15 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    {
+        return new ColumnGetterFactory(pageBuilder, dateTimeZone);
+    }
+
     private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
             throws SQLException
     {
-        ColumnGetterFactory factory = new ColumnGetterFactory(pageBuilder, task.getDefaultTimeZone());
+        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone());
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), c);
