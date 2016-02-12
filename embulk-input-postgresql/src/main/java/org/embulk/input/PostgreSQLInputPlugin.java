@@ -7,7 +7,11 @@ import java.sql.SQLException;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
+import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.postgresql.PostgreSQLInputConnection;
+import org.embulk.input.postgresql.getter.PostgreSQLColumnGetterFactory;
+import org.embulk.spi.PageBuilder;
+import org.joda.time.DateTimeZone;
 
 public class PostgreSQLInputPlugin
         extends AbstractJdbcInputPlugin
@@ -87,5 +91,11 @@ public class PostgreSQLInputPlugin
                 con.close();
             }
         }
+    }
+
+    @Override
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    {
+        return new PostgreSQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 }
