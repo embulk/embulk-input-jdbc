@@ -7,6 +7,15 @@ plugins {
 }
 import com.github.jrubygradle.JRubyExec
 
+def bintrayReleaseProjects = [
+    project(":embulk-input-jdbc"),
+    project(":embulk-input-mysql"),
+    project(":embulk-input-postgresql"),
+    project(":embulk-input-redshift"),
+    project(":embulk-input-oracle"),
+    project(":embulk-input-sqlserver"),
+]
+
 allprojects {
     group = 'org.embulk.input.jdbc'
     version = '0.6.4'
@@ -23,13 +32,13 @@ allprojects {
 
         publications = ['bintrayMavenRelease']
 
-        dryRun = false
+        dryRun = !bintrayReleaseProjects.contains(project)
         publish = true
 
         pkg {
-            userOrg = 'embulk'
+            userOrg = 'embulk-input-jdbc'
             repo = 'maven'
-            name = 'embulk-input-jdbc'
+            name = project.name
             desc = 'MySQL, PostgreSQL, Redshift and generic JDBC input plugins for Embulk'
             websiteUrl = 'https://github.com/embulk/embulk-input-jdbc'
             issueTrackerUrl = 'https://github.com/embulk/embulk-input-jdbc/issues'
