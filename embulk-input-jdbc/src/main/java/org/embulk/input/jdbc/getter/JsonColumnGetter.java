@@ -54,5 +54,4 @@ public class JsonColumnGetter
     {
         to.setString(column, value);
     }
-
 }
