@@ -51,6 +51,13 @@ subprojects {
         ignoreFailures = true
     }
 
+    javadoc {
+        options {
+            locale = 'en_US'
+            encoding = 'UTF-8'
+        }
+    }
+
     task classpath(type: Copy, dependsOn: ["jar"]) {
         doFirst { file('classpath').deleteDir() }
         from (configurations.runtime - configurations.provided + files(jar.archivePath))
