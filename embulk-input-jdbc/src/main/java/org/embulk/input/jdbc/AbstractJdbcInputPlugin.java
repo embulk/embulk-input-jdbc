@@ -120,6 +120,10 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("\"UTC\"")
         public DateTimeZone getDefaultTimeZone();
 
+        @Config("after_execute")
+        @ConfigDefault("null")
+        public Optional<String> getAfterExecute();
+
         public JdbcSchema getQuerySchema();
         public void setQuerySchema(JdbcSchema schema);
 
@@ -158,7 +162,7 @@ public abstract class AbstractJdbcInputPlugin
     private Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
     {
         // build SELECT query and gets schema of its result
-    	String query = getQuery(task, con);
+        String query = getQuery(task, con);
         logger.info("SQL: " + query);
         JdbcSchema querySchema = con.getSchemaOfQuery(query);
         task.setQuerySchema(querySchema);
@@ -257,6 +261,10 @@ public abstract class AbstractJdbcInputPlugin
                             break;
                         }
                     }
+                }
+
+                if (task.getAfterExecute().isPresent()) {
+                    con.executeUpdate(task.getAfterExecute().get());
                 }
             }
 
