@@ -120,9 +120,9 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("\"UTC\"")
         public DateTimeZone getDefaultTimeZone();
 
-        @Config("after_execute")
+        @Config("after_select")
         @ConfigDefault("null")
-        public Optional<String> getAfterExecute();
+        public Optional<String> getAfterSelect();
 
         public JdbcSchema getQuerySchema();
         public void setQuerySchema(JdbcSchema schema);
@@ -263,8 +263,8 @@ public abstract class AbstractJdbcInputPlugin
                     }
                 }
 
-                if (task.getAfterExecute().isPresent()) {
-                    con.executeUpdate(task.getAfterExecute().get());
+                if (task.getAfterSelect().isPresent()) {
+                    con.executeUpdate(task.getAfterSelect().get());
                 }
             }
 
