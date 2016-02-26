@@ -57,6 +57,7 @@ See [embulk-input-sqlserver](embulk-input-sqlserver/).
   - **timestamp_format**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted by this timestamp_format. And if the embulk type is `timestamp`, this timestamp_format may be used in the output plugin. For example, stdout plugin use the timestamp_format, but *csv formatter plugin doesn't use*. (string, default : `%Y-%m-%d` for `date`, `%H:%M:%S` for `time`, `%Y-%m-%d %H:%M:%S` for `timestamp`)
   - **timezone**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted in this timezone.
 (string, value of default_timezone option is used by default)
+- **after_select**: if set, this SQL will be executed after the SELECT query in the same transaction.
 
 
 
@@ -108,6 +109,7 @@ in:
   column_options:
     col1: {type: long}
     col3: {type: string, timestamp_format: "%Y/%m/%d", timezone: "+0900"}
+  after_select: "update my_table set col5 = '1' where col4 != 'a'"
 
 ```
 
