@@ -5,8 +5,10 @@ import java.sql.Types;
 import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
+import org.embulk.input.jdbc.ToStringMap;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.TimestampFormatter;
+import org.embulk.spi.type.StringType;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
 import org.joda.time.DateTimeZone;
@@ -15,11 +17,13 @@ public class ColumnGetterFactory
 {
     private final PageBuilder to;
     private final DateTimeZone defaultTimeZone;
+    private final ToStringMap convertDateToString;
 
-    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
+    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, ToStringMap convertDateToString)
     {
         this.to = to;
         this.defaultTimeZone = defaultTimeZone;
+        this.convertDateToString = convertDateToString;
     }
 
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
@@ -29,7 +33,7 @@ public class ColumnGetterFactory
 
     private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
     {
-        Type toType = getToType(option);
+        Type toType = getToType(option, valueType);
         switch(valueType) {
         case "coalesce":
             return newColumnGetter(column, option, sqlTypeToValueType(column, column.getSqlType()));
@@ -137,10 +141,14 @@ public class ColumnGetterFactory
         }
     }
 
-    private Type getToType(JdbcColumnOption option)
+    private Type getToType(JdbcColumnOption option, String valueType)
     {
         if (!option.getType().isPresent()) {
-            return null;
+            if(valueType.equals("date") && convertDateToString.containsKey("format")){
+                return org.embulk.spi.type.Types.STRING;
+            } else {
+                return null;
+            }
         }
         Type toType = option.getType().get();
         if (toType instanceof TimestampType && option.getTimestampFormat().isPresent()) {

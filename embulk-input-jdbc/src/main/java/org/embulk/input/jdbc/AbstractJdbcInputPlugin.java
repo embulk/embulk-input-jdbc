@@ -120,6 +120,11 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("\"UTC\"")
         public DateTimeZone getDefaultTimeZone();
 
+        @Config("convert_date_to_string")
+        @ConfigDefault("{}")
+        public ToStringMap getConvertDateToString();
+
+
         public JdbcSchema getQuerySchema();
         public void setQuerySchema(JdbcSchema schema);
 
@@ -166,7 +171,7 @@ public abstract class AbstractJdbcInputPlugin
         // validate column_options
         newColumnGetters(task, querySchema, null);
 
-        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone());
+        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone(), task.getConvertDateToString());
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
             JdbcColumn column = querySchema.getColumn(i);
@@ -273,15 +278,15 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, ToStringMap convertDateToString)
     {
-        return new ColumnGetterFactory(pageBuilder, dateTimeZone);
+        return new ColumnGetterFactory(pageBuilder, dateTimeZone, convertDateToString);
     }
 
     private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
             throws SQLException
     {
-        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone());
+        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone(), task.getConvertDateToString());
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), c);
