@@ -31,6 +31,10 @@ public class ColumnGetterFactory
         return newColumnGetter(column, option, option.getValueType());
     }
 
+    private String getDateColumnFormat() {
+        return convertDateToString.getOrDefault("format", DateColumnGetter.DEFAULT_FORMAT);
+    }
+
     private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
     {
         Type toType = getToType(option, valueType);
@@ -54,7 +58,7 @@ public class ColumnGetterFactory
         case "time":
             return new TimeColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
         case "timestamp":
-            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
+            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, getDateColumnFormat()));
         case "decimal":
             return new BigDecimalColumnGetter(to, toType);
         default:
