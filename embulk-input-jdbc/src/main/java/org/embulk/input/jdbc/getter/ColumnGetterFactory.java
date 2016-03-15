@@ -32,7 +32,11 @@ public class ColumnGetterFactory
     }
 
     private String getDateColumnFormat() {
-        return convertDateToString.getOrDefault("format", DateColumnGetter.DEFAULT_FORMAT);
+        if(convertDateToString.containsKey("format")){
+            return convertDateToString.get("format");
+        } else {
+            return DateColumnGetter.DEFAULT_FORMAT;
+        }
     }
 
     private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
@@ -54,11 +58,11 @@ public class ColumnGetterFactory
         case "json":
             return new JsonColumnGetter(to, toType);
         case "date":
-            return new DateColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
+            return new DateColumnGetter(to, toType, newTimestampFormatter(option, getDateColumnFormat()));
         case "time":
             return new TimeColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
         case "timestamp":
-            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, getDateColumnFormat()));
+            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
         case "decimal":
             return new BigDecimalColumnGetter(to, toType);
         default:
