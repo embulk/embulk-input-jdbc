@@ -1,7 +1,7 @@
 
 plugins {
     id 'com.jfrog.bintray' version '1.6'
-    id 'com.github.jruby-gradle.base' version '0.1.5'
+    id 'com.github.jruby-gradle.base' version '1.2.1'
     id 'java'
     id 'checkstyle'
 }
@@ -126,7 +126,7 @@ subprojects {
 
     task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath']) {
         jrubyArgs '-rrubygems/gem_runner', "-eGem::GemRunner.new.run(ARGV)", 'build'
-        script "${project.projectDir.absolutePath}/build/gemspec"
+        scriptArgs "${project.projectDir.absolutePath}/build/gemspec"
         doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "${parent.projectDir}/pkg") }
     }
 
