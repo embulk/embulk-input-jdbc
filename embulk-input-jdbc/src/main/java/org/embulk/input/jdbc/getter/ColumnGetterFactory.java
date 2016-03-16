@@ -5,21 +5,20 @@ import java.sql.Types;
 import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
-import org.embulk.input.jdbc.ToStringMap;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.TimestampFormatter;
-import org.embulk.spi.type.StringType;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
 import org.joda.time.DateTimeZone;
+import com.google.common.base.Optional;
 
 public class ColumnGetterFactory
 {
     private final PageBuilder to;
     private final DateTimeZone defaultTimeZone;
-    private final ToStringMap convertDateToString;
+    private final Optional<JdbcColumnOption> convertDateToString;
 
-    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, ToStringMap convertDateToString)
+    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Optional<JdbcColumnOption> convertDateToString)
     {
         this.to = to;
         this.defaultTimeZone = defaultTimeZone;
@@ -32,10 +31,18 @@ public class ColumnGetterFactory
     }
 
     private String getDateColumnFormat() {
-        if(convertDateToString.containsKey("timestamp_format")){
-            return convertDateToString.get("timestamp_format");
+        if(convertDateToString.isPresent() && convertDateToString.get().getTimestampFormat().isPresent()){
+            return convertDateToString.get().getTimestampFormat().get().getFormat();
         } else {
             return DateColumnGetter.DEFAULT_FORMAT;
+        }
+    }
+
+    private DateTimeZone getDateColumnTimezone() {
+        if(convertDateToString.isPresent() && convertDateToString.get().getTimeZone().isPresent()){
+            return convertDateToString.get().getTimeZone().get();
+        } else {
+            return defaultTimeZone;
         }
     }
 
@@ -58,11 +65,11 @@ public class ColumnGetterFactory
         case "json":
             return new JsonColumnGetter(to, toType);
         case "date":
-            return new DateColumnGetter(to, toType, newTimestampFormatter(option, getDateColumnFormat()));
+            return new DateColumnGetter(to, toType, newTimestampFormatter(option, getDateColumnFormat(), getDateColumnTimezone()));
         case "time":
-            return new TimeColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
+            return new TimeColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT, defaultTimeZone));
         case "timestamp":
-            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
+            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT, defaultTimeZone));
         case "decimal":
             return new BigDecimalColumnGetter(to, toType);
         default:
@@ -152,7 +159,7 @@ public class ColumnGetterFactory
     private Type getToType(JdbcColumnOption option, String valueType)
     {
         if (!option.getType().isPresent()) {
-            if(valueType.equals("date") && convertDateToString.containsKey("timestamp_format")){
+            if(valueType.equals("date") && convertDateToString.isPresent() && convertDateToString.get().getTimestampFormat().isPresent()){
                 return org.embulk.spi.type.Types.STRING;
             } else {
                 return null;
@@ -165,7 +172,7 @@ public class ColumnGetterFactory
         return toType;
     }
 
-    private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat)
+    private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat, DateTimeZone defaultTimeZone)
     {
         return new TimestampFormatter(
                 option.getJRuby(),

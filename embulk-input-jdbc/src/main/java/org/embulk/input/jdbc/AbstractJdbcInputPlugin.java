@@ -121,8 +121,8 @@ public abstract class AbstractJdbcInputPlugin
         public DateTimeZone getDefaultTimeZone();
 
         @Config("convert_date_to_string")
-        @ConfigDefault("{}")
-        public ToStringMap getConvertDateToString();
+        @ConfigDefault("null")
+        public Optional<JdbcColumnOption> getConvertDateToString();
 
 
         public JdbcSchema getQuerySchema();
@@ -278,7 +278,7 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, ToStringMap convertDateToString)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Optional<JdbcColumnOption> convertDateToString)
     {
         return new ColumnGetterFactory(pageBuilder, dateTimeZone, convertDateToString);
     }
