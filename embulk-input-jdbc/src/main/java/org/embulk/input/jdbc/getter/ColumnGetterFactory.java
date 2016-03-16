@@ -32,8 +32,8 @@ public class ColumnGetterFactory
     }
 
     private String getDateColumnFormat() {
-        if(convertDateToString.containsKey("format")){
-            return convertDateToString.get("format");
+        if(convertDateToString.containsKey("timestamp_format")){
+            return convertDateToString.get("timestamp_format");
         } else {
             return DateColumnGetter.DEFAULT_FORMAT;
         }
@@ -152,7 +152,7 @@ public class ColumnGetterFactory
     private Type getToType(JdbcColumnOption option, String valueType)
     {
         if (!option.getType().isPresent()) {
-            if(valueType.equals("date") && convertDateToString.containsKey("format")){
+            if(valueType.equals("date") && convertDateToString.containsKey("timestamp_format")){
                 return org.embulk.spi.type.Types.STRING;
             } else {
                 return null;
