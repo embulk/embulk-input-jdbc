@@ -120,9 +120,9 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("\"UTC\"")
         public DateTimeZone getDefaultTimeZone();
 
-        @Config("convert_types_to_string")
-        @ConfigDefault("null")
-        public Map<String, JdbcColumnOption> getConvertTypesToString();
+        @Config("default_column_options")
+        @ConfigDefault("{}")
+        public Map<String, JdbcColumnOption> getDefaultColumnOptions();
 
 
         public JdbcSchema getQuerySchema();
@@ -171,11 +171,11 @@ public abstract class AbstractJdbcInputPlugin
         // validate column_options
         newColumnGetters(task, querySchema, null);
 
-        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone(), task.getConvertTypesToString());
+        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone(), task.getDefaultColumnOptions());
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
             JdbcColumn column = querySchema.getColumn(i);
-            JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), column);
+            JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), task.getDefaultColumnOptions(), column);
             columns.add(new Column(i,
                     column.getName(),
                     factory.newColumnGetter(column, columnOption).getToType()));
@@ -278,26 +278,29 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Map<String, JdbcColumnOption> convertTypesToString)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Map<String, JdbcColumnOption> defaultColumnOptions)
     {
-        return new ColumnGetterFactory(pageBuilder, dateTimeZone, convertTypesToString);
+        return new ColumnGetterFactory(pageBuilder, dateTimeZone, defaultColumnOptions);
     }
 
     private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
             throws SQLException
     {
-        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone(), task.getConvertTypesToString());
+        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone(), task.getDefaultColumnOptions());
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
-            JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), c);
+            JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), task.getDefaultColumnOptions(), c);
             getters.add(factory.newColumnGetter(c, columnOption));
         }
         return getters.build();
     }
 
-    private static JdbcColumnOption columnOptionOf(Map<String, JdbcColumnOption> columnOptions, JdbcColumn targetColumn)
+    private static JdbcColumnOption columnOptionOf(Map<String, JdbcColumnOption> columnOptions, Map<String, JdbcColumnOption> defaultColumnOptions, JdbcColumn targetColumn)
     {
-        return Optional.fromNullable(columnOptions.get(targetColumn.getName())).or(
+        return Optional
+                .fromNullable(columnOptions.get(targetColumn.getName()))
+                .fromNullable(defaultColumnOptions.get(targetColumn.getName()))
+                .or(
                     // default column option
                     new Supplier<JdbcColumnOption>()
                     {

@@ -98,8 +98,8 @@ public class PostgreSQLInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Map<String, JdbcColumnOption> convertTypesToString)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Map<String, JdbcColumnOption> defaultColumnOptions)
     {
-        return new PostgreSQLColumnGetterFactory(pageBuilder, dateTimeZone, convertTypesToString);
+        return new PostgreSQLColumnGetterFactory(pageBuilder, dateTimeZone, defaultColumnOptions);
     }
 }

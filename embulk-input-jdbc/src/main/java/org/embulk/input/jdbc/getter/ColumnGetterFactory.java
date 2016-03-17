@@ -11,19 +11,18 @@ import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
 import org.joda.time.DateTimeZone;
-import com.google.common.base.Optional;
 
 public class ColumnGetterFactory
 {
     private final PageBuilder to;
     private final DateTimeZone defaultTimeZone;
-    private final Map<String, JdbcColumnOption> convertTypesToString;
+    private final Map<String, JdbcColumnOption> defaultColumnOptions;
 
-    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> convertTypesToString)
+    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> defaultColumnOptions)
     {
         this.to = to;
         this.defaultTimeZone = defaultTimeZone;
-        this.convertTypesToString = convertTypesToString;
+        this.defaultColumnOptions = defaultColumnOptions;
     }
 
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
@@ -32,16 +31,16 @@ public class ColumnGetterFactory
     }
 
     private String getDateColumnFormat() {
-        if(convertTypesToString.containsKey("date") && convertTypesToString.get("date").getTimestampFormat().isPresent()){
-            return convertTypesToString.get("date").getTimestampFormat().get().getFormat();
+        if(defaultColumnOptions.containsKey("date") && defaultColumnOptions.get("date").getTimestampFormat().isPresent()){
+            return defaultColumnOptions.get("date").getTimestampFormat().get().getFormat();
         } else {
             return DateColumnGetter.DEFAULT_FORMAT;
         }
     }
 
     private DateTimeZone getDateColumnTimezone() {
-        if(convertTypesToString.containsKey("date") && convertTypesToString.get("date").getTimeZone().isPresent()){
-            return convertTypesToString.get("date").getTimeZone().get();
+        if(defaultColumnOptions.containsKey("date") && defaultColumnOptions.get("date").getTimeZone().isPresent()){
+            return defaultColumnOptions.get("date").getTimeZone().get();
         } else {
             return defaultTimeZone;
         }
@@ -49,7 +48,7 @@ public class ColumnGetterFactory
 
     private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
     {
-        Type toType = getToType(option, valueType);
+        Type toType = getToType(option);
         switch(valueType) {
         case "coalesce":
             return newColumnGetter(column, option, sqlTypeToValueType(column, column.getSqlType()));
@@ -157,14 +156,10 @@ public class ColumnGetterFactory
         }
     }
 
-    private Type getToType(JdbcColumnOption option, String valueType)
+    private Type getToType(JdbcColumnOption option)
     {
         if (!option.getType().isPresent()) {
-            if(convertTypesToString.containsKey(valueType)){
-                return org.embulk.spi.type.Types.STRING;
-            } else {
-                return null;
-            }
+            return null;
         }
         Type toType = option.getType().get();
         if (toType instanceof TimestampType && option.getTimestampFormat().isPresent()) {

@@ -11,9 +11,9 @@ import java.util.Map;
 
 public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
 {
-    public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> convertTypesToString)
+    public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> defaultColumnOptions)
     {
-        super(to, defaultTimeZone, convertTypesToString);
+        super(to, defaultTimeZone, defaultColumnOptions);
     }
 
     @Override
