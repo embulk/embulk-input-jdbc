@@ -299,7 +299,7 @@ public abstract class AbstractJdbcInputPlugin
     {
         return Optional
                 .fromNullable(columnOptions.get(targetColumn.getName()))
-                .fromNullable(defaultColumnOptions.get(targetColumn.getName()))
+                .fromNullable(defaultColumnOptions.get(targetColumn.getTypeName()))
                 .or(
                     // default column option
                     new Supplier<JdbcColumnOption>()
