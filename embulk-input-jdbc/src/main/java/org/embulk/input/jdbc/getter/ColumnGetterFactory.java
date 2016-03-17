@@ -1,6 +1,7 @@
 package org.embulk.input.jdbc.getter;
 
 import java.sql.Types;
+import java.util.Map;
 
 import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.JdbcColumn;
@@ -16,13 +17,13 @@ public class ColumnGetterFactory
 {
     private final PageBuilder to;
     private final DateTimeZone defaultTimeZone;
-    private final Optional<JdbcColumnOption> convertDateToString;
+    private final Map<String, JdbcColumnOption> convertTypesToString;
 
-    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Optional<JdbcColumnOption> convertDateToString)
+    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> convertTypesToString)
     {
         this.to = to;
         this.defaultTimeZone = defaultTimeZone;
-        this.convertDateToString = convertDateToString;
+        this.convertTypesToString = convertTypesToString;
     }
 
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
@@ -31,16 +32,16 @@ public class ColumnGetterFactory
     }
 
     private String getDateColumnFormat() {
-        if(convertDateToString.isPresent() && convertDateToString.get().getTimestampFormat().isPresent()){
-            return convertDateToString.get().getTimestampFormat().get().getFormat();
+        if(convertTypesToString.containsKey("date") && convertTypesToString.get("date").getTimestampFormat().isPresent()){
+            return convertTypesToString.get("date").getTimestampFormat().get().getFormat();
         } else {
             return DateColumnGetter.DEFAULT_FORMAT;
         }
     }
 
     private DateTimeZone getDateColumnTimezone() {
-        if(convertDateToString.isPresent() && convertDateToString.get().getTimeZone().isPresent()){
-            return convertDateToString.get().getTimeZone().get();
+        if(convertTypesToString.containsKey("date") && convertTypesToString.get("date").getTimeZone().isPresent()){
+            return convertTypesToString.get("date").getTimeZone().get();
         } else {
             return defaultTimeZone;
         }
@@ -159,7 +160,7 @@ public class ColumnGetterFactory
     private Type getToType(JdbcColumnOption option, String valueType)
     {
         if (!option.getType().isPresent()) {
-            if(valueType.equals("date") && convertDateToString.isPresent() && convertDateToString.get().getTimestampFormat().isPresent()){
+            if(convertTypesToString.containsKey(valueType)){
                 return org.embulk.spi.type.Types.STRING;
             } else {
                 return null;

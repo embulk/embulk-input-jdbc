@@ -7,11 +7,13 @@ import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.joda.time.DateTimeZone;
 
+import java.util.Map;
+
 public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
 {
-    public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Optional<JdbcColumnOption> convertDateToString)
+    public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> convertTypesToString)
     {
-        super(to, defaultTimeZone, convertDateToString);
+        super(to, defaultTimeZone, convertTypesToString);
     }
 
     @Override

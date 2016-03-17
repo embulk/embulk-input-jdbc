@@ -1,5 +1,6 @@
 package org.embulk.input;
 
+import java.util.Map;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -97,8 +98,8 @@ public class PostgreSQLInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Optional<JdbcColumnOption> convertDateToString)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Map<String, JdbcColumnOption> convertTypesToString)
     {
-        return new PostgreSQLColumnGetterFactory(pageBuilder, dateTimeZone, convertDateToString);
+        return new PostgreSQLColumnGetterFactory(pageBuilder, dateTimeZone, convertTypesToString);
     }
 }

@@ -120,9 +120,9 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("\"UTC\"")
         public DateTimeZone getDefaultTimeZone();
 
-        @Config("convert_date_to_string")
+        @Config("convert_types_to_string")
         @ConfigDefault("null")
-        public Optional<JdbcColumnOption> getConvertDateToString();
+        public Map<String, JdbcColumnOption> getConvertTypesToString();
 
 
         public JdbcSchema getQuerySchema();
@@ -171,7 +171,7 @@ public abstract class AbstractJdbcInputPlugin
         // validate column_options
         newColumnGetters(task, querySchema, null);
 
-        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone(), task.getConvertDateToString());
+        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone(), task.getConvertTypesToString());
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
             JdbcColumn column = querySchema.getColumn(i);
@@ -278,15 +278,15 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Optional<JdbcColumnOption> convertDateToString)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Map<String, JdbcColumnOption> convertTypesToString)
     {
-        return new ColumnGetterFactory(pageBuilder, dateTimeZone, convertDateToString);
+        return new ColumnGetterFactory(pageBuilder, dateTimeZone, convertTypesToString);
     }
 
     private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
             throws SQLException
     {
-        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone(), task.getConvertDateToString());
+        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone(), task.getConvertTypesToString());
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), c);
