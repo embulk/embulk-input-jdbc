@@ -30,22 +30,6 @@ public class ColumnGetterFactory
         return newColumnGetter(column, option, option.getValueType());
     }
 
-    private String getDateColumnFormat() {
-        if(defaultColumnOptions.containsKey("date") && defaultColumnOptions.get("date").getTimestampFormat().isPresent()){
-            return defaultColumnOptions.get("date").getTimestampFormat().get().getFormat();
-        } else {
-            return DateColumnGetter.DEFAULT_FORMAT;
-        }
-    }
-
-    private DateTimeZone getDateColumnTimezone() {
-        if(defaultColumnOptions.containsKey("date") && defaultColumnOptions.get("date").getTimeZone().isPresent()){
-            return defaultColumnOptions.get("date").getTimeZone().get();
-        } else {
-            return defaultTimeZone;
-        }
-    }
-
     private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
     {
         Type toType = getToType(option);
@@ -65,16 +49,21 @@ public class ColumnGetterFactory
         case "json":
             return new JsonColumnGetter(to, toType);
         case "date":
-            return new DateColumnGetter(to, toType, newTimestampFormatter(option, getDateColumnFormat(), getDateColumnTimezone()));
+            return new DateColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
         case "time":
-            return new TimeColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT, defaultTimeZone));
+            return new TimeColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
         case "timestamp":
-            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT, defaultTimeZone));
+            return new TimestampColumnGetter(to, toType, newTimestampFormatter(option, DateColumnGetter.DEFAULT_FORMAT));
         case "decimal":
             return new BigDecimalColumnGetter(to, toType);
         default:
             throw new ConfigException(String.format("Unknown value_type '%s' for column '%s'", option.getValueType(), column.getName()));
         }
+    }
+
+    public String sqlTypeToValueType(JdbcColumn column)
+    {
+        return sqlTypeToValueType(column, column.getSqlType());
     }
 
     protected String sqlTypeToValueType(JdbcColumn column, int sqlType)
@@ -168,7 +157,7 @@ public class ColumnGetterFactory
         return toType;
     }
 
-    private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat, DateTimeZone defaultTimeZone)
+    private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat)
     {
         return new TimestampFormatter(
                 option.getJRuby(),
