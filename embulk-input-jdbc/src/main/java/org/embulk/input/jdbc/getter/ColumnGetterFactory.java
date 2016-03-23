@@ -1,6 +1,8 @@
 package org.embulk.input.jdbc.getter;
 
+import java.lang.reflect.Field;
 import java.sql.Types;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.embulk.config.ConfigException;
@@ -17,6 +19,7 @@ public class ColumnGetterFactory
     private final PageBuilder to;
     private final DateTimeZone defaultTimeZone;
     private final Map<String, JdbcColumnOption> defaultColumnOptions;
+    private final Map<Integer, String> jdbcTypes = getAllJDBCTypes();
 
     public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> defaultColumnOptions)
     {
@@ -61,10 +64,26 @@ public class ColumnGetterFactory
         }
     }
 
-    public String sqlTypeToValueType(JdbcColumn column)
-    {
-        return sqlTypeToValueType(column, column.getSqlType());
+    protected Map<Integer,String> getAllJDBCTypes() {
+        Map<Integer,String> map = new HashMap<Integer, String>();
+        for(Field f: Types.class.getFields()){
+            try {
+                map.put((Integer) f.get(null), f.getName());
+            } catch(IllegalAccessException iea){
+            }
+        }
+        return map;
     }
+
+    public String getJdbcType(int sqlType)
+    {
+        String sqlTypeName = jdbcTypes.get(sqlType);
+        if(sqlTypeName == null){
+            throw new UnsupportedOperationException(String.format("Unknown SQL type value '%d'", sqlType));
+        }
+        return sqlTypeName;
+    }
+
 
     protected String sqlTypeToValueType(JdbcColumn column, int sqlType)
     {
