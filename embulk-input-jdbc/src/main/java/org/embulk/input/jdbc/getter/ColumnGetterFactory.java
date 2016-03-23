@@ -16,7 +16,7 @@ import org.joda.time.DateTimeZone;
 
 public class ColumnGetterFactory
 {
-    private final PageBuilder to;
+    protected final PageBuilder to;
     private final DateTimeZone defaultTimeZone;
     private final Map<Integer, String> jdbcTypes = getAllJDBCTypes();
 
@@ -31,7 +31,7 @@ public class ColumnGetterFactory
         return newColumnGetter(column, option, option.getValueType());
     }
 
-    private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
+    protected ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
     {
         Type toType = getToType(option);
         switch(valueType) {
@@ -162,7 +162,7 @@ public class ColumnGetterFactory
         }
     }
 
-    private Type getToType(JdbcColumnOption option)
+    protected Type getToType(JdbcColumnOption option)
     {
         if (!option.getType().isPresent()) {
             return null;
