@@ -18,14 +18,12 @@ public class ColumnGetterFactory
 {
     private final PageBuilder to;
     private final DateTimeZone defaultTimeZone;
-    private final Map<String, JdbcColumnOption> defaultColumnOptions;
     private final Map<Integer, String> jdbcTypes = getAllJDBCTypes();
 
-    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> defaultColumnOptions)
+    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
     {
         this.to = to;
         this.defaultTimeZone = defaultTimeZone;
-        this.defaultColumnOptions = defaultColumnOptions;
     }
 
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)

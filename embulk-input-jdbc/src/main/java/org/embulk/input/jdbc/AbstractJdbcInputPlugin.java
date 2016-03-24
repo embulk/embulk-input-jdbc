@@ -171,7 +171,7 @@ public abstract class AbstractJdbcInputPlugin
         // validate column_options
         newColumnGetters(task, querySchema, null);
 
-        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone(), task.getDefaultColumnOptions());
+        ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone());
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
         for (int i = 0; i < querySchema.getCount(); i++) {
             JdbcColumn column = querySchema.getColumn(i);
@@ -278,15 +278,15 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone, Map<String, JdbcColumnOption> defaultColumnOptions)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
     {
-        return new ColumnGetterFactory(pageBuilder, dateTimeZone, defaultColumnOptions);
+        return new ColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
     private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
             throws SQLException
     {
-        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone(), task.getDefaultColumnOptions());
+        ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone());
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), task.getDefaultColumnOptions(), c, factory.getJdbcType(c.getSqlType()));
@@ -299,7 +299,7 @@ public abstract class AbstractJdbcInputPlugin
     {
         return Optional
                 .fromNullable(columnOptions.get(targetColumn.getName()))
-                .or(Optional.fromNullable(defaultColumnOptions.get(targetColumnSQLType))
+                .or(Optional.fromNullable(defaultColumnOptions.get(targetColumnSQLType)))
                 .or(
                     // default column option
                     new Supplier<JdbcColumnOption>()
@@ -308,7 +308,7 @@ public abstract class AbstractJdbcInputPlugin
                         {
                             return Exec.newConfigSource().loadConfig(JdbcColumnOption.class);
                         }
-                    }));
+                    });
     }
 
     private boolean fetch(BatchSelect cursor,

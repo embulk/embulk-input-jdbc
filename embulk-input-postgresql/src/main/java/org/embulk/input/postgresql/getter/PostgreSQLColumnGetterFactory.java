@@ -10,9 +10,9 @@ import java.util.Map;
 
 public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
 {
-    public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone, Map<String, JdbcColumnOption> defaultColumnOptions)
+    public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
     {
-        super(to, defaultTimeZone, defaultColumnOptions);
+        super(to, defaultTimeZone);
     }
 
     @Override
