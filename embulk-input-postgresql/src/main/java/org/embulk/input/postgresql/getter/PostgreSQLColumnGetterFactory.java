@@ -1,9 +1,12 @@
 package org.embulk.input.postgresql.getter;
 
 import org.embulk.input.jdbc.JdbcColumn;
+import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.joda.time.DateTimeZone;
+
+import java.util.Map;
 
 public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
 {
