@@ -89,8 +89,8 @@ public class SQLServerInputPlugin
             }
             StringBuilder urlBuilder = new StringBuilder();
             if (sqlServerTask.getInstance().isPresent()) {
-                urlBuilder.append(String.format("jdbc:sqlserver://%s\\%s:%d",
-                        sqlServerTask.getHost().get(), sqlServerTask.getInstance().get(), sqlServerTask.getPort()));
+                urlBuilder.append(String.format("jdbc:sqlserver://%s\\%s",
+                        sqlServerTask.getHost().get(), sqlServerTask.getInstance().get()));
             } else {
                 urlBuilder.append(String.format("jdbc:sqlserver://%s:%d",
                         sqlServerTask.getHost().get(), sqlServerTask.getPort()));
