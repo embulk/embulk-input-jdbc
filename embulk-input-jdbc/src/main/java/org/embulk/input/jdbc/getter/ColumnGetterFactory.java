@@ -31,7 +31,7 @@ public class ColumnGetterFactory
         return newColumnGetter(column, option, option.getValueType());
     }
 
-    protected ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
+    private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
     {
         Type toType = getToType(option);
         switch(valueType) {

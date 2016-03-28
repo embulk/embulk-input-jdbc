@@ -15,12 +15,12 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
     }
 
     @Override
-    protected ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
+    public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
     {
         if (column.getTypeName().equals("hstore")) {
             return new HstoreColumnGetter(to, getToType(option));
         } else {
-            return super.newColumnGetter(column, option, valueType);
+            return super.newColumnGetter(column, option);
         }
     }
 
