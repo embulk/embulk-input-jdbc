@@ -19,8 +19,8 @@ import java.util.Map;
 public class HstoreColumnGetter
         extends AbstractColumnGetter
 {
-    final JsonParser parser = new JsonParser();
-    final ObjectMapper mapper = new ObjectMapper();
+    private final JsonParser parser = new JsonParser();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     private String value;
 
