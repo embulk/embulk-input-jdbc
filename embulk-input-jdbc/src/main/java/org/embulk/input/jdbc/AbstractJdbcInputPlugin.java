@@ -265,6 +265,7 @@ public abstract class AbstractJdbcInputPlugin
 
                 if (task.getAfterSelect().isPresent()) {
                     con.executeUpdate(task.getAfterSelect().get());
+                    con.connection.commit();
                 }
             }
 
