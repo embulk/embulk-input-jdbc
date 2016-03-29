@@ -1,5 +1,7 @@
 package org.embulk.input.postgresql;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -15,13 +17,12 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
+import org.embulk.input.EmbulkPluginTester;
 import org.embulk.input.PostgreSQLInputPlugin;
 import org.embulk.spi.InputPlugin;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class PostgreSQLInputPluginTest
 {

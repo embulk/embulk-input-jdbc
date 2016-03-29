@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
+import org.embulk.input.EmbulkPluginTester;
 import org.embulk.input.MySQLInputPlugin;
 import org.embulk.spi.InputPlugin;
 import org.junit.AfterClass;

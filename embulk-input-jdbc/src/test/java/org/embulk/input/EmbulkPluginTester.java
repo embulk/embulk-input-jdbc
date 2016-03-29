@@ -1,4 +1,4 @@
-package org.embulk.input.mysql;
+package org.embulk.input;
 
 import java.io.File;
 import java.util.ArrayList;
