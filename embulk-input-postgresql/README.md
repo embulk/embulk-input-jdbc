@@ -30,12 +30,29 @@ PostgreSQL input plugins for Embulk loads records from PostgreSQL.
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
   - **value_type**: embulk get values from database as this value_type. Typically, the value_type determines `getXXX` method of `java.sql.PreparedStatement`.
   (string, default: depends on the sql type of the column. Available values options are: `long`, `double`, `float`, `decimal`, `boolean`, `string`, `json`, `date`, `time`, `timestamp`)
+  See below for `hstore` column.
   - **type**: Column values are converted to this embulk type.
   Available values options are: `boolean`, `long`, `double`, `string`, `json`, `timestamp`).
   By default, the embulk type is determined according to the sql type of the column (or value_type if specified).
+  See below for `hstore` column.
   - **timestamp_format**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted by this timestamp_format. And if the embulk type is `timestamp`, this timestamp_format may be used in the output plugin. For example, stdout plugin use the timestamp_format, but *csv formatter plugin doesn't use*. (string, default : `%Y-%m-%d` for `date`, `%H:%M:%S` for `time`, `%Y-%m-%d %H:%M:%S` for `timestamp`)
   - **timezone**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted in this timezone.
 (string, value of default_timezone option is used by default)
+
+### hstore column support
+
+By default, `type` of `column_options` for `hstore` column is `string`, and output will be as follows.
+```
+"key1"=>"value1", "key2"=>"value2"
+```
+
+In addition, `json` type is supported for `hstore` column, and output will be as follows.
+```
+{"key1": "value1", "key2": "value2"}
+```
+
+`value_type` is ignored.
+
 
 ## Example
 
