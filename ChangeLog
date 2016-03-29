@@ -1,3 +1,10 @@
+Release 0.7.0 - 2016-03-29
+
+* Support json type (@joker1007++).
+* Add 'default_column_options' to specify column options by SQL type. (@yoyama++)
+* Support hstore column in embulk-input-postgresql. (@kamatama41++)
+* Add 'after_select' option to execute SQL after extracting records.
+
 Release 0.6.4 - 2016-01-15
 
 * Support schema in SQL Server.

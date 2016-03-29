@@ -18,7 +18,7 @@ def bintrayReleaseProjects = [
 
 allprojects {
     group = 'org.embulk.input.jdbc'
-    version = '0.6.4'
+    version = '0.7.0'
 
     apply plugin: 'com.jfrog.bintray'
     apply plugin: 'maven-publish'
@@ -74,8 +74,8 @@ subprojects {
     targetCompatibility = 1.7
 
     dependencies {
-        compile  'org.embulk:embulk-core:0.8.0'
-        provided 'org.embulk:embulk-core:0.8.0'
+        compile  'org.embulk:embulk-core:0.8.8'
+        provided 'org.embulk:embulk-core:0.8.8'
         testCompile 'junit:junit:4.+'
     }
 

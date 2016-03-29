@@ -3,6 +3,6 @@ dependencies {
 
     compile 'mysql:mysql-connector-java:5.1.34'
 
-    testCompile 'org.embulk:embulk-standards:0.8.0'
+    testCompile 'org.embulk:embulk-standards:0.8.8'
     testCompile project(':embulk-input-jdbc').sourceSets.test.output
 }
