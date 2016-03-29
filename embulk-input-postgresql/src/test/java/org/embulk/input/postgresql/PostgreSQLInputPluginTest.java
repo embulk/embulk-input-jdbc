@@ -1,7 +1,9 @@
 package org.embulk.input.postgresql;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
@@ -89,11 +91,17 @@ public class PostgreSQLInputPluginTest
     }
 
     private static void psql(String sql) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder("psql", "-c", sql);
+        ProcessBuilder pb = new ProcessBuilder("psql", "-w", "-c", sql);
         System.out.println("PSQL: " + pb.command().toString());
         final Process process = pb.start();
         final int code = process.waitFor();
         if (code != 0) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.err.println(line);
+                }
+            }
             throw new IOException(String.format(
                     "Command finished with non-zero exit code. Exit code is %d.", code));
         }
