@@ -124,6 +124,9 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("{}")
         public Map<String, JdbcColumnOption> getDefaultColumnOptions();
 
+        @Config("after_select")
+        @ConfigDefault("null")
+        public Optional<String> getAfterSelect();
 
         public JdbcSchema getQuerySchema();
         public void setQuerySchema(JdbcSchema schema);
@@ -163,7 +166,7 @@ public abstract class AbstractJdbcInputPlugin
     private Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
     {
         // build SELECT query and gets schema of its result
-    	String query = getQuery(task, con);
+        String query = getQuery(task, con);
         logger.info("SQL: " + query);
         JdbcSchema querySchema = con.getSchemaOfQuery(query);
         task.setQuerySchema(querySchema);
@@ -262,6 +265,11 @@ public abstract class AbstractJdbcInputPlugin
                             break;
                         }
                     }
+                }
+
+                if (task.getAfterSelect().isPresent()) {
+                    con.executeUpdate(task.getAfterSelect().get());
+                    con.connection.commit();
                 }
             }
 
