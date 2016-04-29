@@ -57,7 +57,10 @@ public abstract class AbstractColumnGetter implements ColumnGetter, ColumnVisito
     }
 
     @Override
-    public void jsonColumn(Column column) { to.setNull(column); }
+    public void jsonColumn(Column column)
+    {
+        to.setNull(column);
+    }
 
     @Override
     public void timestampColumn(Column column)
