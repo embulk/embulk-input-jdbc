@@ -252,31 +252,36 @@ public abstract class AbstractJdbcInputPlugin
         BufferAllocator allocator = task.getBufferAllocator();
         PageBuilder pageBuilder = new PageBuilder(allocator, schema, output);
 
-        try {
-            List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
-
-            try (JdbcInputConnection con = newConnection(task)) {
-                try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows(), task.getSocketTimeout())) {
-                    while (true) {
-                        // TODO run fetch() in another thread asynchronously
-                        // TODO retry fetch() if it failed (maybe order_by is required and unique_column(s) option is also required)
-                        boolean cont = fetch(cursor, getters, pageBuilder);
-                        if (!cont) {
-                            break;
-                        }
+        try (JdbcInputConnection con = newConnection(task)) {
+            try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows(), task.getSocketTimeout())) {
+                List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
+                while (true) {
+                    // TODO run fetch() in another thread asynchronously
+                    // TODO retry fetch() if it failed (maybe order_by is required and unique_column(s) option is also required)
+                    boolean cont = fetch(cursor, getters, pageBuilder);
+                    if (!cont) {
+                        break;
                     }
                 }
-
-                if (task.getAfterSelect().isPresent()) {
-                    con.executeUpdate(task.getAfterSelect().get());
-                    con.connection.commit();
-                }
             }
+            pageBuilder.finish();
 
+            // after_select runs after pageBuilder.finish because pageBuilder.finish may fail.
+            // TODO Output plugin's transaction might still fail. In that case, after_select is
+            //      already done but output plugin didn't commit the data to the target storage.
+            //      This means inconsistency between data source and destination. To avoid this
+            //      issue, we need another option like `after_commit` that runs after output plugin's
+            //      commit. after_commit can't run in the same transaction with SELECT. So,
+            //      after_select gets values and store them in TaskReport, and after_commit take
+            //      them as placeholder. Or, after_select puts values to an intermediate table, and
+            //      after_commit moves those values to the actual table.
+            if (task.getAfterSelect().isPresent()) {
+                con.executeUpdate(task.getAfterSelect().get());
+                con.connection.commit();
+            }
         } catch (SQLException ex) {
             throw Throwables.propagate(ex);
         }
-        pageBuilder.finish();
 
         TaskReport report = Exec.newTaskReport();
         // TODO
