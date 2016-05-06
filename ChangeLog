@@ -1,13 +1,19 @@
+Release 0.7.1 - 2016-05-07
+
+* Running after_select after pageBuilder#finish because some output plugins do significant works in the method that may throw exceptions.
+
+. committing output plugin.
+
 Release 0.7.0 - 2016-03-29
 
-* Support json type (@joker1007++).
-* Add 'default_column_options' to specify column options by SQL type. (@yoyama++)
-* Support hstore column in embulk-input-postgresql. (@kamatama41++)
-* Add 'after_select' option to execute SQL after extracting records.
+* Supported json type (@joker1007++).
+* Added 'default_column_options' to specify column options by SQL type. (@yoyama++)
+* Supported hstore column in embulk-input-postgresql. (@kamatama41++)
+* Added 'after_select' option to execute SQL after extracting records.
 
 Release 0.6.4 - 2016-01-15
 
-* Support schema in SQL Server.
+* Supported schema in SQL Server.
 * Log query SQL before it is used for the first time, so that the SQL is logged even if it is invalid.
 
 Release 0.6.3 - 2016-01-13
@@ -18,15 +24,15 @@ Release 0.6.3 - 2016-01-13
 
 Release 0.6.2 - 2016-01-04
 
-* Support schema in Oracle.
+* Supported schema in Oracle.
 
 
 Release 0.6.1 - 2015-12-08
 
 This release requires embulk >= 0.7.1.
 
-* Add connect_timeout and socket_timeout to config.
-* Support SSL in PostrgreSQL (@kamatama41++).
+* Added connect_timeout and socket_timeout to config.
+* Supported SSL in PostrgreSQL (@kamatama41++).
 
 
 Release 0.6.0 - 2015-07-06
@@ -45,7 +51,7 @@ Release 0.5.0 - 2015-06-17
 
 Release 0.4.0 - 2015-03-05
 
-* added support for 'query' parameter.
+* Added support for 'query' parameter.
 * If 'query' parameter is set, 'table', 'select', 'where' and 'order_by' parameters are invalid.
 
 Release 0.3.0 - 2015-02-27
