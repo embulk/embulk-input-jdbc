@@ -5,15 +5,18 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Set;
+
+import org.embulk.config.ConfigException;
+import org.embulk.spi.Exec;
+import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-
-import org.slf4j.Logger;
-import org.embulk.config.ConfigException;
-import org.embulk.spi.Exec;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 public class JdbcInputConnection
         implements AutoCloseable
@@ -160,18 +163,18 @@ public class JdbcInputConnection
         if (tableExists(tableName)) {
             actualTableName = tableName;
         } else {
-            String upperTable = tableName.toUpperCase();
-            String lowerTable = tableName.toLowerCase();
-            if (tableExists(upperTable)) {
-                if (tableExists(lowerTable)) {
+            String upperTableName = tableName.toUpperCase();
+            String lowerTableName = tableName.toLowerCase();
+            if (tableExists(upperTableName)) {
+                if (tableExists(lowerTableName)) {
                     throw new ConfigException(String.format("Cannot specify table '%s' because both '%s' and '%s' exist.",
-                            tableName, upperTable, lowerTable));
+                            tableName, upperTableName, lowerTableName));
                 } else {
-                    actualTableName = upperTable;
+                    actualTableName = upperTableName;
                 }
             } else {
-                if (tableExists(lowerTable)) {
-                    actualTableName = lowerTable;
+                if (tableExists(lowerTableName)) {
+                    actualTableName = lowerTableName;
                 } else {
                     actualTableName = tableName;
                 }
@@ -183,11 +186,36 @@ public class JdbcInputConnection
         sb.append("SELECT ");
         sb.append(selectColumnList.or("*"));
         sb.append(" FROM ").append(buildTableName(actualTableName));
+
         if (whereCondition.isPresent()) {
             sb.append(" WHERE ").append(whereCondition.get());
         }
+
         if (orderByColumn.isPresent()) {
-            sb.append("ORDER BY ").append(quoteIdentifierString(orderByColumn.get())).append(" ASC");
+            String actualOrderByColumn;
+            Set<String> columnNames = getColumnNames(actualTableName);
+            if (columnNames.contains(orderByColumn.get())) {
+                actualOrderByColumn = orderByColumn.get();
+            } else {
+                String upperOrderByColumn = orderByColumn.get().toUpperCase();
+                String lowerOrderByColumn = orderByColumn.get().toLowerCase();
+                if (columnNames.contains(upperOrderByColumn)) {
+                    if (columnNames.contains(lowerOrderByColumn)) {
+                        throw new ConfigException(String.format("Cannot specify order-by colum '%s' because both '%s' and '%s' exist.",
+                                orderByColumn.get(), upperOrderByColumn, lowerOrderByColumn));
+                    } else {
+                        actualOrderByColumn = upperOrderByColumn;
+                    }
+                } else {
+                    if (columnNames.contains(lowerOrderByColumn)) {
+                        actualOrderByColumn = lowerOrderByColumn;
+                    } else {
+                        actualOrderByColumn = orderByColumn.get();
+                    }
+                }
+            }
+
+            sb.append("ORDER BY ").append(quoteIdentifierString(actualOrderByColumn)).append(" ASC");
         }
 
         return sb.toString();
@@ -197,6 +225,17 @@ public class JdbcInputConnection
     {
         try (ResultSet rs = connection.getMetaData().getTables(null, schemaName, tableName, null)) {
             return rs.next();
+        }
+    }
+
+    private Set<String> getColumnNames(String tableName) throws SQLException
+    {
+        Builder<String> columnNamesBuilder = ImmutableSet.builder();
+        try (ResultSet rs = connection.getMetaData().getColumns(null, schemaName, tableName, null)) {
+            while (rs.next()) {
+                columnNamesBuilder.add(rs.getString("COLUMN_NAME"));
+            }
+            return columnNamesBuilder.build();
         }
     }
 }

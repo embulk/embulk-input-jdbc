@@ -102,8 +102,8 @@ public class OracleInputPluginTest
             tester.run(convertPath("/oracle/yml/input.yml"));
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
-                    ",,,,,,",
-                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789"),
+                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789",
+                    ",,,,,,"),
                     read("oracle-input000.00.csv"));
         }
     }
@@ -115,8 +115,8 @@ public class OracleInputPluginTest
             tester.run(convertPath("/oracle/yml/input-lower.yml"));
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
-                    ",,,,,,",
-                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789"),
+                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789",
+                    ",,,,,,"),
                     read("oracle-input000.00.csv"));
         }
     }
