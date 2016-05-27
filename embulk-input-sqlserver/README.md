@@ -28,6 +28,7 @@ embulk "-J-Djava.library.path=C:\drivers" run input-sqlserver.yml
   - **table**: destination table name (string, required)
   - **select**: comma-separated list of columns to select (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
+  - **order_by**: name of the column that rows are sorted by (string, default: not sorted)
 - **fetch_rows**: number of rows to fetch one time (used for java.sql.Statement#setFetchSize) (integer, default: 10000)
 - **connect_timeout**: timeout for the driver to connect. 0 means the default of SQL Server (15 by default). (integer (seconds), default: 300)
 - **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)

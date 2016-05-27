@@ -26,6 +26,7 @@ PostgreSQL input plugins for Embulk loads records from PostgreSQL.
   - **table**: destination table name (string, required)
   - **select**: comma-separated list of columns to select (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
+  - **order_by**: name of the column that rows are sorted by (string, default: not sorted)
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
   - **value_type**: embulk get values from database as this value_type. Typically, the value_type determines `getXXX` method of `java.sql.PreparedStatement`.

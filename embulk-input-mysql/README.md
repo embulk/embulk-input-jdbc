@@ -20,6 +20,7 @@ MySQL input plugins for Embulk loads records from MySQL.
   - **table**: destination table name (string, required)
   - **select**: comma-separated list of columns to select (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
+  - **order_by**: name of the column that rows are sorted by (string, default: not sorted)
 - **fetch_rows**: number of rows to fetch one time (integer, default: 10000)
   - If this value is set to > 1:
     - It uses a server-side prepared statement and fetches rows by chunks.
