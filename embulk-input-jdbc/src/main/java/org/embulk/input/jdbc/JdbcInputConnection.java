@@ -7,9 +7,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+
 import org.slf4j.Logger;
+import org.embulk.config.ConfigException;
 import org.embulk.spi.Exec;
 
 public class JdbcInputConnection
@@ -146,18 +149,40 @@ public class JdbcInputConnection
 
     protected String buildTableName(String tableName)
     {
-    	return quoteIdentifierString(tableName);
+        return quoteIdentifierString(tableName);
     }
 
     public String buildSelectQuery(String tableName,
             Optional<String> selectColumnList, Optional<String> whereCondition,
-            Optional<String> orderByColumn)
+            Optional<String> orderByColumn) throws SQLException
     {
+        String actualTableName;
+        if (tableExists(tableName)) {
+            actualTableName = tableName;
+        } else {
+            String upperTable = tableName.toUpperCase();
+            String lowerTable = tableName.toLowerCase();
+            if (tableExists(upperTable)) {
+                if (tableExists(lowerTable)) {
+                    throw new ConfigException(String.format("Cannot specify table '%s' because both '%s' and '%s' exist.",
+                            tableName, upperTable, lowerTable));
+                } else {
+                    actualTableName = upperTable;
+                }
+            } else {
+                if (tableExists(lowerTable)) {
+                    actualTableName = lowerTable;
+                } else {
+                    actualTableName = tableName;
+                }
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
 
         sb.append("SELECT ");
         sb.append(selectColumnList.or("*"));
-        sb.append(" FROM ").append(buildTableName(tableName));
+        sb.append(" FROM ").append(buildTableName(actualTableName));
         if (whereCondition.isPresent()) {
             sb.append(" WHERE ").append(whereCondition.get());
         }
@@ -166,5 +191,12 @@ public class JdbcInputConnection
         }
 
         return sb.toString();
+    }
+
+    private boolean tableExists(String tableName) throws SQLException
+    {
+        try (ResultSet rs = connection.getMetaData().getTables(null, schemaName, tableName, null)) {
+            return rs.next();
+        }
     }
 }

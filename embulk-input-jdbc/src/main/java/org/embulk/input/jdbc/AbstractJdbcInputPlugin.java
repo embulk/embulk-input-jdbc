@@ -186,7 +186,7 @@ public abstract class AbstractJdbcInputPlugin
         return new Schema(columns.build());
     }
 
-    private String getQuery(PluginTask task, JdbcInputConnection con)
+    private String getQuery(PluginTask task, JdbcInputConnection con) throws SQLException
     {
         if (task.getQuery().isPresent()) {
             if (task.getTable().isPresent() || task.getSelect().isPresent() ||
