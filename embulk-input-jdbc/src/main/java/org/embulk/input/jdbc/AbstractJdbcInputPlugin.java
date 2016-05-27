@@ -305,8 +305,21 @@ public abstract class AbstractJdbcInputPlugin
 
     private static JdbcColumnOption columnOptionOf(Map<String, JdbcColumnOption> columnOptions, Map<String, JdbcColumnOption> defaultColumnOptions, JdbcColumn targetColumn, String targetColumnSQLType)
     {
+        JdbcColumnOption columnOption = columnOptions.get(targetColumn.getName());
+        if (columnOption == null) {
+            columnOption = columnOptions.get(targetColumn.getName().toUpperCase());
+            if (columnOption == null) {
+                columnOption = columnOptions.get(targetColumn.getName().toLowerCase());
+            } else {
+                if (columnOptions.containsKey(targetColumn.getName().toLowerCase())) {
+                    throw new ConfigException(String.format("Cannot specify column_options '%s' because both '%s' and '%s' exist.",
+                            targetColumn.getName(), targetColumn.getName().toUpperCase(), targetColumn.getName().toLowerCase()));
+                }
+            }
+        }
+
         return Optional
-                .fromNullable(columnOptions.get(targetColumn.getName()))
+                .fromNullable(columnOption)
                 .or(Optional.fromNullable(defaultColumnOptions.get(targetColumnSQLType)))
                 .or(
                     // default column option

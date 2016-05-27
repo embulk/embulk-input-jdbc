@@ -1,0 +1,19 @@
+in:
+  type: oracle
+  host: localhost
+  database: TESTDB
+  user: TEST_USER
+  password: test_pw
+  table: TEST1
+  select: "*"
+  column_options:
+    C5: {type: string, timestamp_format: '%Y/%m/%d', timezone: "+0900"}
+    C6: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S', timezone: "+0900"}
+    C7: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S.%3N', timezone: "+0900"}
+
+out:
+  type: file
+  path_prefix: oracle-input
+  file_ext: csv
+  formatter:
+    type: csv

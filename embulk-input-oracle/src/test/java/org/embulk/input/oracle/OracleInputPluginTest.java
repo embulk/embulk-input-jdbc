@@ -147,6 +147,32 @@ public class OracleInputPluginTest
         }
     }
 
+    @Test
+    public void testColumnOptions() throws Exception
+    {
+        if (prepared) {
+            tester.run(convertPath("/oracle/yml/input-column-options.yml"));
+            assertEquals(Arrays.asList(
+                    "C1,C2,C3,C4,C5,C6,C7",
+                    ",,,,,,",
+                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015/06/04,2015/06/05 23:45:06,2015/06/06 23:45:06.789"),
+                    read("oracle-input000.00.csv"));
+        }
+    }
+
+    @Test
+    public void testColumnOptionsLower() throws Exception
+    {
+        if (prepared) {
+            tester.run(convertPath("/oracle/yml/input-column-options-lower.yml"));
+            assertEquals(Arrays.asList(
+                    "C1,C2,C3,C4,C5,C6,C7",
+                    ",,,,,,",
+                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015/06/04,2015/06/05 23:45:06,2015/06/06 23:45:06.789"),
+                    read("oracle-input000.00.csv"));
+        }
+    }
+
     private List<String> read(String path) throws IOException
     {
         FileSystem fs = FileSystems.getDefault();
