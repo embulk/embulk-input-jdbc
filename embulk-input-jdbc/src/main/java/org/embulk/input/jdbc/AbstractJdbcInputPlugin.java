@@ -307,13 +307,15 @@ public abstract class AbstractJdbcInputPlugin
     {
         JdbcColumnOption columnOption = columnOptions.get(targetColumn.getName());
         if (columnOption == null) {
-            columnOption = columnOptions.get(targetColumn.getName().toUpperCase());
-            if (columnOption == null) {
-                columnOption = columnOptions.get(targetColumn.getName().toLowerCase());
-            } else {
-                if (columnOptions.containsKey(targetColumn.getName().toLowerCase())) {
-                    throw new ConfigException(String.format("Cannot specify column_options '%s' because both '%s' and '%s' exist.",
-                            targetColumn.getName(), targetColumn.getName().toUpperCase(), targetColumn.getName().toLowerCase()));
+            String foundName = null;
+            for (Map.Entry<String, JdbcColumnOption> entry : columnOptions.entrySet()) {
+                if (entry.getKey().equalsIgnoreCase(targetColumn.getName())) {
+                    if (columnOption != null) {
+                        throw new ConfigException(String.format("Cannot specify column '%s' because both '%s' and '%s' exist in column_options.",
+                                targetColumn.getName(), foundName, entry.getKey()));
+                    }
+                    foundName = entry.getKey();
+                    columnOption = entry.getValue();
                 }
             }
         }
