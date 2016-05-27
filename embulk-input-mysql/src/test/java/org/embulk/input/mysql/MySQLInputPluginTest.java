@@ -128,7 +128,7 @@ public class MySQLInputPluginTest
     public void test() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input.yml"));
+            tester.run(convertPath("/mysql/yml/input.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -141,7 +141,7 @@ public class MySQLInputPluginTest
     public void testString() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-string.yml"));
+            tester.run(convertPath("/mysql/yml/input-string.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -154,7 +154,7 @@ public class MySQLInputPluginTest
     public void testBoolean() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-boolean.yml"));
+            tester.run(convertPath("/mysql/yml/input-boolean.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -167,7 +167,7 @@ public class MySQLInputPluginTest
     public void testLong() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-long.yml"));
+            tester.run(convertPath("/mysql/yml/input-long.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -180,7 +180,7 @@ public class MySQLInputPluginTest
     public void testDouble() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-double.yml"));
+            tester.run(convertPath("/mysql/yml/input-double.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -193,7 +193,7 @@ public class MySQLInputPluginTest
     public void testTimestamp1() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-timestamp1.yml"));
+            tester.run(convertPath("/mysql/yml/input-timestamp1.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015/06/04 14:45:06,,",
@@ -206,7 +206,7 @@ public class MySQLInputPluginTest
     public void testTimestamp2() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-timestamp2.yml"));
+            tester.run(convertPath("/mysql/yml/input-timestamp2.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015/06/04 23:45:06,,",
@@ -219,7 +219,7 @@ public class MySQLInputPluginTest
     public void testTimestamp3() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-timestamp3.yml"));
+            tester.run(convertPath("/mysql/yml/input-timestamp3.yml"));
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015/06/04 23:45:06,,",
@@ -232,7 +232,7 @@ public class MySQLInputPluginTest
     public void testValueTypeString() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-valuetype-string.yml"));
+            tester.run(convertPath("/mysql/yml/input-valuetype-string.yml"));
             assertEquals(Arrays.asList(
                     "c1",
                     "18446744073709551615"),
@@ -244,7 +244,7 @@ public class MySQLInputPluginTest
     public void testValueTypeDecimal() throws Exception
     {
         if (prepared) {
-            tester.run(convertPath("/yml/input-valuetype-decimal.yml"));
+            tester.run(convertPath("/mysql/yml/input-valuetype-decimal.yml"));
             assertEquals(Arrays.asList(
                     "c1",
                     "1.8446744073709552E19"),
