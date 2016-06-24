@@ -186,7 +186,7 @@ public abstract class AbstractJdbcInputPlugin
         return new Schema(columns.build());
     }
 
-    private String getQuery(PluginTask task, JdbcInputConnection con)
+    private String getQuery(PluginTask task, JdbcInputConnection con) throws SQLException
     {
         if (task.getQuery().isPresent()) {
             if (task.getTable().isPresent() || task.getSelect().isPresent() ||
@@ -310,8 +310,23 @@ public abstract class AbstractJdbcInputPlugin
 
     private static JdbcColumnOption columnOptionOf(Map<String, JdbcColumnOption> columnOptions, Map<String, JdbcColumnOption> defaultColumnOptions, JdbcColumn targetColumn, String targetColumnSQLType)
     {
+        JdbcColumnOption columnOption = columnOptions.get(targetColumn.getName());
+        if (columnOption == null) {
+            String foundName = null;
+            for (Map.Entry<String, JdbcColumnOption> entry : columnOptions.entrySet()) {
+                if (entry.getKey().equalsIgnoreCase(targetColumn.getName())) {
+                    if (columnOption != null) {
+                        throw new ConfigException(String.format("Cannot specify column '%s' because both '%s' and '%s' exist in column_options.",
+                                targetColumn.getName(), foundName, entry.getKey()));
+                    }
+                    foundName = entry.getKey();
+                    columnOption = entry.getValue();
+                }
+            }
+        }
+
         return Optional
-                .fromNullable(columnOptions.get(targetColumn.getName()))
+                .fromNullable(columnOption)
                 .or(Optional.fromNullable(defaultColumnOptions.get(targetColumnSQLType)))
                 .or(
                     // default column option

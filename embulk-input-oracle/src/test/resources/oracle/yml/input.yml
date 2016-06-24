@@ -1,0 +1,20 @@
+in:
+  type: oracle
+  host: localhost
+  database: TESTDB
+  user: TEST_USER
+  password: test_pw
+  table: TEST1
+  select: "C1, C2, C3, C4, C5, C6, C7"
+  order_by: C1
+
+out:
+  type: file
+  path_prefix: oracle-input
+  file_ext: csv
+  formatter:
+    type: csv
+    column_options:
+      C5: {format: '%Y-%m-%d', timezone: '+0900'}
+      C6: {format: '%Y-%m-%d %H:%M:%S', timezone: '+0900'}
+      C7: {format: '%Y-%m-%d %H:%M:%S.%3N', timezone: '+0900'}
