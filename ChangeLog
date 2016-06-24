@@ -1,3 +1,7 @@
+Release 0.7.2 - 2016-06-24
+
+* Case insensitive for table names and column names.
+
 Release 0.7.1 - 2016-05-07
 
 * Running after_select after pageBuilder#finish because some output plugins do significant works in the method that may throw exceptions.
