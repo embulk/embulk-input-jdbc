@@ -77,6 +77,8 @@ in:
   host: localhost
   user: myuser
   password: ""
+  port: 443
+  jdbcopts: ?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory
   database: my_database
   table: "my_table"
   select: "col1, col2, col3"
