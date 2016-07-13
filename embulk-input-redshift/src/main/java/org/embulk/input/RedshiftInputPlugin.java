@@ -39,6 +39,10 @@ public class RedshiftInputPlugin
         @Config("schema")
         @ConfigDefault("\"public\"")
         public String getSchema();
+
+        @Config("jdbcopts")
+        @ConfigDefault("\"\"")
+        public String getJdbcopts();
     }
 
     @Override
@@ -52,8 +56,8 @@ public class RedshiftInputPlugin
     {
         RedshiftPluginTask t = (RedshiftPluginTask) task;
 
-        String url = String.format("jdbc:postgresql://%s:%d/%s",
-                t.getHost(), t.getPort(), t.getDatabase());
+        String url = String.format("jdbc:postgresql://%s:%d/%s%s",
+                t.getHost(), t.getPort(), t.getDatabase(), t.getJdbcopts());
 
         Properties props = new Properties();
         props.setProperty("user", t.getUser());
