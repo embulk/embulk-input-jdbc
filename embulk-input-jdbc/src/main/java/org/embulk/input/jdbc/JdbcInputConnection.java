@@ -13,6 +13,9 @@ import org.embulk.config.ConfigException;
 import org.embulk.spi.Exec;
 import org.slf4j.Logger;
 
+import java.util.List;
+import java.util.Map;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -157,7 +160,7 @@ public class JdbcInputConnection
 
     public String buildSelectQuery(String tableName,
             Optional<String> selectColumnList, Optional<String> whereCondition,
-            Optional<String> orderByColumn) throws SQLException
+            Optional<String> orderByColumn, Optional<List<String>> incrementalColumn, Optional<Map<String, String>> lastRecord) throws SQLException
     {
         String actualTableName;
         if (tableExists(tableName)) {
@@ -187,35 +190,69 @@ public class JdbcInputConnection
         sb.append(selectColumnList.or("*"));
         sb.append(" FROM ").append(buildTableName(actualTableName));
 
-        if (whereCondition.isPresent()) {
-            sb.append(" WHERE ").append(whereCondition.get());
+        if (whereCondition.isPresent() || incrementalColumn.isPresent()) {
+            sb.append(" WHERE ");
+            if (incrementalColumn.isPresent() && lastRecord.isPresent()) {
+                for (int i = 0; i < incrementalColumn.get().size(); i++) {
+                    String column = incrementalColumn.get().get(i);
+                    sb.append(column).append( " > \"");
+                    sb.append(lastRecord.get().get(column).replace("\"", "\\\""));
+                    sb.append("\"");
+                    if (i < incrementalColumn.get().size() - 1) {
+                        sb.append(" AND ");
+                    }
+                }
+            }
+            if (whereCondition.isPresent()) {
+                if (lastRecord.isPresent()) {
+                    sb.append(" AND ");
+                }
+                sb.append(whereCondition.get());
+            }
         }
 
-        if (orderByColumn.isPresent()) {
-            String actualOrderByColumn;
-            Set<String> columnNames = getColumnNames(actualTableName);
-            if (columnNames.contains(orderByColumn.get())) {
-                actualOrderByColumn = orderByColumn.get();
-            } else {
-                String upperOrderByColumn = orderByColumn.get().toUpperCase();
-                String lowerOrderByColumn = orderByColumn.get().toLowerCase();
-                if (columnNames.contains(upperOrderByColumn)) {
-                    if (columnNames.contains(lowerOrderByColumn)) {
-                        throw new ConfigException(String.format("Cannot specify order-by colum '%s' because both '%s' and '%s' exist.",
-                                orderByColumn.get(), upperOrderByColumn, lowerOrderByColumn));
-                    } else {
-                        actualOrderByColumn = upperOrderByColumn;
-                    }
+        if (orderByColumn.isPresent() || incrementalColumn.isPresent()) {
+            String actualOrderByColumn = null;
+            if (orderByColumn.isPresent()) {
+                Set<String> columnNames = getColumnNames(actualTableName);
+                if (columnNames.contains(orderByColumn.get())) {
+                    actualOrderByColumn = orderByColumn.get();
                 } else {
-                    if (columnNames.contains(lowerOrderByColumn)) {
-                        actualOrderByColumn = lowerOrderByColumn;
+                    String upperOrderByColumn = orderByColumn.get().toUpperCase();
+                    String lowerOrderByColumn = orderByColumn.get().toLowerCase();
+                    if (columnNames.contains(upperOrderByColumn)) {
+                        if (columnNames.contains(lowerOrderByColumn)) {
+                            throw new ConfigException(String.format("Cannot specify order-by colum '%s' because both '%s' and '%s' exist.",
+                                    orderByColumn.get(), upperOrderByColumn, lowerOrderByColumn));
+                        } else {
+                            actualOrderByColumn = upperOrderByColumn;
+                        }
                     } else {
-                        actualOrderByColumn = orderByColumn.get();
+                        if (columnNames.contains(lowerOrderByColumn)) {
+                            actualOrderByColumn = lowerOrderByColumn;
+                        } else {
+                            actualOrderByColumn = orderByColumn.get();
+                        }
                     }
                 }
             }
 
-            sb.append("ORDER BY ").append(quoteIdentifierString(actualOrderByColumn)).append(" ASC");
+            sb.append(" ORDER BY ");
+            if (incrementalColumn.isPresent()) {
+                for (int i = 0; i < incrementalColumn.get().size(); i++) {
+                    String column = incrementalColumn.get().get(i);
+                    sb.append(quoteIdentifierString(column)).append(" ASC");
+                    if (i < incrementalColumn.get().size() - 1) {
+                        sb.append(", ");
+                    }
+                }
+            }
+            if (orderByColumn.isPresent() && actualOrderByColumn != null) {
+                if (lastRecord.isPresent()) {
+                    sb.append(", ");
+                }
+                sb.append(quoteIdentifierString(actualOrderByColumn)).append(" ASC");
+            }
         }
 
         return sb.toString();

@@ -1,5 +1,6 @@
 package org.embulk.input.jdbc;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.nio.file.Paths;
@@ -66,10 +67,14 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("null")
         public Optional<String> getOrderBy();
 
-        //// TODO See bellow.
-        //@Config("last_value")
-        //@ConfigDefault("null")
-        //public Optional<String> getLastValue();
+        @Config("incremental_column")
+        @ConfigDefault("null")
+        public Optional<List<String>> getIncrementalColumn();
+
+        @Config("last_record")
+        @ConfigDefault("null")
+        public Optional<Map<String, String>> getLastRecord();
+        public void setLastRecord(Optional<Map<String, String>> lastRecord);
 
         // TODO limit_value is necessary to make sure repeated bulk load transactions
         //      don't a same record twice or miss records when the column
@@ -149,10 +154,6 @@ public abstract class AbstractJdbcInputPlugin
     {
         PluginTask task = config.loadConfig(getTaskClass());
 
-        //if (task.getLastValue().isPresent() && !task.getOrderBy().isPresent()) {
-        //    throw new ConfigException("order_by parameter must be set if last_value parameter is set");
-        //}
-
         Schema schema;
         try (JdbcInputConnection con = newConnection(task)) {
             schema = setupTask(con, task);
@@ -192,11 +193,13 @@ public abstract class AbstractJdbcInputPlugin
             if (task.getTable().isPresent() || task.getSelect().isPresent() ||
                     task.getWhere().isPresent() || task.getOrderBy().isPresent()) {
                 throw new ConfigException("'table', 'select', 'where' and 'order_by' parameters are unnecessary if 'query' parameter is set.");
+            } else if (task.getIncrementalColumn().isPresent() || task.getLastRecord().isPresent()) {
+                throw new ConfigException("'incremental_column', 'last_record' parameters couldn't be used if 'query' parameter is set.");
             }
             return task.getQuery().get();
         } else if (task.getTable().isPresent()) {
             return con.buildSelectQuery(task.getTable().get(), task.getSelect(),
-                    task.getWhere(), task.getOrderBy());
+                    task.getWhere(), task.getOrderBy(), task.getIncrementalColumn(), task.getLastRecord());
         } else {
             throw new ConfigException("'table' parameter is required (if 'query' parameter is not set)");
         }
@@ -224,12 +227,9 @@ public abstract class AbstractJdbcInputPlugin
     protected ConfigDiff buildNextConfigDiff(PluginTask task, List<TaskReport> reports)
     {
         ConfigDiff next = Exec.newConfigDiff();
-        // TODO
-        //if (task.getOrderBy().isPresent()) {
-        //    // TODO when parallel execution is implemented, calculate the max last_value
-        //    //      from the all commit reports.
-        //    next.set("last_value", reports.get(0).get(JsonNode.class, "last_value"));
-        //}
+        if (reports.size() > 0 && reports.get(0).has("last_record")) {
+            next.set("last_record", reports.get(0).get(Map.class, "last_record"));
+        }
         return next;
     }
 
@@ -258,7 +258,7 @@ public abstract class AbstractJdbcInputPlugin
                 while (true) {
                     // TODO run fetch() in another thread asynchronously
                     // TODO retry fetch() if it failed (maybe order_by is required and unique_column(s) option is also required)
-                    boolean cont = fetch(cursor, getters, pageBuilder);
+                    boolean cont = fetch(cursor, getters, pageBuilder, task);
                     if (!cont) {
                         break;
                     }
@@ -284,10 +284,9 @@ public abstract class AbstractJdbcInputPlugin
         }
 
         TaskReport report = Exec.newTaskReport();
-        // TODO
-        //if (orderByColumn != null) {
-        //    report.set("last_value", lastValue);
-        //}
+        if (task.getIncrementalColumn() != null) {
+            report.set("last_record", task.getLastRecord().get());
+        }
         return report;
     }
 
@@ -340,20 +339,26 @@ public abstract class AbstractJdbcInputPlugin
     }
 
     private boolean fetch(BatchSelect cursor,
-            List<ColumnGetter> getters, PageBuilder pageBuilder) throws SQLException
+            List<ColumnGetter> getters, PageBuilder pageBuilder, PluginTask task) throws SQLException
     {
         ResultSet result = cursor.fetch();
         if (result == null || !result.next()) {
             return false;
         }
 
+        Map<String, String> temporaryLastRecord = new HashMap<>();
+        Map<String, String> lastRecord = new HashMap<>();
+
         List<Column> columns = pageBuilder.getSchema().getColumns();
         long rows = 0;
         long reportRows = 500;
         do {
+            temporaryLastRecord.clear();
             for (int i=0; i < getters.size(); i++) {
                 int index = i + 1;  // JDBC column index begins from 1
                 getters.get(i).getAndSet(result, index, columns.get(i));
+                String k = columns.get(i).getName();
+                temporaryLastRecord.put(k, result.getString(index));
             }
             pageBuilder.addRecord();
             rows++;
@@ -362,6 +367,16 @@ public abstract class AbstractJdbcInputPlugin
                 reportRows *= 2;
             }
         } while (result.next());
+
+        if (task.getIncrementalColumn().isPresent()) {
+            for (String key : task.getIncrementalColumn().get()) {
+                if (temporaryLastRecord.containsKey(key)) {
+                    lastRecord.put(key, temporaryLastRecord.get(key));
+                }
+            }
+            task.setLastRecord(Optional.of(lastRecord));
+        }
+
         return true;
     }
 
