@@ -159,8 +159,8 @@ public class JdbcInputConnection
     }
 
     public String buildSelectQuery(String tableName,
-            Optional<String> selectColumnList, Optional<String> whereCondition,
-            Optional<String> orderByColumn, Optional<List<String>> incrementalColumn, Optional<Map<String, String>> lastRecord) throws SQLException
+            Optional<String> selectExpression, Optional<String> whereCondition, Optional<String> orderByExpression,
+            Optional<List<String>> incrementalColumn, Optional<Map<String, String>> lastRecord) throws SQLException
     {
         String actualTableName;
         if (tableExists(tableName)) {
@@ -187,7 +187,7 @@ public class JdbcInputConnection
         StringBuilder sb = new StringBuilder();
 
         sb.append("SELECT ");
-        sb.append(selectColumnList.or("*"));
+        sb.append(selectExpression.or("*"));
         sb.append(" FROM ").append(buildTableName(actualTableName));
 
         if (whereCondition.isPresent() || incrementalColumn.isPresent()) {
@@ -253,6 +253,9 @@ public class JdbcInputConnection
                 }
                 sb.append(quoteIdentifierString(actualOrderByColumn)).append(" ASC");
             }
+        }
+        if (orderByExpression.isPresent()) {
+            sb.append("ORDER BY ").append(orderByExpression.get());
         }
 
         return sb.toString();

@@ -21,9 +21,9 @@ Oracle input plugins for Embulk loads records from Oracle.
   - **query**: SQL to run (string)
 - If **query** is not set,
   - **table**: destination table name (string, required)
-  - **select**: comma-separated list of columns to select (string, default: "*")
+  - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
-  - **order_by**: name of the column that rows are sorted by (string, default: not sorted)
+  - **order_by**: expression of ORDER BY to sort rows (e.g. `created_at DESC, id ASC`) (string, default: not sorted)
 - **fetch_rows**: number of rows to fetch one time (used for java.sql.Statement#setFetchSize) (integer, default: 10000)
 - **connect_timeout**: timeout for establishment of a database connection. (integer (seconds), default: 300)
 - **socket_timeout**: timeout for socket read operations. (integer (seconds), default: 1800)
