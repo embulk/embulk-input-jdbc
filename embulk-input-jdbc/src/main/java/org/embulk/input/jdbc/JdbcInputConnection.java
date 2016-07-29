@@ -160,7 +160,7 @@ public class JdbcInputConnection
 
     public String buildSelectQuery(String tableName,
             Optional<String> selectExpression, Optional<String> whereCondition, Optional<String> orderByExpression,
-            Optional<List<String>> incrementalColumn, Optional<Map<String, String>> lastRecord) throws SQLException
+            List<String> incrementalColumns, Optional<Map<String, String>> lastRecord) throws SQLException
     {
         String actualTableName;
         if (tableExists(tableName)) {
@@ -190,15 +190,15 @@ public class JdbcInputConnection
         sb.append(selectExpression.or("*"));
         sb.append(" FROM ").append(buildTableName(actualTableName));
 
-        if (whereCondition.isPresent() || incrementalColumn.isPresent()) {
+        if (whereCondition.isPresent() || incrementalColumns.isPresent()) {
             sb.append(" WHERE ");
-            if (incrementalColumn.isPresent() && lastRecord.isPresent()) {
-                for (int i = 0; i < incrementalColumn.get().size(); i++) {
-                    String column = incrementalColumn.get().get(i);
+            if (incrementalColumns.isPresent() && lastRecord.isPresent()) {
+                for (int i = 0; i < incrementalColumns.get().size(); i++) {
+                    String column = incrementalColumns.get().get(i);
                     sb.append(column).append( " > \"");
                     sb.append(lastRecord.get().get(column).replace("\"", "\\\""));
                     sb.append("\"");
-                    if (i < incrementalColumn.get().size() - 1) {
+                    if (i < incrementalColumns.get().size() - 1) {
                         sb.append(" AND ");
                     }
                 }
@@ -211,7 +211,7 @@ public class JdbcInputConnection
             }
         }
 
-        if (orderByColumn.isPresent() || incrementalColumn.isPresent()) {
+        if (orderByColumn.isPresent() || !incrementalColumns.isEmpty()) {
             String actualOrderByColumn = null;
             if (orderByColumn.isPresent()) {
                 Set<String> columnNames = getColumnNames(actualTableName);
@@ -238,13 +238,11 @@ public class JdbcInputConnection
             }
 
             sb.append(" ORDER BY ");
-            if (incrementalColumn.isPresent()) {
-                for (int i = 0; i < incrementalColumn.get().size(); i++) {
-                    String column = incrementalColumn.get().get(i);
-                    sb.append(quoteIdentifierString(column)).append(" ASC");
-                    if (i < incrementalColumn.get().size() - 1) {
-                        sb.append(", ");
-                    }
+            for (int i = 0; i < incrementalColumns.size(); i++) {
+                String column = incrementalColumns.get(i);
+                sb.append(quoteIdentifierString(column)).append(" ASC");
+                if (i < incrementalColumns.size() - 1) {
+                    sb.append(", ");
                 }
             }
             if (orderByColumn.isPresent() && actualOrderByColumn != null) {

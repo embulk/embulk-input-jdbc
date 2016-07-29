@@ -67,9 +67,9 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("null")
         public Optional<String> getOrderBy();
 
-        @Config("incremental_column")
-        @ConfigDefault("null")
-        public Optional<List<String>> getIncrementalColumn();
+        @Config("incremental_columns")
+        @ConfigDefault("[]")
+        public List<String> getIncrementalColumns();
 
         @Config("last_record")
         @ConfigDefault("null")
@@ -193,13 +193,13 @@ public abstract class AbstractJdbcInputPlugin
             if (task.getTable().isPresent() || task.getSelect().isPresent() ||
                     task.getWhere().isPresent() || task.getOrderBy().isPresent()) {
                 throw new ConfigException("'table', 'select', 'where' and 'order_by' parameters are unnecessary if 'query' parameter is set.");
-            } else if (task.getIncrementalColumn().isPresent() || task.getLastRecord().isPresent()) {
-                throw new ConfigException("'incremental_column', 'last_record' parameters couldn't be used if 'query' parameter is set.");
+            } else if (!task.getIncrementalColumns().isEmpty() || task.getLastRecord().isPresent()) {
+                throw new ConfigException("'incremental_columns' and 'last_record' parameters are not supported if 'query' parameter is set.");
             }
             return task.getQuery().get();
         } else if (task.getTable().isPresent()) {
             return con.buildSelectQuery(task.getTable().get(), task.getSelect(),
-                    task.getWhere(), task.getOrderBy(), task.getIncrementalColumn(), task.getLastRecord());
+                    task.getWhere(), task.getOrderBy(), task.getIncrementalColumns(), task.getLastRecord());
         } else {
             throw new ConfigException("'table' parameter is required (if 'query' parameter is not set)");
         }
@@ -284,7 +284,7 @@ public abstract class AbstractJdbcInputPlugin
         }
 
         TaskReport report = Exec.newTaskReport();
-        if (task.getIncrementalColumn() != null) {
+        if (!task.getIncrementalColumns().isEmpty()) {
             report.set("last_record", task.getLastRecord().get());
         }
         return report;
@@ -368,8 +368,8 @@ public abstract class AbstractJdbcInputPlugin
             }
         } while (result.next());
 
-        if (task.getIncrementalColumn().isPresent()) {
-            for (String key : task.getIncrementalColumn().get()) {
+        if (!task.getIncrementalColumns()) {
+            for (String key : task.getIncrementalColumns().get()) {
                 if (temporaryLastRecord.containsKey(key)) {
                     lastRecord.put(key, temporaryLastRecord.get(key));
                 }
