@@ -192,7 +192,7 @@ public class JdbcInputConnection
         }
 
         if (orderByExpression.isPresent()) {
-            sb.append("ORDER BY ").append(orderByExpression.get());
+            sb.append(" ORDER BY ").append(orderByExpression.get());
         }
 
         return sb.toString();
