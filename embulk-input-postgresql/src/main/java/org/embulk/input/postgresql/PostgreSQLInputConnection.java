@@ -1,5 +1,6 @@
 package org.embulk.input.postgresql;
 
+import java.util.List;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,9 +21,24 @@ public class PostgreSQLInputConnection
     }
 
     @Override
-    protected CursorSelect newBatchSelect(String select, int fetchRows, int queryTimeout) throws SQLException
+    protected CursorSelect newBatchSelect(String select, List<Number> placeHolderValues,
+            int fetchRows, int queryTimeout) throws SQLException
     {
-        executeUpdate("DECLARE cur NO SCROLL CURSOR FOR "+select);
+        String sql = "DECLARE cur NO SCROLL CURSOR FOR " + select;
+
+        logger.info("SQL: " + sql);
+        if (!placeHolderValues.isEmpty()) {
+            logger.info("Parameters: {}", placeHolderValues);
+        }
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        try {
+            for (int i = 0; i < placeHolderValues.size(); i++) {
+                stmt.setObject(i + 1, placeHolderValues.get(i));
+            }
+            stmt.executeUpdate();
+        } finally {
+            stmt.close();
+        }
 
         String fetchSql = "FETCH FORWARD "+fetchRows+" FROM cur";
         // Because socketTimeout is set in Connection, don't need to set quertyTimeout.

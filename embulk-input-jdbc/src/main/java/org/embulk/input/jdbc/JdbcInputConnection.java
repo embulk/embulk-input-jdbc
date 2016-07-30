@@ -14,12 +14,11 @@ import org.embulk.spi.Exec;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.Map;
+import static java.util.Locale.ENGLISH;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 
 public class JdbcInputConnection
         implements AutoCloseable
@@ -60,6 +59,20 @@ public class JdbcInputConnection
         }
     }
 
+    public List<String> getPrimaryKeys(String tableName) throws SQLException
+    {
+        ResultSet rs = databaseMetaData.getPrimaryKeys(null, schemaName, tableName);
+        ImmutableList.Builder<String> builder = ImmutableList.builder();
+        try {
+            while(rs.next()) {
+                builder.add(rs.getString("COLUMN_NAME"));
+            }
+        } finally {
+            rs.close();
+        }
+        return builder.build();
+    }
+
     protected JdbcSchema getSchemaOfResultMetadata(ResultSetMetaData metadata) throws SQLException
     {
         ImmutableList.Builder<JdbcColumn> columns = ImmutableList.builder();
@@ -75,16 +88,25 @@ public class JdbcInputConnection
         return new JdbcSchema(columns.build());
     }
 
-    public BatchSelect newSelectCursor(String query, int fetchRows, int queryTimeout) throws SQLException
+    public BatchSelect newSelectCursor(String query, List<Number> placeHolderValues,
+            int fetchRows, int queryTimeout) throws SQLException
     {
-        return newBatchSelect(query, fetchRows, queryTimeout);
+        return newBatchSelect(query, placeHolderValues, fetchRows, queryTimeout);
     }
 
-    protected BatchSelect newBatchSelect(String query, int fetchRows, int queryTimeout) throws SQLException
+    protected BatchSelect newBatchSelect(String query, List<Number> placeHolderValues,
+            int fetchRows, int queryTimeout) throws SQLException
     {
         PreparedStatement stmt = connection.prepareStatement(query);
         stmt.setFetchSize(fetchRows);
         stmt.setQueryTimeout(queryTimeout);
+        logger.info("SQL: " + query);
+        if (!placeHolderValues.isEmpty()) {
+            logger.info("Parameters: {}", placeHolderValues);
+        }
+        for (int i = 0; i < placeHolderValues.size(); i++) {
+            stmt.setObject(i + 1, placeHolderValues.get(i));
+        }
         return new SingleSelect(stmt);
     }
 
@@ -159,107 +181,68 @@ public class JdbcInputConnection
     }
 
     public String buildSelectQuery(String tableName,
-            Optional<String> selectExpression, Optional<String> whereCondition, Optional<String> orderByExpression,
-            List<String> incrementalColumns, Optional<Map<String, String>> lastRecord) throws SQLException
+            Optional<String> selectExpression, Optional<String> whereCondition,
+            Optional<String> orderByExpression) throws SQLException
     {
-        String actualTableName;
-        if (tableExists(tableName)) {
-            actualTableName = tableName;
-        } else {
-            String upperTableName = tableName.toUpperCase();
-            String lowerTableName = tableName.toLowerCase();
-            if (tableExists(upperTableName)) {
-                if (tableExists(lowerTableName)) {
-                    throw new ConfigException(String.format("Cannot specify table '%s' because both '%s' and '%s' exist.",
-                            tableName, upperTableName, lowerTableName));
-                } else {
-                    actualTableName = upperTableName;
-                }
-            } else {
-                if (tableExists(lowerTableName)) {
-                    actualTableName = lowerTableName;
-                } else {
-                    actualTableName = tableName;
-                }
-            }
-        }
-
         StringBuilder sb = new StringBuilder();
 
         sb.append("SELECT ");
         sb.append(selectExpression.or("*"));
-        sb.append(" FROM ").append(buildTableName(actualTableName));
+        sb.append(" FROM ").append(buildTableName(tableName));
 
-        if (whereCondition.isPresent() || incrementalColumns.isPresent()) {
-            sb.append(" WHERE ");
-            if (incrementalColumns.isPresent() && lastRecord.isPresent()) {
-                for (int i = 0; i < incrementalColumns.get().size(); i++) {
-                    String column = incrementalColumns.get().get(i);
-                    sb.append(column).append( " > \"");
-                    sb.append(lastRecord.get().get(column).replace("\"", "\\\""));
-                    sb.append("\"");
-                    if (i < incrementalColumns.get().size() - 1) {
-                        sb.append(" AND ");
-                    }
-                }
-            }
-            if (whereCondition.isPresent()) {
-                if (lastRecord.isPresent()) {
-                    sb.append(" AND ");
-                }
-                sb.append(whereCondition.get());
-            }
+        if (whereCondition.isPresent()) {
+            sb.append(" WHERE ").append(whereCondition.get());
         }
 
-        if (orderByColumn.isPresent() || !incrementalColumns.isEmpty()) {
-            String actualOrderByColumn = null;
-            if (orderByColumn.isPresent()) {
-                Set<String> columnNames = getColumnNames(actualTableName);
-                if (columnNames.contains(orderByColumn.get())) {
-                    actualOrderByColumn = orderByColumn.get();
-                } else {
-                    String upperOrderByColumn = orderByColumn.get().toUpperCase();
-                    String lowerOrderByColumn = orderByColumn.get().toLowerCase();
-                    if (columnNames.contains(upperOrderByColumn)) {
-                        if (columnNames.contains(lowerOrderByColumn)) {
-                            throw new ConfigException(String.format("Cannot specify order-by colum '%s' because both '%s' and '%s' exist.",
-                                    orderByColumn.get(), upperOrderByColumn, lowerOrderByColumn));
-                        } else {
-                            actualOrderByColumn = upperOrderByColumn;
-                        }
-                    } else {
-                        if (columnNames.contains(lowerOrderByColumn)) {
-                            actualOrderByColumn = lowerOrderByColumn;
-                        } else {
-                            actualOrderByColumn = orderByColumn.get();
-                        }
-                    }
-                }
-            }
-
-            sb.append(" ORDER BY ");
-            for (int i = 0; i < incrementalColumns.size(); i++) {
-                String column = incrementalColumns.get(i);
-                sb.append(quoteIdentifierString(column)).append(" ASC");
-                if (i < incrementalColumns.size() - 1) {
-                    sb.append(", ");
-                }
-            }
-            if (orderByColumn.isPresent() && actualOrderByColumn != null) {
-                if (lastRecord.isPresent()) {
-                    sb.append(", ");
-                }
-                sb.append(quoteIdentifierString(actualOrderByColumn)).append(" ASC");
-            }
-        }
         if (orderByExpression.isPresent()) {
-            sb.append("ORDER BY ").append(orderByExpression.get());
+            sb.append(" ORDER BY ").append(orderByExpression.get());
         }
 
         return sb.toString();
     }
 
-    private boolean tableExists(String tableName) throws SQLException
+    public String buildIncrementalQuery(String rawQuery, List<String> incrementalColumns,
+            boolean generateIncrementalPlaceHolders) throws SQLException
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("SELECT * FROM (");
+        sb.append(truncateStatementDelimiter(rawQuery));
+        sb.append(") embulk_incremental_");
+        if (generateIncrementalPlaceHolders) {
+            sb.append(" WHERE ");
+            boolean first = true;
+            for (String column : incrementalColumns) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(" AND ");
+                }
+                sb.append(quoteIdentifierString(column));
+                sb.append(" > ?");
+            }
+        }
+        sb.append(" ORDER BY ");
+
+        boolean first = true;
+        for (String column : incrementalColumns) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(quoteIdentifierString(column));
+        }
+
+        return sb.toString();
+    }
+
+    protected String truncateStatementDelimiter(String rawQuery) throws SQLException
+    {
+        return rawQuery.replaceAll(";\\s*$", "");
+    }
+
+    public boolean tableExists(String tableName) throws SQLException
     {
         try (ResultSet rs = connection.getMetaData().getTables(null, schemaName, tableName, null)) {
             return rs.next();
@@ -268,7 +251,7 @@ public class JdbcInputConnection
 
     private Set<String> getColumnNames(String tableName) throws SQLException
     {
-        Builder<String> columnNamesBuilder = ImmutableSet.builder();
+        ImmutableSet.Builder<String> columnNamesBuilder = ImmutableSet.builder();
         try (ResultSet rs = connection.getMetaData().getColumns(null, schemaName, tableName, null)) {
             while (rs.next()) {
                 columnNamesBuilder.add(rs.getString("COLUMN_NAME"));

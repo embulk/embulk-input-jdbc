@@ -1,6 +1,5 @@
 package org.embulk.input.jdbc;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.nio.file.Paths;
@@ -13,6 +12,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import org.embulk.config.Config;
 import org.embulk.config.ConfigException;
@@ -26,6 +26,7 @@ import org.embulk.config.TaskSource;
 import org.embulk.plugin.PluginClassLoader;
 import org.embulk.spi.BufferAllocator;
 import org.embulk.spi.Column;
+import org.embulk.spi.DataException;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.InputPlugin;
 import org.embulk.spi.PageOutput;
@@ -35,6 +36,8 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.JdbcInputConnection.BatchSelect;
 import org.joda.time.DateTimeZone;
+
+import static java.util.Locale.ENGLISH;
 
 public abstract class AbstractJdbcInputPlugin
         implements InputPlugin
@@ -50,6 +53,7 @@ public abstract class AbstractJdbcInputPlugin
         @Config("table")
         @ConfigDefault("null")
         public Optional<String> getTable();
+        public void setTable(Optional<String> normalizedTableName);
 
         @Config("query")
         @ConfigDefault("null")
@@ -67,14 +71,19 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("null")
         public Optional<String> getOrderBy();
 
+        @Config("incremental")
+        @ConfigDefault("false")
+        public boolean getIncremental();
+
         @Config("incremental_columns")
         @ConfigDefault("[]")
         public List<String> getIncrementalColumns();
+        public void setIncrementalColumns(List<String> indexes);
 
         @Config("last_record")
         @ConfigDefault("null")
-        public Optional<Map<String, String>> getLastRecord();
-        public void setLastRecord(Optional<Map<String, String>> lastRecord);
+        public Optional<Map<String, Number>> getLastRecord();
+        public void setLastRecord(Optional<Map<String, Number>> lastRecord);
 
         // TODO limit_value is necessary to make sure repeated bulk load transactions
         //      don't a same record twice or miss records when the column
@@ -133,8 +142,17 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("null")
         public Optional<String> getAfterSelect();
 
+        public String getBuiltQuery();
+        public void setBuiltQuery(String query);
+
         public JdbcSchema getQuerySchema();
         public void setQuerySchema(JdbcSchema schema);
+
+        public List<Integer> getIncrementalColumnIndexes();
+        public void setIncrementalColumnIndexes(List<Integer> indexes);
+
+        public List<Number> getPlaceHolderValues();
+        public void setPlaceHolderValues(List<Number> values);
 
         @ConfigInject
         public BufferAllocator getBufferAllocator();
@@ -154,8 +172,20 @@ public abstract class AbstractJdbcInputPlugin
     {
         PluginTask task = config.loadConfig(getTaskClass());
 
+        if (task.getIncremental()) {
+            if (task.getOrderBy().isPresent()) {
+                throw new ConfigException("order_by option must not be set if incremental is true");
+            }
+        }
+        else {
+            if (!task.getIncrementalColumns().isEmpty()) {
+                throw new ConfigException("'incremental: true' must be set if incremental_columns is set");
+            }
+        }
+
         Schema schema;
         try (JdbcInputConnection con = newConnection(task)) {
+            // TODO incremental_columns is not set => get primary key
             schema = setupTask(con, task);
         } catch (SQLException ex) {
             throw Throwables.propagate(ex);
@@ -166,11 +196,74 @@ public abstract class AbstractJdbcInputPlugin
 
     private Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
     {
+        if (task.getTable().isPresent()) {
+            String actualTableName = normalizeTableNameCase(con, task.getTable().get());
+            task.setTable(Optional.of(actualTableName));
+        }
+
         // build SELECT query and gets schema of its result
         String query = getQuery(task, con);
-        logger.info("SQL: " + query);
+
         JdbcSchema querySchema = con.getSchemaOfQuery(query);
         task.setQuerySchema(querySchema);
+        // query schema should not change after incremental query
+
+        String builtQuery;
+        if (task.getIncremental()) {
+            // build incremental query
+
+            List<String> incrementalColumns = task.getIncrementalColumns();
+            if (incrementalColumns.isEmpty()) {
+                // incremental_columns is not set
+                if (!task.getTable().isPresent()) {
+                    throw new ConfigException("incremental_columns option must be set if incremental is true and custom query option is set");
+                }
+                // get primary keys from the target table to use them as incremental_columns
+                List<String> primaryKeys = con.getPrimaryKeys(task.getTable().get());
+                if (primaryKeys.isEmpty()) {
+                    throw new ConfigException(String.format(ENGLISH,
+                                "Primary key is not available at the table '%s'. incremental_columns option must be set",
+                                task.getTable().get()));
+                }
+                logger.info("Using primary keys as incremental_columns: {}", primaryKeys);
+                task.setIncrementalColumns(primaryKeys);
+                incrementalColumns = primaryKeys;
+            }
+            List<Integer> incrementalColumnIndexes = findIncrementalColumnIndexes(querySchema, incrementalColumns);
+            List<String> normalizedIncrementalColumns = normalizeColumnNameCases(querySchema, incrementalColumnIndexes);
+            task.setIncrementalColumnIndexes(incrementalColumnIndexes);
+
+            if (task.getLastRecord().isPresent()) {
+                Map<String, Number> lastRecord = task.getLastRecord().get();
+                ImmutableList.Builder<Number> placeHolderValues = ImmutableList.builder();
+                for (String column : incrementalColumns) {
+                    if (!lastRecord.containsKey(column)) {
+                        throw new ConfigException(String.format(ENGLISH,
+                                    "incremental_columns includes column '%s' but last_record doesn't include it",
+                                    column));
+                    }
+                    Number value = lastRecord.get(column);
+                    if (value == null) {
+                        throw new ConfigException("last_record option must not include null");
+                    }
+                    placeHolderValues.add(value);
+                }
+                builtQuery = con.buildIncrementalQuery(query, normalizedIncrementalColumns, true);
+                task.setPlaceHolderValues(placeHolderValues.build());
+            }
+            else {
+                builtQuery = con.buildIncrementalQuery(query, normalizedIncrementalColumns, false);
+                task.setPlaceHolderValues(ImmutableList.<Number>of());
+            }
+        }
+        else {
+            builtQuery = query;
+            task.setIncrementalColumnIndexes(ImmutableList.<Integer>of());
+            task.setPlaceHolderValues(ImmutableList.<Number>of());
+        }
+
+        task.setBuiltQuery(builtQuery);
+        logger.info("SQL: " + builtQuery);
 
         // validate column_options
         newColumnGetters(task, querySchema, null);
@@ -187,6 +280,57 @@ public abstract class AbstractJdbcInputPlugin
         return new Schema(columns.build());
     }
 
+    private String normalizeTableNameCase(JdbcInputConnection con, String tableName)
+        throws SQLException
+    {
+        if (con.tableExists(tableName)) {
+            return tableName;
+        } else {
+            String upperTableName = tableName.toUpperCase();
+            String lowerTableName = tableName.toLowerCase();
+            boolean upperExists = con.tableExists(upperTableName);
+            boolean lowerExists = con.tableExists(upperTableName);
+            if (upperExists && lowerExists) {
+                    throw new ConfigException(String.format("Cannot specify table '%s' because both '%s' and '%s' exist.",
+                            tableName, upperTableName, lowerTableName));
+            } else if (upperExists) {
+                return upperTableName;
+            } else if (lowerExists) {
+                return lowerTableName;
+            } else {
+                // fallback to the given table name. this may throw error later at getSchemaOfQuery
+                return tableName;
+            }
+        }
+    }
+
+    private List<Integer> findIncrementalColumnIndexes(JdbcSchema schema, List<String> incrementalColumns)
+        throws SQLException
+    {
+        ImmutableList.Builder<Integer> builder = ImmutableList.builder();
+        for (String name : incrementalColumns) {
+            Optional<Integer> index = schema.findColumn(name);
+            if (index.isPresent()) {
+                builder.add(index.get());
+            }
+            else {
+                throw new ConfigException(String.format(ENGLISH,
+                        "Column name '%s' is in incremental_columns option does not exist",
+                        name));
+            }
+        }
+        return builder.build();
+    }
+
+    private List<String> normalizeColumnNameCases(JdbcSchema schema, List<Integer> indexes)
+    {
+        ImmutableList.Builder<String> builder = ImmutableList.builder();
+        for (int index : indexes) {
+            builder.add(schema.getColumn(index).getName());
+        }
+        return builder.build();
+    }
+
     private String getQuery(PluginTask task, JdbcInputConnection con) throws SQLException
     {
         if (task.getQuery().isPresent()) {
@@ -199,9 +343,9 @@ public abstract class AbstractJdbcInputPlugin
             return task.getQuery().get();
         } else if (task.getTable().isPresent()) {
             return con.buildSelectQuery(task.getTable().get(), task.getSelect(),
-                    task.getWhere(), task.getOrderBy(), task.getIncrementalColumns(), task.getLastRecord());
+                    task.getWhere(), task.getOrderBy());
         } else {
-            throw new ConfigException("'table' parameter is required (if 'query' parameter is not set)");
+            throw new ConfigException("'table' or 'query' parameter is required");
         }
     }
 
@@ -229,6 +373,8 @@ public abstract class AbstractJdbcInputPlugin
         ConfigDiff next = Exec.newConfigDiff();
         if (reports.size() > 0 && reports.get(0).has("last_record")) {
             next.set("last_record", reports.get(0).get(Map.class, "last_record"));
+        } else if (task.getLastRecord().isPresent()) {
+            next.set("last_record", task.getLastRecord().get());
         }
         return next;
     }
@@ -241,6 +387,49 @@ public abstract class AbstractJdbcInputPlugin
         // do nothing
     }
 
+    private static class LastRecordStore {
+        private final List<Integer> columnIndexes;
+        private final List<String> columnNames;
+        private final Number[] lastValues;
+
+        public LastRecordStore(List<Integer> columnIndexes, List<String> columnNames)
+        {
+            this.columnIndexes = columnIndexes;
+            this.columnNames = columnNames;
+            this.lastValues = new Number[columnIndexes.size()];
+        }
+
+        public void accept(ResultSet rs) throws SQLException
+        {
+            for (int i = 0; i < lastValues.length; i++) {
+                int rsIndex = columnIndexes.get(i) + 1;  // JDBC index starts wit h1
+                Object v = rs.getObject(rsIndex);
+                if (v instanceof Number) {
+                    lastValues[i] = (Number) v;
+                }
+                else {
+                    throw new DataException(String.format(ENGLISH,
+                                "incremental_columns must be integer columns but type of column '%s' is not integer. other column types are not supported.",
+                                columnNames.get(i)));
+                }
+            }
+        }
+
+        public Map<String, Number> getMap()
+        {
+            ImmutableMap.Builder<String, Number> builder = ImmutableMap.builder();
+            for (int i = 0; i < lastValues.length; i++) {
+                if (lastValues[i] == null) {
+                    throw new DataException(String.format(ENGLISH,
+                            "incremental_columns can't include null values but the last row is null at column '%s'",
+                            columnNames.get(i)));
+                }
+                builder.put(columnNames.get(i), lastValues[i]);
+            }
+            return builder.build();
+        }
+    }
+
     @Override
     public TaskReport run(TaskSource taskSource,
             Schema schema, int taskIndex,
@@ -248,20 +437,27 @@ public abstract class AbstractJdbcInputPlugin
     {
         PluginTask task = taskSource.loadTask(getTaskClass());
 
+        String builtQuery = task.getBuiltQuery();
         JdbcSchema querySchema = task.getQuerySchema();
         BufferAllocator allocator = task.getBufferAllocator();
         PageBuilder pageBuilder = new PageBuilder(allocator, schema, output);
 
+        long totalRows = 0;
+
+        LastRecordStore lastRecordStore = null;
+        if (task.getIncremental()) {
+            lastRecordStore = new LastRecordStore(task.getIncrementalColumnIndexes(), task.getIncrementalColumns());
+        }
+
         try (JdbcInputConnection con = newConnection(task)) {
-            try (BatchSelect cursor = con.newSelectCursor(getQuery(task, con), task.getFetchRows(), task.getSocketTimeout())) {
+            try (BatchSelect cursor = con.newSelectCursor(builtQuery, task.getPlaceHolderValues(), task.getFetchRows(), task.getSocketTimeout())) {
                 List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
                 while (true) {
-                    // TODO run fetch() in another thread asynchronously
-                    // TODO retry fetch() if it failed (maybe order_by is required and unique_column(s) option is also required)
-                    boolean cont = fetch(cursor, getters, pageBuilder, task);
-                    if (!cont) {
+                    long rows = fetch(cursor, getters, pageBuilder, lastRecordStore);
+                    if (rows <= 0L) {
                         break;
                     }
+                    totalRows += rows;
                 }
             }
             pageBuilder.finish();
@@ -284,9 +480,10 @@ public abstract class AbstractJdbcInputPlugin
         }
 
         TaskReport report = Exec.newTaskReport();
-        if (!task.getIncrementalColumns().isEmpty()) {
-            report.set("last_record", task.getLastRecord().get());
+        if (lastRecordStore != null && totalRows > 0) {
+            report.set("last_record", lastRecordStore.getMap());
         }
+
         return report;
     }
 
@@ -338,27 +535,25 @@ public abstract class AbstractJdbcInputPlugin
                     });
     }
 
-    private boolean fetch(BatchSelect cursor,
-            List<ColumnGetter> getters, PageBuilder pageBuilder, PluginTask task) throws SQLException
+    private long fetch(BatchSelect cursor,
+            List<ColumnGetter> getters, PageBuilder pageBuilder,
+            LastRecordStore lastRecordStore) throws SQLException
     {
         ResultSet result = cursor.fetch();
         if (result == null || !result.next()) {
-            return false;
+            return 0;
         }
-
-        Map<String, String> temporaryLastRecord = new HashMap<>();
-        Map<String, String> lastRecord = new HashMap<>();
 
         List<Column> columns = pageBuilder.getSchema().getColumns();
         long rows = 0;
         long reportRows = 500;
         do {
-            temporaryLastRecord.clear();
             for (int i=0; i < getters.size(); i++) {
                 int index = i + 1;  // JDBC column index begins from 1
                 getters.get(i).getAndSet(result, index, columns.get(i));
-                String k = columns.get(i).getName();
-                temporaryLastRecord.put(k, result.getString(index));
+                if (lastRecordStore != null) {
+                    lastRecordStore.accept(result);
+                }
             }
             pageBuilder.addRecord();
             rows++;
@@ -368,16 +563,7 @@ public abstract class AbstractJdbcInputPlugin
             }
         } while (result.next());
 
-        if (!task.getIncrementalColumns()) {
-            for (String key : task.getIncrementalColumns().get()) {
-                if (temporaryLastRecord.containsKey(key)) {
-                    lastRecord.put(key, temporaryLastRecord.get(key));
-                }
-            }
-            task.setLastRecord(Optional.of(lastRecord));
-        }
-
-        return true;
+        return rows;
     }
 
     //// TODO move to embulk.spi.util?
