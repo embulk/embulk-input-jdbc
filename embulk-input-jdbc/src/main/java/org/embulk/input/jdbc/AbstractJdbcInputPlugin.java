@@ -263,7 +263,6 @@ public abstract class AbstractJdbcInputPlugin
         }
 
         task.setBuiltQuery(builtQuery);
-        logger.info("SQL: " + builtQuery);
 
         // validate column_options
         newColumnGetters(task, querySchema, null);
