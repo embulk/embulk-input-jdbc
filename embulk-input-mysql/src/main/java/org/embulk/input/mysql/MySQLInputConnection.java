@@ -26,7 +26,7 @@ public class MySQLInputConnection
         }
         PreparedStatement stmt = connection.prepareStatement(select, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);  // TYPE_FORWARD_ONLY and CONCUR_READ_ONLY are default
         for (int i = 0; i < placeHolderValues.size(); i++) {
-            stmt.setString(i + 1, placeHolderValues.get(i));
+            stmt.setString(i + 1, placeHolderValues.get(i).toString());
         }
         if (fetchRows == 1) {
             // See MySQLInputPlugin.newConnection doesn't set useCursorFetch=true when fetchRows=1
