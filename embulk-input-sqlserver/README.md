@@ -59,6 +59,16 @@ in:
   table: my_table
   select: "col1, col2, col3"
   where: "col4 != 'a'"
+  order_by: "col1 DESC"
+```
+
+This configuration will generate following SQL:
+
+```
+SELECT col1, col2, col3
+FROM "my_table"
+WHERE col4 != 'a'
+ORDER BY col1 DESC
 ```
 
 If you need a complex SQL,
