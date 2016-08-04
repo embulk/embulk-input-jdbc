@@ -368,16 +368,13 @@ public abstract class AbstractJdbcInputPlugin
 
     private static class LastRecordStore
     {
-        private final int[] columnIndexes;
+        private final List<Integer> columnIndexes;
         private final JsonNode[] lastValues;
         private final List<String> columnNames;
 
         public LastRecordStore(List<Integer> columnIndexes, List<String> columnNames)
         {
-            this.columnIndexes = new int[columnIndexes.size()];
-            for (int i = 0; i < this.columnIndexes.length; i++) {
-                this.columnIndexes[i] = columnIndexes.get(i);
-            }
+            this.columnIndexes = columnIndexes;
             this.lastValues = new JsonNode[columnIndexes.size()];
             this.columnNames = columnNames;
         }
@@ -385,8 +382,8 @@ public abstract class AbstractJdbcInputPlugin
         public void accept(List<ColumnGetter> getters)
             throws SQLException
         {
-            for (int i = 0; i < columnIndexes.length; i++) {
-                lastValues[i] = getters.get(columnIndexes[i]).encodeToJson();
+            for (int i = 0; i < columnIndexes.size(); i++) {
+                lastValues[i] = getters.get(columnIndexes.get(i)).encodeToJson();
             }
         }
 
@@ -527,9 +524,6 @@ public abstract class AbstractJdbcInputPlugin
                 int index = i + 1;  // JDBC column index begins from 1
                 getters.get(i).getAndSet(result, index, columns.get(i));
             }
-            if (lastRecordStore != null) {
-                lastRecordStore.accept(getters);
-            }
             pageBuilder.addRecord();
             rows++;
             if (rows % reportRows == 0) {
@@ -537,6 +531,10 @@ public abstract class AbstractJdbcInputPlugin
                 reportRows *= 2;
             }
         } while (result.next());
+
+        if (lastRecordStore != null) {
+            lastRecordStore.accept(getters);
+        }
 
         return rows;
     }
