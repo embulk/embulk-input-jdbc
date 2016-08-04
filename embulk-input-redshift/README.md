@@ -25,9 +25,9 @@ Redshift input plugins for Embulk loads records from Redshift.
   - **query**: SQL to run (string)
 - If **query** is not set,
   - **table**: destination table name (string, required)
-  - **select**: comma-separated list of columns to select (string, default: "*")
+  - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
-  - **order_by**: name of the column that rows are sorted by (string, default: not sorted)
+  - **order_by**: expression of ORDER BY to sort rows (e.g. `created_at DESC, id ASC`) (string, default: not sorted)
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
   - **value_type**: embulk get values from database as this value_type. Typically, the value_type determines `getXXX` method of `java.sql.PreparedStatement`.
@@ -52,6 +52,16 @@ in:
   table: my_table
   select: "col1, col2, col3"
   where: "col4 != 'a'"
+  order_by: "col1 DESC"
+```
+
+This configuration will generate following SQL:
+
+```
+SELECT col1, col2, col3
+FROM "my_table"
+WHERE col4 != 'a'
+ORDER BY col1 DESC
 ```
 
 If you need a complex SQL,

@@ -156,8 +156,8 @@ public class JdbcInputConnection
     }
 
     public String buildSelectQuery(String tableName,
-            Optional<String> selectColumnList, Optional<String> whereCondition,
-            Optional<String> orderByColumn) throws SQLException
+            Optional<String> selectExpression, Optional<String> whereCondition,
+            Optional<String> orderByExpression) throws SQLException
     {
         String actualTableName;
         if (tableExists(tableName)) {
@@ -184,38 +184,15 @@ public class JdbcInputConnection
         StringBuilder sb = new StringBuilder();
 
         sb.append("SELECT ");
-        sb.append(selectColumnList.or("*"));
+        sb.append(selectExpression.or("*"));
         sb.append(" FROM ").append(buildTableName(actualTableName));
 
         if (whereCondition.isPresent()) {
             sb.append(" WHERE ").append(whereCondition.get());
         }
 
-        if (orderByColumn.isPresent()) {
-            String actualOrderByColumn;
-            Set<String> columnNames = getColumnNames(actualTableName);
-            if (columnNames.contains(orderByColumn.get())) {
-                actualOrderByColumn = orderByColumn.get();
-            } else {
-                String upperOrderByColumn = orderByColumn.get().toUpperCase();
-                String lowerOrderByColumn = orderByColumn.get().toLowerCase();
-                if (columnNames.contains(upperOrderByColumn)) {
-                    if (columnNames.contains(lowerOrderByColumn)) {
-                        throw new ConfigException(String.format("Cannot specify order-by colum '%s' because both '%s' and '%s' exist.",
-                                orderByColumn.get(), upperOrderByColumn, lowerOrderByColumn));
-                    } else {
-                        actualOrderByColumn = upperOrderByColumn;
-                    }
-                } else {
-                    if (columnNames.contains(lowerOrderByColumn)) {
-                        actualOrderByColumn = lowerOrderByColumn;
-                    } else {
-                        actualOrderByColumn = orderByColumn.get();
-                    }
-                }
-            }
-
-            sb.append("ORDER BY ").append(quoteIdentifierString(actualOrderByColumn)).append(" ASC");
+        if (orderByExpression.isPresent()) {
+            sb.append(" ORDER BY ").append(orderByExpression.get());
         }
 
         return sb.toString();

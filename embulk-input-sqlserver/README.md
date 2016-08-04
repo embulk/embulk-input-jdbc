@@ -26,9 +26,9 @@ embulk "-J-Djava.library.path=C:\drivers" run input-sqlserver.yml
   - **query**: SQL to run (string)
 - If **query** is not set,
   - **table**: destination table name (string, required)
-  - **select**: comma-separated list of columns to select (string, default: "*")
+  - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
-  - **order_by**: name of the column that rows are sorted by (string, default: not sorted)
+  - **order_by**: expression of ORDER BY to sort rows (e.g. `created_at DESC, id ASC`) (string, default: not sorted)
 - **fetch_rows**: number of rows to fetch one time (used for java.sql.Statement#setFetchSize) (integer, default: 10000)
 - **connect_timeout**: timeout for the driver to connect. 0 means the default of SQL Server (15 by default). (integer (seconds), default: 300)
 - **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
@@ -59,6 +59,16 @@ in:
   table: my_table
   select: "col1, col2, col3"
   where: "col4 != 'a'"
+  order_by: "col1 DESC"
+```
+
+This configuration will generate following SQL:
+
+```
+SELECT col1, col2, col3
+FROM "my_table"
+WHERE col4 != 'a'
+ORDER BY col1 DESC
 ```
 
 If you need a complex SQL,
