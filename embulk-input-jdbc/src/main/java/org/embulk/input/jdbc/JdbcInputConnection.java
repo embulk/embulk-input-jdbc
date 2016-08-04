@@ -11,11 +11,14 @@ import java.util.Set;
 
 import org.embulk.config.ConfigException;
 import org.embulk.spi.Exec;
+import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.ArrayList;
 import static java.util.Locale.ENGLISH;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -88,26 +91,38 @@ public class JdbcInputConnection
         return new JdbcSchema(columns.build());
     }
 
-    public BatchSelect newSelectCursor(String query, List<Number> placeHolderValues,
+    public BatchSelect newSelectCursor(String query,
+            List<JdbcLiteral> parameters, List<ColumnGetter> getters,
             int fetchRows, int queryTimeout) throws SQLException
     {
-        return newBatchSelect(query, placeHolderValues, fetchRows, queryTimeout);
+        return newBatchSelect(query, parameters, getters, fetchRows, queryTimeout);
     }
 
-    protected BatchSelect newBatchSelect(String query, List<Number> placeHolderValues,
+    protected BatchSelect newBatchSelect(String select,
+            List<JdbcLiteral> parameters, List<ColumnGetter> getters,
             int fetchRows, int queryTimeout) throws SQLException
     {
-        PreparedStatement stmt = connection.prepareStatement(query);
+        PreparedStatement stmt = connection.prepareStatement(select);
         stmt.setFetchSize(fetchRows);
         stmt.setQueryTimeout(queryTimeout);
-        logger.info("SQL: " + query);
-        if (!placeHolderValues.isEmpty()) {
-            logger.info("Parameters: {}", placeHolderValues);
-        }
-        for (int i = 0; i < placeHolderValues.size(); i++) {
-            stmt.setObject(i + 1, placeHolderValues.get(i));
+        logger.info("SQL: " + select);
+        if (!parameters.isEmpty()) {
+            logger.info("Parameters: {}", parameters);
+            prepareParameters(stmt, getters, parameters);
         }
         return new SingleSelect(stmt);
+    }
+
+    protected void prepareParameters(PreparedStatement stmt, List<ColumnGetter> getters,
+            List<JdbcLiteral> parameters)
+        throws SQLException
+    {
+        for (int i = 0; i < parameters.size(); i++) {
+            JdbcLiteral literal = parameters.get(i);
+            ColumnGetter getter = getters.get(literal.getColumnIndex());
+            int index = i + 1;  // JDBC column index begins from 1
+            getter.decodeFromJsonTo(stmt, index, literal.getValue());
+        }
     }
 
     public interface BatchSelect
@@ -201,40 +216,81 @@ public class JdbcInputConnection
         return sb.toString();
     }
 
-    public String buildIncrementalQuery(String rawQuery, List<String> incrementalColumns,
-            boolean generateIncrementalPlaceHolders) throws SQLException
+    public static class PreparedQuery
+    {
+        private final String query;
+        private final List<JdbcLiteral> parameters;
+
+        public PreparedQuery(String query, List<JdbcLiteral> parameters)
+        {
+            this.query = query;
+            this.parameters = parameters;
+        }
+
+        public String getQuery()
+        {
+            return query;
+        }
+
+        public List<JdbcLiteral> getParameters()
+        {
+            return parameters;
+        }
+    }
+
+    public PreparedQuery buildIncrementalQuery(String rawQuery, JdbcSchema querySchema,
+            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues) throws SQLException
     {
         StringBuilder sb = new StringBuilder();
+        ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
 
         sb.append("SELECT * FROM (");
         sb.append(truncateStatementDelimiter(rawQuery));
         sb.append(") embulk_incremental_");
-        if (generateIncrementalPlaceHolders) {
+        if (incrementalValues != null) {
             sb.append(" WHERE ");
-            boolean first = true;
-            for (String column : incrementalColumns) {
-                if (first) {
-                    first = false;
-                } else {
+
+            List<String> leftColumnNames = new ArrayList<>();
+            List<JdbcLiteral> rightLiterals = new ArrayList<>();
+            for (int n = 0; n < incrementalColumnIndexes.size(); n++) {
+                int columnIndex = incrementalColumnIndexes.get(n);
+                JsonNode value = incrementalValues.get(n);
+                leftColumnNames.add(querySchema.getColumnName(columnIndex));
+                rightLiterals.add(new JdbcLiteral(columnIndex, value));
+            }
+
+            for (int n = 0; n < leftColumnNames.size(); n++) {
+                if (n > 0) {
+                    sb.append(" OR ");
+                }
+                sb.append("(");
+
+                for (int i = 0; i < n; i++) {
+                    sb.append(quoteIdentifierString(leftColumnNames.get(i)));
+                    sb.append(" = ?");
+                    parameters.add(rightLiterals.get(i));
                     sb.append(" AND ");
                 }
-                sb.append(quoteIdentifierString(column));
+                sb.append(quoteIdentifierString(leftColumnNames.get(n)));
                 sb.append(" > ?");
+                parameters.add(rightLiterals.get(n));
+
+                sb.append(")");
             }
         }
         sb.append(" ORDER BY ");
 
         boolean first = true;
-        for (String column : incrementalColumns) {
+        for (int i : incrementalColumnIndexes) {
             if (first) {
                 first = false;
             } else {
                 sb.append(", ");
             }
-            sb.append(quoteIdentifierString(column));
+            sb.append(quoteIdentifierString(querySchema.getColumnName(i)));
         }
 
-        return sb.toString();
+        return new PreparedQuery(sb.toString(), parameters.build());
     }
 
     protected String truncateStatementDelimiter(String rawQuery) throws SQLException

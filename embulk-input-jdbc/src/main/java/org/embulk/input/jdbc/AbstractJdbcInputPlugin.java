@@ -8,6 +8,7 @@ import java.sql.SQLException;
 
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
@@ -35,6 +36,7 @@ import org.embulk.spi.Exec;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.JdbcInputConnection.BatchSelect;
+import org.embulk.input.jdbc.JdbcInputConnection.PreparedQuery;
 import org.joda.time.DateTimeZone;
 
 import static java.util.Locale.ENGLISH;
@@ -82,8 +84,7 @@ public abstract class AbstractJdbcInputPlugin
 
         @Config("last_record")
         @ConfigDefault("null")
-        public Optional<Map<String, Number>> getLastRecord();
-        public void setLastRecord(Optional<Map<String, Number>> lastRecord);
+        public Optional<List<JsonNode>> getLastRecord();
 
         // TODO limit_value is necessary to make sure repeated bulk load transactions
         //      don't a same record twice or miss records when the column
@@ -151,8 +152,8 @@ public abstract class AbstractJdbcInputPlugin
         public List<Integer> getIncrementalColumnIndexes();
         public void setIncrementalColumnIndexes(List<Integer> indexes);
 
-        public List<Number> getPlaceHolderValues();
-        public void setPlaceHolderValues(List<Number> values);
+        public List<JdbcLiteral> getBuiltQueryParameters();
+        public void setBuiltQueryParameters(List<JdbcLiteral> values);
 
         @ConfigInject
         public BufferAllocator getBufferAllocator();
@@ -208,7 +209,7 @@ public abstract class AbstractJdbcInputPlugin
         task.setQuerySchema(querySchema);
         // query schema should not change after incremental query
 
-        String builtQuery;
+        PreparedQuery preparedQuery;
         if (task.getIncremental()) {
             // build incremental query
 
@@ -229,40 +230,28 @@ public abstract class AbstractJdbcInputPlugin
                 task.setIncrementalColumns(primaryKeys);
                 incrementalColumns = primaryKeys;
             }
+
             List<Integer> incrementalColumnIndexes = findIncrementalColumnIndexes(querySchema, incrementalColumns);
-            List<String> normalizedIncrementalColumns = normalizeColumnNameCases(querySchema, incrementalColumnIndexes);
             task.setIncrementalColumnIndexes(incrementalColumnIndexes);
 
             if (task.getLastRecord().isPresent()) {
-                Map<String, Number> lastRecord = task.getLastRecord().get();
-                ImmutableList.Builder<Number> placeHolderValues = ImmutableList.builder();
-                for (String column : incrementalColumns) {
-                    if (!lastRecord.containsKey(column)) {
-                        throw new ConfigException(String.format(ENGLISH,
-                                    "incremental_columns includes column '%s' but last_record doesn't include it",
-                                    column));
-                    }
-                    Number value = lastRecord.get(column);
-                    if (value == null) {
-                        throw new ConfigException("last_record option must not include null");
-                    }
-                    placeHolderValues.add(value);
+                List<JsonNode> lastRecord = task.getLastRecord().get();
+                if (lastRecord.size() != incrementalColumnIndexes.size()) {
+                    throw new ConfigException("Number of values set at last_record must be same with number of columns set at incremental_columns");
                 }
-                builtQuery = con.buildIncrementalQuery(query, normalizedIncrementalColumns, true);
-                task.setPlaceHolderValues(placeHolderValues.build());
+                preparedQuery = con.buildIncrementalQuery(query, querySchema, incrementalColumnIndexes, lastRecord);
             }
             else {
-                builtQuery = con.buildIncrementalQuery(query, normalizedIncrementalColumns, false);
-                task.setPlaceHolderValues(ImmutableList.<Number>of());
+                preparedQuery = con.buildIncrementalQuery(query, querySchema, incrementalColumnIndexes, null);
             }
         }
         else {
-            builtQuery = query;
             task.setIncrementalColumnIndexes(ImmutableList.<Integer>of());
-            task.setPlaceHolderValues(ImmutableList.<Number>of());
+            preparedQuery = new PreparedQuery(query, ImmutableList.<JdbcLiteral>of());
         }
 
-        task.setBuiltQuery(builtQuery);
+        task.setBuiltQuery(preparedQuery.getQuery());
+        task.setBuiltQueryParameters(preparedQuery.getParameters());
 
         // validate column_options
         newColumnGetters(task, querySchema, null);
@@ -321,15 +310,6 @@ public abstract class AbstractJdbcInputPlugin
         return builder.build();
     }
 
-    private List<String> normalizeColumnNameCases(JdbcSchema schema, List<Integer> indexes)
-    {
-        ImmutableList.Builder<String> builder = ImmutableList.builder();
-        for (int index : indexes) {
-            builder.add(schema.getColumn(index).getName());
-        }
-        return builder.build();
-    }
-
     private String getQuery(PluginTask task, JdbcInputConnection con) throws SQLException
     {
         if (task.getQuery().isPresent()) {
@@ -371,7 +351,7 @@ public abstract class AbstractJdbcInputPlugin
     {
         ConfigDiff next = Exec.newConfigDiff();
         if (reports.size() > 0 && reports.get(0).has("last_record")) {
-            next.set("last_record", reports.get(0).get(Map.class, "last_record"));
+            next.set("last_record", reports.get(0).get(JsonNode.class, "last_record"));
         } else if (task.getLastRecord().isPresent()) {
             next.set("last_record", task.getLastRecord().get());
         }
@@ -386,44 +366,40 @@ public abstract class AbstractJdbcInputPlugin
         // do nothing
     }
 
-    private static class LastRecordStore {
-        private final List<Integer> columnIndexes;
+    private static class LastRecordStore
+    {
+        private final int[] columnIndexes;
+        private final JsonNode[] lastValues;
         private final List<String> columnNames;
-        private final Number[] lastValues;
 
         public LastRecordStore(List<Integer> columnIndexes, List<String> columnNames)
         {
-            this.columnIndexes = columnIndexes;
+            this.columnIndexes = new int[columnIndexes.size()];
+            for (int i = 0; i < this.columnIndexes.length; i++) {
+                this.columnIndexes[i] = columnIndexes.get(i);
+            }
+            this.lastValues = new JsonNode[columnIndexes.size()];
             this.columnNames = columnNames;
-            this.lastValues = new Number[columnIndexes.size()];
         }
 
-        public void accept(ResultSet rs) throws SQLException
+        public void accept(List<ColumnGetter> getters)
+            throws SQLException
         {
-            for (int i = 0; i < lastValues.length; i++) {
-                int rsIndex = columnIndexes.get(i) + 1;  // JDBC index starts wit h1
-                Object v = rs.getObject(rsIndex);
-                if (v instanceof Number) {
-                    lastValues[i] = (Number) v;
-                }
-                else {
-                    throw new DataException(String.format(ENGLISH,
-                                "incremental_columns must be integer columns but type of column '%s' is not integer. other column types are not supported.",
-                                columnNames.get(i)));
-                }
+            for (int i = 0; i < columnIndexes.length; i++) {
+                lastValues[i] = getters.get(columnIndexes[i]).encodeToJson();
             }
         }
 
-        public Map<String, Number> getMap()
+        public List<JsonNode> getList()
         {
-            ImmutableMap.Builder<String, Number> builder = ImmutableMap.builder();
+            ImmutableList.Builder<JsonNode> builder = ImmutableList.builder();
             for (int i = 0; i < lastValues.length; i++) {
-                if (lastValues[i] == null) {
+                if (lastValues[i] == null || lastValues[i].isNull()) {
                     throw new DataException(String.format(ENGLISH,
                             "incremental_columns can't include null values but the last row is null at column '%s'",
                             columnNames.get(i)));
                 }
-                builder.put(columnNames.get(i), lastValues[i]);
+                builder.add(lastValues[i]);
             }
             return builder.build();
         }
@@ -449,8 +425,8 @@ public abstract class AbstractJdbcInputPlugin
         }
 
         try (JdbcInputConnection con = newConnection(task)) {
-            try (BatchSelect cursor = con.newSelectCursor(builtQuery, task.getPlaceHolderValues(), task.getFetchRows(), task.getSocketTimeout())) {
-                List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
+            List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
+            try (BatchSelect cursor = con.newSelectCursor(builtQuery, task.getBuiltQueryParameters(), getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {
                     long rows = fetch(cursor, getters, pageBuilder, lastRecordStore);
                     if (rows <= 0L) {
@@ -480,7 +456,7 @@ public abstract class AbstractJdbcInputPlugin
 
         TaskReport report = Exec.newTaskReport();
         if (lastRecordStore != null && totalRows > 0) {
-            report.set("last_record", lastRecordStore.getMap());
+            report.set("last_record", lastRecordStore.getList());
         }
 
         return report;
@@ -550,9 +526,9 @@ public abstract class AbstractJdbcInputPlugin
             for (int i=0; i < getters.size(); i++) {
                 int index = i + 1;  // JDBC column index begins from 1
                 getters.get(i).getAndSet(result, index, columns.get(i));
-                if (lastRecordStore != null) {
-                    lastRecordStore.accept(result);
-                }
+            }
+            if (lastRecordStore != null) {
+                lastRecordStore.accept(getters);
             }
             pageBuilder.addRecord();
             rows++;

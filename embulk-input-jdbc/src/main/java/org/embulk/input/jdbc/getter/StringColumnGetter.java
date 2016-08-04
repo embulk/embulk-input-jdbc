@@ -1,7 +1,9 @@
 package org.embulk.input.jdbc.getter;
 
 import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.json.JsonParseException;
@@ -79,4 +81,16 @@ public class StringColumnGetter
         to.setString(column, value);
     }
 
+    @Override
+    public JsonNode encodeToJson()
+    {
+        return jsonNodeFactory.textNode(value);
+    }
+
+    @Override
+    public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
+        throws SQLException
+    {
+        toStatement.setString(toIndex, fromValue.asText());
+    }
 }

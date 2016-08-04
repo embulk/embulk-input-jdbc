@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.JdbcLiteral;
+import org.embulk.input.jdbc.getter.ColumnGetter;
 
 public class MySQLInputConnection
         extends JdbcInputConnection
@@ -17,16 +19,15 @@ public class MySQLInputConnection
     }
 
     @Override
-    protected BatchSelect newBatchSelect(String select, List<Number> placeHolderValues,
+    protected BatchSelect newBatchSelect(String select,
+            List<JdbcLiteral> parameters, List<ColumnGetter> getters,
             int fetchRows, int queryTimeout) throws SQLException
     {
         logger.info("SQL: " + select);
-        if (!placeHolderValues.isEmpty()) {
-            logger.info("Parameters: {}", placeHolderValues);
-        }
         PreparedStatement stmt = connection.prepareStatement(select, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);  // TYPE_FORWARD_ONLY and CONCUR_READ_ONLY are default
-        for (int i = 0; i < placeHolderValues.size(); i++) {
-            stmt.setObject(i + 1, placeHolderValues.get(i));
+        if (!parameters.isEmpty()) {
+            logger.info("Parameters: {}", parameters);
+            prepareParameters(stmt, getters, parameters);
         }
         if (fetchRows == 1) {
             // See MySQLInputPlugin.newConnection doesn't set useCursorFetch=true when fetchRows=1

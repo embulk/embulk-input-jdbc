@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.embulk.spi.Exec;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.JdbcLiteral;
+import org.embulk.input.jdbc.getter.ColumnGetter;
 
 public class PostgreSQLInputConnection
         extends JdbcInputConnection
@@ -21,19 +23,18 @@ public class PostgreSQLInputConnection
     }
 
     @Override
-    protected CursorSelect newBatchSelect(String select, List<Number> placeHolderValues,
+    protected BatchSelect newBatchSelect(String select,
+            List<JdbcLiteral> parameters, List<ColumnGetter> getters,
             int fetchRows, int queryTimeout) throws SQLException
     {
         String sql = "DECLARE cur NO SCROLL CURSOR FOR " + select;
 
         logger.info("SQL: " + sql);
-        if (!placeHolderValues.isEmpty()) {
-            logger.info("Parameters: {}", placeHolderValues);
-        }
         PreparedStatement stmt = connection.prepareStatement(sql);
         try {
-            for (int i = 0; i < placeHolderValues.size(); i++) {
-                stmt.setObject(i + 1, placeHolderValues.get(i));
+            if (!parameters.isEmpty()) {
+                logger.info("Parameters: {}", parameters);
+                prepareParameters(stmt, getters, parameters);
             }
             stmt.executeUpdate();
         } finally {
