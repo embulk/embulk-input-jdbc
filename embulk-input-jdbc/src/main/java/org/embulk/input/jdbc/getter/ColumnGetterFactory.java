@@ -14,6 +14,8 @@ import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
 import org.joda.time.DateTimeZone;
 
+import static java.util.Locale.ENGLISH;
+
 public class ColumnGetterFactory
 {
     protected final PageBuilder to;
@@ -58,7 +60,8 @@ public class ColumnGetterFactory
         case "decimal":
             return new BigDecimalColumnGetter(to, toType);
         default:
-            throw new ConfigException(String.format("Unknown value_type '%s' for column '%s'", option.getValueType(), column.getName()));
+            throw new ConfigException(String.format(ENGLISH,
+                        "Unknown value_type '%s' for column '%s'", option.getValueType(), column.getName()));
         }
     }
 
@@ -185,7 +188,8 @@ public class ColumnGetterFactory
     private static UnsupportedOperationException unsupportedOperationException(JdbcColumn column)
     {
         throw new UnsupportedOperationException(
-                String.format("Unsupported type %s (sqlType=%d) of '%s' column. Please exclude the column from 'select:' option.",
-                    column.getTypeName(), column.getSqlType(), column.getName()));
+                String.format(ENGLISH,
+                    "Unsupported type %s (sqlType=%d) of '%s' column. Please add '%s: {type: string}' to 'column_options: {...}' option to convert the values to strings, or exclude the column from 'select:' option",
+                    column.getTypeName(), column.getSqlType(), column.getName(), column.getName()));
     }
 }
