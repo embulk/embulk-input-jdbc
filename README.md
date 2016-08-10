@@ -62,6 +62,41 @@ See [embulk-input-sqlserver](embulk-input-sqlserver/).
 - **after_select**: if set, this SQL will be executed after the SELECT query in the same transaction.
 
 
+### Incremental loading
+
+If `incremental: true` option is set, incremental loading is enabled. Incremental loading generates additional WHERE conditions on one multiple incrementing columns (such as auto-increment id) to load records inserted (or updated) after last execution.
+
+If `increment: true` is set, this plugin loads all records with additional ORDER BY. For example, if `incremental_columns: [updated_at, id]` option is set, query will be as following:
+
+```
+SELECT * FROM (
+  ...original query is here...
+)
+ORDER BY updated_at, id
+```
+
+When bulk data loading finishes successfully, it outputs `last_record: ` paramater as config-diff so that next execution uses it.
+
+At the next execution, when `last_record: ` is also set, this plugin generates additional WHERE conditions to load records larger than the last record. For example, if `last_record: ["2017-01-01 00:32:12", 5291]` is set,
+
+```
+SELECT * FROM (
+  ...original query is here...
+)
+WHERE created_at > '2017-01-01 00:32:12' OR (created_at = '2017-01-01 00:32:12' AND id > 5291)
+ORDER BY updated_at, id
+```
+
+Then, it updates `last_record: ` so that next execution uses the updated last_record.
+
+**IMPORTANT**: Make sure that there is an index on incremental_columns. If the columns are not indexed, it runs full table scan. For this example, following index should be created:
+
+```
+CREATE INDEX embulk_incremental_loading_index ON table (updated_at, id);
+```
+
+Currently, only strings and integers are supported as incremental_columns. Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds an auto-increment primary key.
+
 
 ### Example
 
