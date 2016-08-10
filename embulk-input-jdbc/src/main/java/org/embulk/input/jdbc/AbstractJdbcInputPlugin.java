@@ -421,13 +421,18 @@ public abstract class AbstractJdbcInputPlugin
             List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
             try (BatchSelect cursor = con.newSelectCursor(builtQuery.getQuery(), builtQuery.getParameters(), getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {
-                    long rows = fetch(cursor, getters, pageBuilder, lastRecordStore);
+                    long rows = fetch(cursor, getters, pageBuilder);
                     if (rows <= 0L) {
                         break;
                     }
                     totalRows += rows;
                 }
             }
+
+            if (lastRecordStore != null && totalRows > 0) {
+                lastRecordStore.accept(getters);
+            }
+
             pageBuilder.finish();
 
             // after_select runs after pageBuilder.finish because pageBuilder.finish may fail.
@@ -504,8 +509,7 @@ public abstract class AbstractJdbcInputPlugin
     }
 
     private long fetch(BatchSelect cursor,
-            List<ColumnGetter> getters, PageBuilder pageBuilder,
-            LastRecordStore lastRecordStore) throws SQLException
+            List<ColumnGetter> getters, PageBuilder pageBuilder) throws SQLException
     {
         ResultSet result = cursor.fetch();
         if (result == null || !result.next()) {
@@ -527,10 +531,6 @@ public abstract class AbstractJdbcInputPlugin
                 reportRows *= 2;
             }
         } while (result.next());
-
-        if (lastRecordStore != null) {
-            lastRecordStore.accept(getters);
-        }
 
         return rows;
     }
