@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.ArrayList;
 import static java.util.Locale.ENGLISH;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -221,17 +223,22 @@ public class JdbcInputConnection
         private final String query;
         private final List<JdbcLiteral> parameters;
 
-        public PreparedQuery(String query, List<JdbcLiteral> parameters)
+        @JsonCreator
+        public PreparedQuery(
+                @JsonProperty("query") String query,
+                @JsonProperty("parameters") List<JdbcLiteral> parameters)
         {
             this.query = query;
             this.parameters = parameters;
         }
 
+        @JsonProperty("query")
         public String getQuery()
         {
             return query;
         }
 
+        @JsonProperty("parameters")
         public List<JdbcLiteral> getParameters()
         {
             return parameters;

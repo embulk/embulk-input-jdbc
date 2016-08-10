@@ -143,17 +143,14 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("null")
         public Optional<String> getAfterSelect();
 
-        public String getBuiltQuery();
-        public void setBuiltQuery(String query);
+        public PreparedQuery getBuiltQuery();
+        public void setBuiltQuery(PreparedQuery query);
 
         public JdbcSchema getQuerySchema();
         public void setQuerySchema(JdbcSchema schema);
 
         public List<Integer> getIncrementalColumnIndexes();
         public void setIncrementalColumnIndexes(List<Integer> indexes);
-
-        public List<JdbcLiteral> getBuiltQueryParameters();
-        public void setBuiltQueryParameters(List<JdbcLiteral> values);
 
         @ConfigInject
         public BufferAllocator getBufferAllocator();
@@ -250,8 +247,7 @@ public abstract class AbstractJdbcInputPlugin
             preparedQuery = new PreparedQuery(query, ImmutableList.<JdbcLiteral>of());
         }
 
-        task.setBuiltQuery(preparedQuery.getQuery());
-        task.setBuiltQueryParameters(preparedQuery.getParameters());
+        task.setBuiltQuery(preparedQuery);
 
         // validate column_options
         newColumnGetters(task, querySchema, null);
@@ -409,7 +405,7 @@ public abstract class AbstractJdbcInputPlugin
     {
         PluginTask task = taskSource.loadTask(getTaskClass());
 
-        String builtQuery = task.getBuiltQuery();
+        PreparedQuery builtQuery = task.getBuiltQuery();
         JdbcSchema querySchema = task.getQuerySchema();
         BufferAllocator allocator = task.getBufferAllocator();
         PageBuilder pageBuilder = new PageBuilder(allocator, schema, output);
@@ -423,7 +419,7 @@ public abstract class AbstractJdbcInputPlugin
 
         try (JdbcInputConnection con = newConnection(task)) {
             List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
-            try (BatchSelect cursor = con.newSelectCursor(builtQuery, task.getBuiltQueryParameters(), getters, task.getFetchRows(), task.getSocketTimeout())) {
+            try (BatchSelect cursor = con.newSelectCursor(builtQuery.getQuery(), builtQuery.getParameters(), getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {
                     long rows = fetch(cursor, getters, pageBuilder, lastRecordStore);
                     if (rows <= 0L) {
