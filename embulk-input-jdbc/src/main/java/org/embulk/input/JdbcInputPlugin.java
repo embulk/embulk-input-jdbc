@@ -59,7 +59,7 @@ public class JdbcInputPlugin
             synchronized (loadedJarGlobs) {
                 String glob = t.getDriverPath().get();
                 if (!loadedJarGlobs.contains(glob)) {
-                    loadDriverJar(glob);
+                    addDriverJarToClasspath(glob);
                     loadedJarGlobs.add(glob);
                 }
             }

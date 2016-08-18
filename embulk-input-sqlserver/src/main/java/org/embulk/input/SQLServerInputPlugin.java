@@ -76,8 +76,7 @@ public class SQLServerInputPlugin
         Driver driver;
         boolean useJtdsDriver = false;
         if (sqlServerTask.getDriverPath().isPresent()) {
-            //addDriverJarToClasspath(sqlServerTask.getDriverPath().get());
-            loadDriverJar(sqlServerTask.getDriverPath().get()); // this should throw ConfigException is the file doesn't exist
+            addDriverJarToClasspath(sqlServerTask.getDriverPath().get());
             try {
                 driver = (Driver) Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver").newInstance();
             }
