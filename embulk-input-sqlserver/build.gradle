@@ -1,5 +1,6 @@
 dependencies {
     compile project(':embulk-input-jdbc')
+    compile 'net.sourceforge.jtds:jtds:1.3.1'
 
     testCompile project(':embulk-input-jdbc').sourceSets.test.output
 }
