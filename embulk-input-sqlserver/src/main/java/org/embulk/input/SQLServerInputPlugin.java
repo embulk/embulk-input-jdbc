@@ -143,9 +143,8 @@ public class SQLServerInputPlugin
         Properties props = new Properties();
 
         // common properties
-        if (sqlServerTask.getUser().isPresent()) {
-            props.setProperty("user", sqlServerTask.getUser().get());
-        }
+        props.setProperty("user", sqlServerTask.getUser().get());
+        props.setProperty("password", sqlServerTask.getPassword());
 
         if (useJtdsDriver) {
             // jTDS properties
@@ -169,11 +168,6 @@ public class SQLServerInputPlugin
                     || sqlServerTask.getIntegratedSecurity()) {
                 throw new ConfigException("'host', 'port', 'instance', 'database' and 'integratedSecurity' options are invalid if 'url' option is set.");
             }
-
-            if (sqlServerTask.getUser().isPresent()) {
-                props.setProperty("user", sqlServerTask.getUser().get());
-            }
-            props.setProperty("password", sqlServerTask.getPassword());
 
             return new UrlAndProperties(sqlServerTask.getUrl().get(), props);
         }
@@ -212,9 +206,6 @@ public class SQLServerInputPlugin
             if (!sqlServerTask.getUser().isPresent()) {
                 throw new ConfigException("'user' option is required but not set.");
             }
-
-            props.setProperty("user", sqlServerTask.getUser().get());
-            props.setProperty("password", sqlServerTask.getPassword());
         }
         else {
             // SQLServerDriver URL: host:port[;databaseName=] or host\instance[;databaseName=]
@@ -245,8 +236,6 @@ public class SQLServerInputPlugin
                 if (!sqlServerTask.getUser().isPresent()) {
                     throw new ConfigException("'user' option is required but not set.");
                 }
-                props.setProperty("user", sqlServerTask.getUser().get());
-                props.setProperty("password", sqlServerTask.getPassword());
             }
         }
 
