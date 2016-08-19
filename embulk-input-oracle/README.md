@@ -48,7 +48,7 @@ Oracle input plugins for Embulk loads records from Oracle.
 
 Incremental loading uses monotonically increasing unique columns (such as incremental (SEQUENCE) column) to load records inserted (or updated) after last execution.
 
-First, if `increment: true` is set, this plugin loads all records with additional ORDER BY. For example, if `incremental_columns: [updated_at, id]` option is set, query will be as following:
+First, if `incremental: true` is set, this plugin loads all records with additional ORDER BY. For example, if `incremental_columns: [updated_at, id]` option is set, query will be as following:
 
 ```
 SELECT * FROM (
