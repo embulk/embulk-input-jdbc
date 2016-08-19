@@ -48,6 +48,10 @@ public class PostgreSQLInputPlugin
         @Config("ssl")
         @ConfigDefault("false")
         public boolean getSsl();
+
+        @Config("application_name")
+        @ConfigDefault("\"embulk-input-postgresql\"")
+        public String getApplicationName();
     }
 
     @Override
@@ -81,6 +85,8 @@ public class PostgreSQLInputPlugin
             props.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");  // disable server-side validation
         }
         // setting ssl=false enables SSL. See org.postgresql.core.v3.openConnectionImpl.
+
+        props.setProperty("ApplicationName", t.getApplicationName());
 
         props.putAll(t.getOptions());
 
