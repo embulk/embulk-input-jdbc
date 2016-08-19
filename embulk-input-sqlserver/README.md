@@ -9,7 +9,7 @@ SQL Server input plugins for Embulk loads records from SQL Server.
 
 ## Configuration
 
-- **driver_path**: path to the jar file of the SQL Server JDBC driver (string)
+- **driver_path**: path to the jar file of Microsoft SQL Server JDBC driver. If not set, open-source driver (jTDS driver) is used (string)
 - **host**: database host name (string, required if url is not set)
 - **port**: database port number (integer, default: 1433)
 - **integratedSecutiry**: whether to use integrated authentication or not. The `sqljdbc_auth.dll` must be located on Java library path if using integrated authentication. : (boolean, default: false)
@@ -19,7 +19,7 @@ embulk "-J-Djava.library.path=C:\drivers" run input-sqlserver.yml
 ```
 - **user**: database login user name (string, required if not using integrated authentication)
 - **password**: database login password (string, default: "")
-- **instance**: destination instance name (string, default: use the default instance)
+- **instance**: destination instance name. if instance is set, port option will be ignored (string, default: use the default instance)
 - **database**: destination database name (string, default: use the default database)
 - **url**: URL of the JDBC connection (string, optional)
 - If you write SQL directly,
