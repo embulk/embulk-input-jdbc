@@ -23,18 +23,19 @@ public class PostgreSQLInputConnection
     }
 
     @Override
-    protected BatchSelect newBatchSelect(String select,
-            List<JdbcLiteral> parameters, List<ColumnGetter> getters,
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
+            List<ColumnGetter> getters,
             int fetchRows, int queryTimeout) throws SQLException
     {
-        String sql = "DECLARE cur NO SCROLL CURSOR FOR " + select;
+        String query = "DECLARE cur NO SCROLL CURSOR FOR " + preparedQuery.getQuery();
+        List<JdbcLiteral> params = preparedQuery.getParameters();
 
-        logger.info("SQL: " + sql);
-        PreparedStatement stmt = connection.prepareStatement(sql);
+        logger.info("SQL: " + query);
+        PreparedStatement stmt = connection.prepareStatement(query);
         try {
-            if (!parameters.isEmpty()) {
-                logger.info("Parameters: {}", parameters);
-                prepareParameters(stmt, getters, parameters);
+            if (!params.isEmpty()) {
+                logger.info("Parameters: {}", params);
+                prepareParameters(stmt, getters, params);
             }
             stmt.executeUpdate();
         } finally {

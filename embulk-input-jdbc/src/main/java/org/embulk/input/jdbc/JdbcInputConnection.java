@@ -93,24 +93,54 @@ public class JdbcInputConnection
         return new JdbcSchema(columns.build());
     }
 
-    public BatchSelect newSelectCursor(String query,
-            List<JdbcLiteral> parameters, List<ColumnGetter> getters,
-            int fetchRows, int queryTimeout) throws SQLException
+    public static class PreparedQuery
     {
-        return newBatchSelect(query, parameters, getters, fetchRows, queryTimeout);
+        private final String query;
+        private final List<JdbcLiteral> parameters;
+
+        @JsonCreator
+        public PreparedQuery(
+                @JsonProperty("query") String query,
+                @JsonProperty("parameters") List<JdbcLiteral> parameters)
+        {
+            this.query = query;
+            this.parameters = parameters;
+        }
+
+        @JsonProperty("query")
+        public String getQuery()
+        {
+            return query;
+        }
+
+        @JsonProperty("parameters")
+        public List<JdbcLiteral> getParameters()
+        {
+            return parameters;
+        }
     }
 
-    protected BatchSelect newBatchSelect(String select,
-            List<JdbcLiteral> parameters, List<ColumnGetter> getters,
+    public BatchSelect newSelectCursor(PreparedQuery preparedQuery,
+            List<ColumnGetter> getters,
             int fetchRows, int queryTimeout) throws SQLException
     {
-        PreparedStatement stmt = connection.prepareStatement(select);
+        return newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout);
+    }
+
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
+            List<ColumnGetter> getters,
+            int fetchRows, int queryTimeout) throws SQLException
+    {
+        String query = preparedQuery.getQuery();
+        List<JdbcLiteral> params = preparedQuery.getParameters();
+
+        PreparedStatement stmt = connection.prepareStatement(query);
         stmt.setFetchSize(fetchRows);
         stmt.setQueryTimeout(queryTimeout);
-        logger.info("SQL: " + select);
-        if (!parameters.isEmpty()) {
-            logger.info("Parameters: {}", parameters);
-            prepareParameters(stmt, getters, parameters);
+        logger.info("SQL: " + query);
+        if (!params.isEmpty()) {
+            logger.info("Parameters: {}", params);
+            prepareParameters(stmt, getters, params);
         }
         return new SingleSelect(stmt);
     }
@@ -216,33 +246,6 @@ public class JdbcInputConnection
         }
 
         return sb.toString();
-    }
-
-    public static class PreparedQuery
-    {
-        private final String query;
-        private final List<JdbcLiteral> parameters;
-
-        @JsonCreator
-        public PreparedQuery(
-                @JsonProperty("query") String query,
-                @JsonProperty("parameters") List<JdbcLiteral> parameters)
-        {
-            this.query = query;
-            this.parameters = parameters;
-        }
-
-        @JsonProperty("query")
-        public String getQuery()
-        {
-            return query;
-        }
-
-        @JsonProperty("parameters")
-        public List<JdbcLiteral> getParameters()
-        {
-            return parameters;
-        }
     }
 
     public PreparedQuery buildIncrementalQuery(String rawQuery, JdbcSchema querySchema,

@@ -19,15 +19,18 @@ public class MySQLInputConnection
     }
 
     @Override
-    protected BatchSelect newBatchSelect(String select,
-            List<JdbcLiteral> parameters, List<ColumnGetter> getters,
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
+            List<ColumnGetter> getters,
             int fetchRows, int queryTimeout) throws SQLException
     {
-        logger.info("SQL: " + select);
-        PreparedStatement stmt = connection.prepareStatement(select, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);  // TYPE_FORWARD_ONLY and CONCUR_READ_ONLY are default
-        if (!parameters.isEmpty()) {
-            logger.info("Parameters: {}", parameters);
-            prepareParameters(stmt, getters, parameters);
+        String query = preparedQuery.getQuery();
+        List<JdbcLiteral> params = preparedQuery.getParameters();
+
+        logger.info("SQL: " + query);
+        PreparedStatement stmt = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);  // TYPE_FORWARD_ONLY and CONCUR_READ_ONLY are default
+        if (!params.isEmpty()) {
+            logger.info("Parameters: {}", params);
+            prepareParameters(stmt, getters, params);
         }
         if (fetchRows == 1) {
             // See MySQLInputPlugin.newConnection doesn't set useCursorFetch=true when fetchRows=1

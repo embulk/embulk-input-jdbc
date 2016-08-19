@@ -419,7 +419,7 @@ public abstract class AbstractJdbcInputPlugin
 
         try (JdbcInputConnection con = newConnection(task)) {
             List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
-            try (BatchSelect cursor = con.newSelectCursor(builtQuery.getQuery(), builtQuery.getParameters(), getters, task.getFetchRows(), task.getSocketTimeout())) {
+            try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {
                     long rows = fetch(cursor, getters, pageBuilder);
                     if (rows <= 0L) {
