@@ -58,7 +58,7 @@ public class SQLServerInputPlugin
 
         @Config("password")
         @ConfigDefault("\"\"")
-        public Optional<String> getPassword();
+        public String getPassword();
 
         @Config("schema")
         @ConfigDefault("null")
@@ -147,9 +147,6 @@ public class SQLServerInputPlugin
         if (sqlServerTask.getUser().isPresent()) {
             props.setProperty("user", sqlServerTask.getUser().get());
         }
-        if (sqlServerTask.getPassword().isPresent()) {
-            props.setProperty("password", sqlServerTask.getPassword().get());
-        }
 
         if (useJtdsDriver) {
             // jTDS properties
@@ -177,9 +174,7 @@ public class SQLServerInputPlugin
             if (sqlServerTask.getUser().isPresent()) {
                 props.setProperty("user", sqlServerTask.getUser().get());
             }
-            if (sqlServerTask.getPassword().isPresent()) {
-                props.setProperty("password", sqlServerTask.getPassword().get());
-            }
+            props.setProperty("password", sqlServerTask.getPassword());
 
             return new UrlAndProperties(sqlServerTask.getUrl().get(), props);
         }
@@ -218,12 +213,9 @@ public class SQLServerInputPlugin
             if (!sqlServerTask.getUser().isPresent()) {
                 throw new ConfigException("'user' option is required but not set.");
             }
-            if (!sqlServerTask.getPassword().isPresent()) {
-                throw new ConfigException("'password' option is required but not set.");
-            }
 
             props.setProperty("user", sqlServerTask.getUser().get());
-            props.setProperty("password", sqlServerTask.getPassword().get());
+            props.setProperty("password", sqlServerTask.getPassword());
         }
         else {
             // SQLServerDriver URL: host:port[;databaseName=] or host\instance[;databaseName=]
@@ -245,8 +237,8 @@ public class SQLServerInputPlugin
 
             // integratedSecutiry or user + password is required
             if (sqlServerTask.getIntegratedSecurity()) {
-                if (sqlServerTask.getUser().isPresent() || sqlServerTask.getPassword().isPresent()) {
-                    throw new ConfigException("'user' and 'password' options are invalid if 'integratedSecutiry' option is set.");
+                if (sqlServerTask.getUser().isPresent()) {
+                    throw new ConfigException("'user' options are invalid if 'integratedSecutiry' option is set.");
                 }
                 props.setProperty("integratedSecurity", "true");
             }
@@ -254,11 +246,8 @@ public class SQLServerInputPlugin
                 if (!sqlServerTask.getUser().isPresent()) {
                     throw new ConfigException("'user' option is required but not set.");
                 }
-                if (!sqlServerTask.getPassword().isPresent()) {
-                    throw new ConfigException("'password' option is required but not set.");
-                }
                 props.setProperty("user", sqlServerTask.getUser().get());
-                props.setProperty("password", sqlServerTask.getPassword().get());
+                props.setProperty("password", sqlServerTask.getPassword());
             }
         }
 
