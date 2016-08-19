@@ -123,7 +123,10 @@ public class SQLServerInputPlugin
 
         UrlAndProperties urlAndProps = buildUrlAndProperties(sqlServerTask, useJtdsDriver);
 
-        Connection con = driver.connect(urlAndProps.getUrl(), urlAndProps.getProperties());
+        Properties props = urlAndProps.getProperties();
+        props.putAll(sqlServerTask.getOptions());
+
+        Connection con = driver.connect(urlAndProps.getUrl(), props);
         try {
             SQLServerInputConnection c = new SQLServerInputConnection(con, sqlServerTask.getSchema().orNull());
             con = null;
