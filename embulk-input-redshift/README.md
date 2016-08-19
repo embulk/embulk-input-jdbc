@@ -28,6 +28,9 @@ Redshift input plugins for Embulk loads records from Redshift.
   - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
   - **order_by**: expression of ORDER BY to sort rows (e.g. `created_at DESC, id ASC`) (string, default: not sorted)
+- **incremental**: if true, enables incremental loading. See next section for details (boolean, default: false)
+- **incremental_columns**: column names for incremental loading (array of strings, default: use primary keys)
+- **last_record**: values of the last record for incremental loading (array of objects, default: load all records)
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
   - **value_type**: embulk get values from database as this value_type. Typically, the value_type determines `getXXX` method of `java.sql.PreparedStatement`.
@@ -39,6 +42,43 @@ Redshift input plugins for Embulk loads records from Redshift.
   - **timezone**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted in this timezone.
 (string, value of default_timezone option is used by default)
 - **after_select**: if set, this SQL will be executed after the SELECT query in the same transaction.
+
+
+### Incremental loading
+
+Incremental loading uses monotonically increasing unique columns (such as auto-increment (IDENTITY) column) to load records inserted (or updated) after last execution.
+
+First, if `incremental: true` is set, this plugin loads all records with additional ORDER BY. For example, if `incremental_columns: [updated_at, id]` option is set, query will be as following:
+
+```
+SELECT * FROM (
+  ...original query is here...
+)
+ORDER BY updated_at, id
+```
+
+When bulk data loading finishes successfully, it outputs `last_record: ` paramater as config-diff so that next execution uses it.
+
+At the next execution, when `last_record: ` is also set, this plugin generates additional WHERE conditions to load records larger than the last record. For example, if `last_record: ["2017-01-01 00:32:12", 5291]` is set,
+
+```
+SELECT * FROM (
+  ...original query is here...
+)
+WHERE created_at > '2017-01-01 00:32:12' OR (created_at = '2017-01-01 00:32:12' AND id > 5291)
+ORDER BY updated_at, id
+```
+
+Then, it updates `last_record: ` so that next execution uses the updated last_record.
+
+**IMPORTANT**: If you set `incremental_columns: ` option, make sure that there is an index on the columns to avoid full table scan. For this example, following index should be created:
+
+```
+CREATE INDEX embulk_incremental_loading_index ON table (updated_at, id);
+```
+
+Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds an auto-increment (IDENTITY) primary key. Currently, only strings and integers are supported as incremental_columns.
+
 
 ## Example
 

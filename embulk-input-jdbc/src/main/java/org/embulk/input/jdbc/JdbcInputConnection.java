@@ -11,12 +11,19 @@ import java.util.Set;
 
 import org.embulk.config.ConfigException;
 import org.embulk.spi.Exec;
+import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.slf4j.Logger;
 
+import java.util.List;
+import java.util.ArrayList;
+import static java.util.Locale.ENGLISH;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 
 public class JdbcInputConnection
         implements AutoCloseable
@@ -57,6 +64,20 @@ public class JdbcInputConnection
         }
     }
 
+    public List<String> getPrimaryKeys(String tableName) throws SQLException
+    {
+        ResultSet rs = databaseMetaData.getPrimaryKeys(null, schemaName, tableName);
+        ImmutableList.Builder<String> builder = ImmutableList.builder();
+        try {
+            while(rs.next()) {
+                builder.add(rs.getString("COLUMN_NAME"));
+            }
+        } finally {
+            rs.close();
+        }
+        return builder.build();
+    }
+
     protected JdbcSchema getSchemaOfResultMetadata(ResultSetMetaData metadata) throws SQLException
     {
         ImmutableList.Builder<JdbcColumn> columns = ImmutableList.builder();
@@ -72,17 +93,68 @@ public class JdbcInputConnection
         return new JdbcSchema(columns.build());
     }
 
-    public BatchSelect newSelectCursor(String query, int fetchRows, int queryTimeout) throws SQLException
+    public static class PreparedQuery
     {
-        return newBatchSelect(query, fetchRows, queryTimeout);
+        private final String query;
+        private final List<JdbcLiteral> parameters;
+
+        @JsonCreator
+        public PreparedQuery(
+                @JsonProperty("query") String query,
+                @JsonProperty("parameters") List<JdbcLiteral> parameters)
+        {
+            this.query = query;
+            this.parameters = parameters;
+        }
+
+        @JsonProperty("query")
+        public String getQuery()
+        {
+            return query;
+        }
+
+        @JsonProperty("parameters")
+        public List<JdbcLiteral> getParameters()
+        {
+            return parameters;
+        }
     }
 
-    protected BatchSelect newBatchSelect(String query, int fetchRows, int queryTimeout) throws SQLException
+    public BatchSelect newSelectCursor(PreparedQuery preparedQuery,
+            List<ColumnGetter> getters,
+            int fetchRows, int queryTimeout) throws SQLException
     {
+        return newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout);
+    }
+
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
+            List<ColumnGetter> getters,
+            int fetchRows, int queryTimeout) throws SQLException
+    {
+        String query = preparedQuery.getQuery();
+        List<JdbcLiteral> params = preparedQuery.getParameters();
+
         PreparedStatement stmt = connection.prepareStatement(query);
         stmt.setFetchSize(fetchRows);
         stmt.setQueryTimeout(queryTimeout);
+        logger.info("SQL: " + query);
+        if (!params.isEmpty()) {
+            logger.info("Parameters: {}", params);
+            prepareParameters(stmt, getters, params);
+        }
         return new SingleSelect(stmt);
+    }
+
+    protected void prepareParameters(PreparedStatement stmt, List<ColumnGetter> getters,
+            List<JdbcLiteral> parameters)
+        throws SQLException
+    {
+        for (int i = 0; i < parameters.size(); i++) {
+            JdbcLiteral literal = parameters.get(i);
+            ColumnGetter getter = getters.get(literal.getColumnIndex());
+            int index = i + 1;  // JDBC column index begins from 1
+            getter.decodeFromJsonTo(stmt, index, literal.getValue());
+        }
     }
 
     public interface BatchSelect
@@ -159,33 +231,11 @@ public class JdbcInputConnection
             Optional<String> selectExpression, Optional<String> whereCondition,
             Optional<String> orderByExpression) throws SQLException
     {
-        String actualTableName;
-        if (tableExists(tableName)) {
-            actualTableName = tableName;
-        } else {
-            String upperTableName = tableName.toUpperCase();
-            String lowerTableName = tableName.toLowerCase();
-            if (tableExists(upperTableName)) {
-                if (tableExists(lowerTableName)) {
-                    throw new ConfigException(String.format("Cannot specify table '%s' because both '%s' and '%s' exist.",
-                            tableName, upperTableName, lowerTableName));
-                } else {
-                    actualTableName = upperTableName;
-                }
-            } else {
-                if (tableExists(lowerTableName)) {
-                    actualTableName = lowerTableName;
-                } else {
-                    actualTableName = tableName;
-                }
-            }
-        }
-
         StringBuilder sb = new StringBuilder();
 
         sb.append("SELECT ");
         sb.append(selectExpression.or("*"));
-        sb.append(" FROM ").append(buildTableName(actualTableName));
+        sb.append(" FROM ").append(buildTableName(tableName));
 
         if (whereCondition.isPresent()) {
             sb.append(" WHERE ").append(whereCondition.get());
@@ -198,7 +248,67 @@ public class JdbcInputConnection
         return sb.toString();
     }
 
-    private boolean tableExists(String tableName) throws SQLException
+    public PreparedQuery buildIncrementalQuery(String rawQuery, JdbcSchema querySchema,
+            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues) throws SQLException
+    {
+        StringBuilder sb = new StringBuilder();
+        ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
+
+        sb.append("SELECT * FROM (");
+        sb.append(truncateStatementDelimiter(rawQuery));
+        sb.append(") embulk_incremental_");
+        if (incrementalValues != null) {
+            sb.append(" WHERE ");
+
+            List<String> leftColumnNames = new ArrayList<>();
+            List<JdbcLiteral> rightLiterals = new ArrayList<>();
+            for (int n = 0; n < incrementalColumnIndexes.size(); n++) {
+                int columnIndex = incrementalColumnIndexes.get(n);
+                JsonNode value = incrementalValues.get(n);
+                leftColumnNames.add(querySchema.getColumnName(columnIndex));
+                rightLiterals.add(new JdbcLiteral(columnIndex, value));
+            }
+
+            for (int n = 0; n < leftColumnNames.size(); n++) {
+                if (n > 0) {
+                    sb.append(" OR ");
+                }
+                sb.append("(");
+
+                for (int i = 0; i < n; i++) {
+                    sb.append(quoteIdentifierString(leftColumnNames.get(i)));
+                    sb.append(" = ?");
+                    parameters.add(rightLiterals.get(i));
+                    sb.append(" AND ");
+                }
+                sb.append(quoteIdentifierString(leftColumnNames.get(n)));
+                sb.append(" > ?");
+                parameters.add(rightLiterals.get(n));
+
+                sb.append(")");
+            }
+        }
+        sb.append(" ORDER BY ");
+
+        boolean first = true;
+        for (int i : incrementalColumnIndexes) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(quoteIdentifierString(querySchema.getColumnName(i)));
+        }
+
+        return new PreparedQuery(sb.toString(), parameters.build());
+    }
+
+    protected String truncateStatementDelimiter(String rawQuery) throws SQLException
+    {
+        return rawQuery.replaceAll(";\\s*$", "");
+    }
+
+    public boolean tableExists(String tableName) throws SQLException
     {
         try (ResultSet rs = connection.getMetaData().getTables(null, schemaName, tableName, null)) {
             return rs.next();
@@ -207,7 +317,7 @@ public class JdbcInputConnection
 
     private Set<String> getColumnNames(String tableName) throws SQLException
     {
-        Builder<String> columnNamesBuilder = ImmutableSet.builder();
+        ImmutableSet.Builder<String> columnNamesBuilder = ImmutableSet.builder();
         try (ResultSet rs = connection.getMetaData().getColumns(null, schemaName, tableName, null)) {
             while (rs.next()) {
                 columnNamesBuilder.add(rs.getString("COLUMN_NAME"));

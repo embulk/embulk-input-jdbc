@@ -44,7 +44,6 @@ public class JdbcColumn
         return sqlType;
     }
 
-
     @JsonProperty("precision")
     public int getPrecision()
     {

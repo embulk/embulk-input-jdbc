@@ -1,10 +1,13 @@
 package org.embulk.input.mysql;
 
+import java.util.List;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.JdbcLiteral;
+import org.embulk.input.jdbc.getter.ColumnGetter;
 
 public class MySQLInputConnection
         extends JdbcInputConnection
@@ -16,10 +19,19 @@ public class MySQLInputConnection
     }
 
     @Override
-    protected BatchSelect newBatchSelect(String select, int fetchRows, int queryTimeout) throws SQLException
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
+            List<ColumnGetter> getters,
+            int fetchRows, int queryTimeout) throws SQLException
     {
-        logger.info("SQL: " + select);
-        PreparedStatement stmt = connection.prepareStatement(select, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);  // TYPE_FORWARD_ONLY and CONCUR_READ_ONLY are default
+        String query = preparedQuery.getQuery();
+        List<JdbcLiteral> params = preparedQuery.getParameters();
+
+        logger.info("SQL: " + query);
+        PreparedStatement stmt = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);  // TYPE_FORWARD_ONLY and CONCUR_READ_ONLY are default
+        if (!params.isEmpty()) {
+            logger.info("Parameters: {}", params);
+            prepareParameters(stmt, getters, params);
+        }
         if (fetchRows == 1) {
             // See MySQLInputPlugin.newConnection doesn't set useCursorFetch=true when fetchRows=1
             // MySQL Connector/J keeps the connection opened and process rows one by one with Integer.MIN_VALUE.
