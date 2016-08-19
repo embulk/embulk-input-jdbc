@@ -14,10 +14,13 @@ import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.sqlserver.SQLServerInputConnection;
 
 import com.google.common.base.Optional;
+import static java.util.Locale.ENGLISH;
 
 public class SQLServerInputPlugin
     extends AbstractJdbcInputPlugin
 {
+    private static int DEFAULT_PORT = 1433;
+
     public interface SQLServerPluginTask
         extends PluginTask
     {
@@ -42,8 +45,8 @@ public class SQLServerInputPlugin
         public Optional<String> getDatabase();
 
         @Config("integratedSecurity")
-        @ConfigDefault("null")
-        public Optional<Boolean> getIntegratedSecurity();
+        @ConfigDefault("false")
+        public boolean getIntegratedSecurity();
 
         @Config("url")
         @ConfigDefault("null")
@@ -68,6 +71,28 @@ public class SQLServerInputPlugin
         return SQLServerPluginTask.class;
     }
 
+    private static class UrlAndProperties
+    {
+        private final String url;
+        private final Properties properties;
+
+        public UrlAndProperties(String url, Properties properties)
+        {
+            this.url = url;
+            this.properties = properties;
+        }
+
+        public String getUrl()
+        {
+            return url;
+        }
+
+        public Properties getProperties()
+        {
+            return properties;
+        }
+    }
+
     @Override
     protected JdbcInputConnection newConnection(PluginTask task) throws SQLException
     {
@@ -90,23 +115,15 @@ public class SQLServerInputPlugin
                 driver = (Driver) Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver").newInstance();
             }
             catch (Exception ex) {
-                logger.info("Use jTDS Driver");
+                logger.info("Using jTDS Driver");
                 driver = new net.sourceforge.jtds.jdbc.Driver();
                 useJtdsDriver = true;
             }
         }
 
-        Properties props = new Properties();
-        if (sqlServerTask.getUser().isPresent()) {
-            props.setProperty("user", sqlServerTask.getUser().get());
-        }
-        if (sqlServerTask.getPassword().isPresent()) {
-            props.setProperty("password", sqlServerTask.getPassword().get());
-        }
-        props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
-        props.putAll(sqlServerTask.getOptions());
+        UrlAndProperties urlAndProps = buildUrlAndProperties(sqlServerTask, useJtdsDriver);
 
-        Connection con = driver.connect(buildUrl(sqlServerTask, useJtdsDriver), props);
+        Connection con = driver.connect(urlAndProps.getUrl(), urlAndProps.getProperties());
         try {
             SQLServerInputConnection c = new SQLServerInputConnection(con, sqlServerTask.getSchema().orNull());
             con = null;
@@ -119,58 +136,129 @@ public class SQLServerInputPlugin
         }
     }
 
-    private String buildUrl(SQLServerPluginTask sqlServerTask, boolean useJtdsDriver)
+    private UrlAndProperties buildUrlAndProperties(SQLServerPluginTask sqlServerTask, boolean useJtdsDriver)
     {
+        Properties props = new Properties();
+
+        // common properties
+        if (sqlServerTask.getUser().isPresent()) {
+            props.setProperty("user", sqlServerTask.getUser().get());
+        }
+        if (sqlServerTask.getPassword().isPresent()) {
+            props.setProperty("password", sqlServerTask.getPassword().get());
+        }
+
+        if (useJtdsDriver) {
+            // jTDS properties
+            props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
+            props.setProperty("socketTimeout", String.valueOf(sqlServerTask.getSocketTimeout())); // seconds
+
+            // TODO support more options as necessary
+        }
+        else {
+            // SQLServerDriver properties
+            props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
+
+            // TODO support more options as necessary
+        }
+
+        // skip URL build if it's set
         if (sqlServerTask.getUrl().isPresent()) {
             if (sqlServerTask.getHost().isPresent()
                     || sqlServerTask.getInstance().isPresent()
                     || sqlServerTask.getDatabase().isPresent()
-                    || sqlServerTask.getIntegratedSecurity().isPresent()) {
-                throw new IllegalArgumentException("'host', 'port', 'instance', 'database' and 'integratedSecurity' parameters are invalid if 'url' parameter is set.");
+                    || sqlServerTask.getIntegratedSecurity()) {
+                throw new ConfigException("'host', 'port', 'instance', 'database' and 'integratedSecurity' options are invalid if 'url' option is set.");
             }
-            return sqlServerTask.getUrl().get();
+
+            if (sqlServerTask.getUser().isPresent()) {
+                props.setProperty("user", sqlServerTask.getUser().get());
+            }
+            if (sqlServerTask.getPassword().isPresent()) {
+                props.setProperty("password", sqlServerTask.getPassword().get());
+            }
+
+            return new UrlAndProperties(sqlServerTask.getUrl().get(), props);
         }
+
+        // build URL
+        String url;
 
         if (!sqlServerTask.getHost().isPresent()) {
-            throw new IllegalArgumentException("Field 'host' is not set.");
-        }
-        if (!sqlServerTask.getDatabase().isPresent()) {
-            throw new IllegalArgumentException("Field 'database' is not set.");
+            throw new ConfigException("'host' option is required but not set.");
         }
 
-        StringBuilder urlBuilder = new StringBuilder();
-        String protocol = !useJtdsDriver ? "sqlserver" : "jtds:sqlserver";
-        if (sqlServerTask.getInstance().isPresent()) {
-            urlBuilder.append(String.format("jdbc:%s://%s\\%s", protocol, sqlServerTask.getHost().get(), sqlServerTask.getInstance().get()));
+        if (useJtdsDriver) {
+            // jTDS URL: host:port[/database] or host[/database][;instance=]
+            // host:port;instance= is allowed but port will be ignored? in this case.
+            if (sqlServerTask.getInstance().isPresent()) {
+                if (sqlServerTask.getPort() != DEFAULT_PORT) {
+                    logger.warn("'port: {}' option is ignored because instance option is set", sqlServerTask.getPort());
+                }
+                url = String.format(ENGLISH, "jdbc:jtds:sqlserver://%s", sqlServerTask.getHost().get());
+                props.setProperty("instance", sqlServerTask.getInstance().get());
+            }
+            else {
+                url = String.format(ENGLISH, "jdbc:jtds:sqlserver://%s:%d", sqlServerTask.getHost().get(), sqlServerTask.getPort());
+            }
+
+            // /database
+            if (sqlServerTask.getDatabase().isPresent()) {
+                url += "/" + sqlServerTask.getDatabase().get();
+            }
+
+            // integratedSecutiry is not supported, user + password is required
+            if (sqlServerTask.getIntegratedSecurity()) {
+                throw new ConfigException("'integratedSecutiry' option is not supported with jTDS driver. Set 'driver_path: /path/to/sqljdbc.jar' option if you want to use Microsoft SQLServerDriver.");
+            }
+
+            if (!sqlServerTask.getUser().isPresent()) {
+                throw new ConfigException("'user' option is required but not set.");
+            }
+            if (!sqlServerTask.getPassword().isPresent()) {
+                throw new ConfigException("'password' option is required but not set.");
+            }
+
+            props.setProperty("user", sqlServerTask.getUser().get());
+            props.setProperty("password", sqlServerTask.getPassword().get());
         }
         else {
-            urlBuilder.append(String.format("jdbc:%s://%s:%d", protocol, sqlServerTask.getHost().get(), sqlServerTask.getPort()));
-        }
-        if (!useJtdsDriver) {
-            if (sqlServerTask.getDatabase().isPresent()) {
-                urlBuilder.append(";databaseName=" + sqlServerTask.getDatabase().get());
+            // SQLServerDriver URL: host:port[;databaseName=] or host\instance[;databaseName=]
+            // host\instance:port[;databaseName] is allowed but \instance will be ignored in this case.
+            if (sqlServerTask.getInstance().isPresent()) {
+                if (sqlServerTask.getPort() != DEFAULT_PORT) {
+                    logger.warn("'port: {}' option is ignored because instance option is set", sqlServerTask.getPort());
+                }
+                url = String.format(ENGLISH, "jdbc:sqlserver://%s\\%s", sqlServerTask.getHost().get(), sqlServerTask.getInstance().get());
             }
-            if (sqlServerTask.getIntegratedSecurity().isPresent() && sqlServerTask.getIntegratedSecurity().get()) {
-                urlBuilder.append(";integratedSecurity=" + sqlServerTask.getIntegratedSecurity().get());
+            else {
+                url = String.format(ENGLISH, "jdbc:sqlserver://%s:%d", sqlServerTask.getHost().get(), sqlServerTask.getPort());
+            }
+
+            // ;databaseName=
+            if (sqlServerTask.getDatabase().isPresent()) {
+                props.setProperty("databaseName", sqlServerTask.getDatabase().get());
+            }
+
+            // integratedSecutiry or user + password is required
+            if (sqlServerTask.getIntegratedSecurity()) {
+                if (sqlServerTask.getUser().isPresent() || sqlServerTask.getPassword().isPresent()) {
+                    throw new ConfigException("'user' and 'password' options are invalid if 'integratedSecutiry' option is set.");
+                }
+                props.setProperty("integratedSecurity", "true");
             }
             else {
                 if (!sqlServerTask.getUser().isPresent()) {
-                    throw new IllegalArgumentException("Field 'user' is not set.");
+                    throw new ConfigException("'user' option is required but not set.");
                 }
                 if (!sqlServerTask.getPassword().isPresent()) {
-                    throw new IllegalArgumentException("Field 'password' is not set.");
+                    throw new ConfigException("'password' option is required but not set.");
                 }
-            }
-        }
-        else {
-            if (sqlServerTask.getDatabase().isPresent()) {
-                urlBuilder.append("/" + sqlServerTask.getDatabase().get());
-            }
-            if (sqlServerTask.getIntegratedSecurity().isPresent() && sqlServerTask.getIntegratedSecurity().get()) {
-                throw new ConfigException("Field 'integratedSecutiry' is not supported with jTDS driver. Set 'driver_path: /path/to/sqljdbc.jar' field if you want to use Microsoft SQLServerDriver.");
+                props.setProperty("user", sqlServerTask.getUser().get());
+                props.setProperty("password", sqlServerTask.getPassword().get());
             }
         }
 
-        return urlBuilder.toString();
+        return new UrlAndProperties(url, props);
     }
 }
