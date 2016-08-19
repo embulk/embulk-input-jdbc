@@ -413,9 +413,6 @@ public abstract class AbstractJdbcInputPlugin
         long totalRows = 0;
 
         LastRecordStore lastRecordStore = null;
-        if (task.getIncremental()) {
-            lastRecordStore = new LastRecordStore(task.getIncrementalColumnIndexes(), task.getIncrementalColumns());
-        }
 
         try (JdbcInputConnection con = newConnection(task)) {
             List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
@@ -429,7 +426,8 @@ public abstract class AbstractJdbcInputPlugin
                 }
             }
 
-            if (lastRecordStore != null && totalRows > 0) {
+            if (task.getIncremental() && totalRows > 0) {
+                lastRecordStore = new LastRecordStore(task.getIncrementalColumnIndexes(), task.getIncrementalColumns());
                 lastRecordStore.accept(getters);
             }
 
@@ -453,7 +451,7 @@ public abstract class AbstractJdbcInputPlugin
         }
 
         TaskReport report = Exec.newTaskReport();
-        if (lastRecordStore != null && totalRows > 0) {
+        if (lastRecordStore != null) {
             report.set("last_record", lastRecordStore.getList());
         }
 
