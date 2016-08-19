@@ -143,7 +143,10 @@ public class SQLServerInputPlugin
         Properties props = new Properties();
 
         // common properties
-        props.setProperty("user", sqlServerTask.getUser().get());
+
+        if (sqlServerTask.getUser().isPresent()) {
+            props.setProperty("user", sqlServerTask.getUser().get());
+        }
         props.setProperty("password", sqlServerTask.getPassword());
 
         if (useJtdsDriver) {
