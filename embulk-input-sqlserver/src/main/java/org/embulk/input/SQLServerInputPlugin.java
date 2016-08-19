@@ -5,6 +5,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import javax.validation.constraints.Size;
 
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
@@ -63,6 +64,11 @@ public class SQLServerInputPlugin
         @Config("schema")
         @ConfigDefault("null")
         public Optional<String> getSchema();
+
+        @Config("application_name")
+        @ConfigDefault("\"embulk-input-sqlserver\"")
+        @Size(max=128)
+        public String getApplicationName();
     }
 
     @Override
@@ -153,13 +159,19 @@ public class SQLServerInputPlugin
             props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
             props.setProperty("socketTimeout", String.valueOf(sqlServerTask.getSocketTimeout())); // seconds
 
+            props.setProperty("appName", sqlServerTask.getApplicationName());
+
             // TODO support more options as necessary
+            // List of properties: http://jtds.sourceforge.net/faq.html
         }
         else {
             // SQLServerDriver properties
             props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
 
+            props.setProperty("applicationName", sqlServerTask.getApplicationName());
+
             // TODO support more options as necessary
+            // List of properties: https://msdn.microsoft.com/en-us/library/ms378988(v=sql.110).aspx
         }
 
         // skip URL build if it's set
