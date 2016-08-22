@@ -1,5 +1,6 @@
 package org.embulk.input.jdbc;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.nio.file.Paths;
@@ -570,10 +571,14 @@ public abstract class AbstractJdbcInputPlugin
     //    }
     //}
 
-    protected void loadDriverJar(String glob)
+    protected void addDriverJarToClasspath(String glob)
     {
         // TODO match glob
         PluginClassLoader loader = (PluginClassLoader) getClass().getClassLoader();
+        Path path = Paths.get(glob);
+        if (!path.toFile().exists()) {
+             throw new ConfigException("The specified driver jar doesn't exist: " + glob);
+        }
         loader.addPath(Paths.get(glob));
     }
 }

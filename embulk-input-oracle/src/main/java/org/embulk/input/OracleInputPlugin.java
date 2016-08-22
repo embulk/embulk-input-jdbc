@@ -87,7 +87,7 @@ public class OracleInputPlugin
         props.putAll(oracleTask.getOptions());
 
         if (oracleTask.getDriverPath().isPresent()) {
-            loadDriverJar(oracleTask.getDriverPath().get());
+            addDriverJarToClasspath(oracleTask.getDriverPath().get());
         }
 
         try {
