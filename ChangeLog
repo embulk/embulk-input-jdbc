@@ -1,3 +1,11 @@
+Release 0.7.3 - 2016-08-26
+
+* Supported SSL in Redshift (@yu-yamada++).
+* Allowed DESC order at order_by option.
+* Supported incremental load (@sakama++).
+* embulk-input-sqlserver bundled jTDS, open source JDBC driver for SQL Server, and used it in default (@uu59++).
+* Added application_name option in embulk-input-postgresql and embulk-input-sqlserver.
+
 Release 0.7.2 - 2016-06-24
 
 * Case insensitive for table names and column names.
