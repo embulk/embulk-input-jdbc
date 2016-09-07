@@ -1,50 +1,22 @@
-# JDBC input plugins for Embulk
+# DB2 input plugins for Embulk
 
-JDBC input plugins for Embulk loads records to databases using JDBC drivers.
+DB2 input plugins for Embulk loads records from Oracle.
 
-## MySQL
-
-See [embulk-input-mysql](embulk-input-mysql/).
-
-## PostgreSQL
-
-See [embulk-input-postgresql](embulk-input-postgresql/).
-
-## Oracle
-
-See [embulk-input-oracle](embulk-input-oracle/).
-
-## Redshift
-
-See [embulk-input-redshift](embulk-input-redshift/).
-
-## SQL Server
-
-See [embulk-input-sqlserver](embulk-input-sqlserver/).
-
-## DB2
-
-See [embulk-input-db2](embulk-input-db2/).
-
-## Generic
-
-### Overview
+## Overview
 
 * **Plugin type**: input
 * **Resume supported**: yes
 
-### Configuration
+## Configuration
 
-- **driver_path**: path to the jar file of the JDBC driver (e.g. 'sqlite-jdbc-3.8.7.jar') (string, optional)
-- **driver_class**: class name of the JDBC driver (e.g. 'org.sqlite.JDBC') (string, required)
-- **url**: URL of the JDBC connection (e.g. 'jdbc:sqlite:mydb.sqlite3') (string, required)
-- **user**: database login user name (string, optional)
-- **password**: database login password (string, default: optional)
+- **driver_path**: path to the jar file of the DB2 JDBC driver (string)
+- **host**: database host name (string, required if url is not set)
+- **port**: database port number (integer, default: 50000)
+- **user**: database login user name (string)
+- **password**: database login password (string)
+- **database**: destination database name (string, required if url is not set)
 - **schema**: destination schema name (string, default: use the default schema)
-- **fetch_rows**: number of rows to fetch one time (integer, default: 10000)
-- **connect_timeout**: not supported.
-- **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
-- **options**: extra JDBC properties (hash, default: {})
+- **url**: URL of the JDBC connection (string, optional)
 - If you write SQL directly,
   - **query**: SQL to run (string)
 - If **query** is not set,
@@ -52,10 +24,16 @@ See [embulk-input-db2](embulk-input-db2/).
   - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
   - **order_by**: expression of ORDER BY to sort rows (e.g. `created_at DESC, id ASC`) (string, default: not sorted)
+- **fetch_rows**: number of rows to fetch one time (used for java.sql.Statement#setFetchSize) (integer, default: 10000)
+- **connect_timeout**: timeout for the driver to connect. 0 means no timeout. (integer (seconds), default: 300)
+- **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
+- **options**: extra JDBC properties (hash, default: {})
+- **incremental**: if true, enables incremental loading. See next section for details (boolean, default: false)
+- **incremental_columns**: column names for incremental loading (array of strings, default: use primary keys)
+- **last_record**: values of the last record for incremental loading (array of objects, default: load all records)
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
-- **default_column_options**: column_options for each JDBC type as default. Key is a JDBC type (e.g. 'DATE', 'BIGINT'). Value is same as column_options's value.
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
-  - **value_type**: embulk get values from database as this value_type. Typically, the value_type determines `getXXX` method of `java.sql.PreparedStatement`. `value_type: json` is an exception which uses `getString` and parses the result as a JSON string.
+  - **value_type**: embulk get values from database as this value_type. Typically, the value_type determines `getXXX` method of `java.sql.PreparedStatement`.
   (string, default: depends on the sql type of the column. Available values options are: `long`, `double`, `float`, `decimal`, `boolean`, `string`, `json`, `date`, `time`, `timestamp`)
   - **type**: Column values are converted to this embulk type.
   Available values options are: `boolean`, `long`, `double`, `string`, `json`, `timestamp`).
@@ -68,7 +46,7 @@ See [embulk-input-db2](embulk-input-db2/).
 
 ### Incremental loading
 
-Incremental loading uses monotonically increasing unique columns (such as auto-increment id) to load records inserted (or updated) after last execution.
+Incremental loading uses monotonically increasing unique columns (such as incremental (SEQUENCE) column) to load records inserted (or updated) after last execution.
 
 First, if `incremental: true` is set, this plugin loads all records with additional ORDER BY. For example, if `incremental_columns: [updated_at, id]` option is set, query will be as following:
 
@@ -99,20 +77,20 @@ Then, it updates `last_record: ` so that next execution uses the updated last_re
 CREATE INDEX embulk_incremental_loading_index ON table (updated_at, id);
 ```
 
-Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds an auto-increment primary key. Currently, only strings and integers are supported as incremental_columns.
+Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds a primary key. Currently, only strings and integers are supported as incremental_columns.
 
 
-### Example
+## Example
 
 ```yaml
 in:
-  type: jdbc
-  driver_path: /opt/oracle/ojdbc6.jar
-  driver_class: oracle.jdbc.driver.OracleDriver
-  url: jdbc:oracle:thin:@127.0.0.1:1521:mydb
+  type: db2
+  driver_path: /opt/db2/db2jcc4.jar
+  host: localhost
   user: myuser
-  password: "mypassword"
-  table: "my_table"
+  password: ""
+  database: my_database
+  table: my_table
   select: "col1, col2, col3"
   where: "col4 != 'a'"
   order_by: "col1 DESC"
@@ -131,12 +109,12 @@ If you need a complex SQL,
 
 ```yaml
 in:
-  type: jdbc
-  driver_path: /opt/oracle/ojdbc6.jar
-  driver_class: oracle.jdbc.driver.OracleDriver
-  url: jdbc:oracle:thin:@127.0.0.1:1521:mydb
+  type: db2
+  driver_path: /opt/db2/db2jcc4.jar
+  host: localhost
   user: myuser
-  password: "mypassword"
+  password: ""
+  database: my_database
   query: |
     SELECT t1.id, t1.name, t2.id AS t2_id, t2.name AS t2_name
     FROM table1 AS t1
@@ -148,18 +126,15 @@ Advanced configuration:
 
 ```yaml
 in:
-  type: jdbc
-  driver_path: /opt/oracle/ojdbc6.jar
-  driver_class: oracle.jdbc.driver.OracleDriver
-  url: jdbc:oracle:thin:@127.0.0.1:1521:mydb
+  type: db2
+  driver_path: /opt/db2/db2jcc4.jar
+  host: localhost
   user: myuser
-  password: "mypassword"
+  password: ""
+  database: my_database
   table: "my_table"
   select: "col1, col2, col3"
   where: "col4 != 'a'"
-  default_column_options:
-    DATE: { type: string, timestamp_format: "%Y/%m/%d", timezone: "+0900"}
-    BIGINT: { type: string }
   column_options:
     col1: {type: long}
     col3: {type: string, timestamp_format: "%Y/%m/%d", timezone: "+0900"}
@@ -167,7 +142,7 @@ in:
 
 ```
 
-### Build
+## Build
 
 ```
 $ ./gradlew gem
