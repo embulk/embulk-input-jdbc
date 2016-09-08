@@ -1,6 +1,6 @@
 # DB2 input plugins for Embulk
 
-DB2 input plugins for Embulk loads records from Oracle.
+DB2 input plugins for Embulk loads records from DB2.
 
 ## Overview
 
@@ -10,13 +10,12 @@ DB2 input plugins for Embulk loads records from Oracle.
 ## Configuration
 
 - **driver_path**: path to the jar file of the DB2 JDBC driver (string)
-- **host**: database host name (string, required if url is not set)
+- **host**: database host name (string, required)
 - **port**: database port number (integer, default: 50000)
-- **user**: database login user name (string)
+- **user**: database login user name (string, required)
 - **password**: database login password (string)
-- **database**: destination database name (string, required if url is not set)
+- **database**: destination database name (string, required)
 - **schema**: destination schema name (string, default: use the default schema)
-- **url**: URL of the JDBC connection (string, optional)
 - If you write SQL directly,
   - **query**: SQL to run (string)
 - If **query** is not set,
