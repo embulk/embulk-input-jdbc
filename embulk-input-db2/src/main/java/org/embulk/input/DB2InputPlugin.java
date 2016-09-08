@@ -12,6 +12,7 @@ import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
 
 import com.google.common.base.Optional;
+import static java.util.Locale.ENGLISH;
 
 public class DB2InputPlugin
     extends AbstractJdbcInputPlugin
@@ -24,28 +25,21 @@ public class DB2InputPlugin
         public Optional<String> getDriverPath();
 
         @Config("host")
-        @ConfigDefault("null")
-        public Optional<String> getHost();
+        public String getHost();
 
         @Config("port")
         @ConfigDefault("50000")
         public int getPort();
 
         @Config("database")
-        @ConfigDefault("null")
-        public Optional<String> getDatabase();
+        public String getDatabase();
 
         @Config("schema")
         @ConfigDefault("null")
         public Optional<String> getSchema();
 
-        @Config("url")
-        @ConfigDefault("null")
-        public Optional<String> getUrl();
-
         @Config("user")
-        @ConfigDefault("null")
-        public Optional<String> getUser();
+        public String getUser();
 
         @Config("password")
         @ConfigDefault("null")
@@ -63,27 +57,11 @@ public class DB2InputPlugin
     {
         DB2PluginTask db2Task = (DB2PluginTask) task;
 
-        String url;
-        if (db2Task.getUrl().isPresent()) {
-            if (db2Task.getHost().isPresent() || db2Task.getDatabase().isPresent()) {
-                throw new IllegalArgumentException("'host', 'port' and 'database' parameters are invalid if 'url' parameter is set.");
-            }
-            url = db2Task.getUrl().get();
-        } else {
-            if (!db2Task.getHost().isPresent()) {
-                throw new IllegalArgumentException("Field 'host' is not set.");
-            }
-            if (!db2Task.getDatabase().isPresent()) {
-                throw new IllegalArgumentException("Field 'database' is not set.");
-            }
-            url = String.format("jdbc:db2://%s:%d/%s",
-                    db2Task.getHost().get(), db2Task.getPort(), db2Task.getDatabase().get());
-        }
+        String url = String.format(ENGLISH, "jdbc:db2://%s:%d/%s",
+                db2Task.getHost(), db2Task.getPort(), db2Task.getDatabase());
 
         Properties props = new Properties();
-        if (db2Task.getUser().isPresent()) {
-            props.setProperty("user", db2Task.getUser().get());
-        }
+        props.setProperty("user", db2Task.getUser());
         if (db2Task.getPassword().isPresent()) {
             props.setProperty("password", db2Task.getPassword().get());
         }
