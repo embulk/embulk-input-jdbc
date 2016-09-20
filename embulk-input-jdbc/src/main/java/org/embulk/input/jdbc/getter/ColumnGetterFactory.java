@@ -189,7 +189,7 @@ public class ColumnGetterFactory
     {
         throw new UnsupportedOperationException(
                 String.format(ENGLISH,
-                    "Unsupported type %s (sqlType=%d) of '%s' column. Please add '%s: {type: string}' to 'column_options: {...}' option to convert the values to strings, or exclude the column from 'select:' option",
+                    "Unsupported type %s (sqlType=%d) of '%s' column. Please add '%s: {value_type: string}' to 'column_options: {...}' option to convert the values to strings, or exclude the column from 'select:' option",
                     column.getTypeName(), column.getSqlType(), column.getName(), column.getName()));
     }
 }
