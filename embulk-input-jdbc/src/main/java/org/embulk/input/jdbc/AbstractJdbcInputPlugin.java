@@ -274,7 +274,7 @@ public abstract class AbstractJdbcInputPlugin
             String upperTableName = tableName.toUpperCase();
             String lowerTableName = tableName.toLowerCase();
             boolean upperExists = con.tableExists(upperTableName);
-            boolean lowerExists = con.tableExists(upperTableName);
+            boolean lowerExists = con.tableExists(lowerTableName);
             if (upperExists && lowerExists) {
                     throw new ConfigException(String.format("Cannot specify table '%s' because both '%s' and '%s' exist.",
                             tableName, upperTableName, lowerTableName));
