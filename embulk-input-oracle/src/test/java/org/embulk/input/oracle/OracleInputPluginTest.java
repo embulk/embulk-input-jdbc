@@ -31,6 +31,13 @@ public class OracleInputPluginTest
     @BeforeClass
     public static void prepare() throws SQLException
     {
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Warning: you should put 'ojdbc7.jar' in 'embulk-input-oracle/driver' directory in order to test.");
+            return;
+        }
+
         Connection connection;
         try {
             connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/TESTDB", "TEST_USER", "test_pw");
@@ -176,7 +183,7 @@ public class OracleInputPluginTest
     private List<String> read(String path) throws IOException
     {
         FileSystem fs = FileSystems.getDefault();
-        return Files.readAllLines(fs.getPath(path), Charset.defaultCharset());
+        return Files.readAllLines(fs.getPath(path), Charset.forName("UTF8"));
     }
 
     private String convertPath(String name) throws URISyntaxException
