@@ -1,3 +1,7 @@
+Release 0.7.4 - 2016-09-28
+
+* Corrected checking for table existence (@kasaharatt++).
+
 Release 0.7.3 - 2016-08-26
 
 * Supported SSL in Redshift (@yu-yamada++).
