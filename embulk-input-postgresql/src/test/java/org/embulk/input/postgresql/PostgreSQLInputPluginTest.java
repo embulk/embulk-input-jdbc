@@ -1,5 +1,6 @@
 package org.embulk.input.postgresql;
 
+import static java.util.Locale.ENGLISH;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
@@ -12,7 +13,6 @@ import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,21 +23,17 @@ import org.junit.Test;
 
 public class PostgreSQLInputPluginTest extends AbstractJdbcInputPluginTest
 {
-    private static final String DATABASE = "test_db";
-    private static final String USER = "test_user";
-    private static final String PASSWORD = "test_pw";
-    private static final String URL = "jdbc:postgresql://localhost:5432/" + DATABASE;
-
     @Override
-    protected void prepare() throws SQLException {
+    protected void prepare() throws SQLException
+    {
         tester.addPlugin(InputPlugin.class, "postgresql", PostgreSQLInputPlugin.class);
 
         try {
             // Create User and Database
-            psql(String.format("DROP DATABASE IF EXISTS %s;", DATABASE));
-            psql(String.format("DROP USER IF EXISTS %s;", USER));
-            psql(String.format("CREATE USER %s WITH SUPERUSER PASSWORD '%s';", USER, PASSWORD));
-            psql(String.format("CREATE DATABASE %s WITH OWNER %s;", DATABASE, USER));
+            psql(String.format(ENGLISH, "DROP DATABASE IF EXISTS %s;", getDatabase()));
+            psql(String.format(ENGLISH, "DROP USER IF EXISTS %s;", getUser()));
+            psql(String.format(ENGLISH, "CREATE USER %s WITH SUPERUSER PASSWORD '%s';", getUser(), getPassword()));
+            psql(String.format(ENGLISH, "CREATE DATABASE %s WITH OWNER %s;", getDatabase(), getUser()));
         } catch (IOException e) {
             System.err.println(e);
             System.err.println("Warning: cannot prepare a database for testing embulk-input-postgresql.");
@@ -52,16 +48,12 @@ public class PostgreSQLInputPluginTest extends AbstractJdbcInputPluginTest
         enabled = true;
 
         // Insert Data
-        try(Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            try (Statement statement = connection.createStatement()) {
-                String sql = "";
-                sql += "DROP TABLE IF EXISTS input_hstore;";
-                sql += "CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA public;";
-                sql += "CREATE TABLE input_hstore (c1 hstore);";
-                sql += "INSERT INTO input_hstore (c1) VALUES('\"a\" => \"b\"');";
-                statement.execute(sql);
-            }
-        }
+        String sql = "";
+        sql += "DROP TABLE IF EXISTS input_hstore;";
+        sql += "CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA public;";
+        sql += "CREATE TABLE input_hstore (c1 hstore);";
+        sql += "INSERT INTO input_hstore (c1) VALUES('\"a\" => \"b\"');";
+        executeSQL(sql);
     }
 
     @Test
@@ -108,7 +100,9 @@ public class PostgreSQLInputPluginTest extends AbstractJdbcInputPluginTest
     }
 
     @Override
-    protected Connection connect() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+    protected Connection connect() throws SQLException
+    {
+        return DriverManager.getConnection(String.format(ENGLISH, "jdbc:postgresql://%s:%d/%s", getHost(), getPort(), getDatabase()),
+                getUser(), getPassword());
     }
 }

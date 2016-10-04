@@ -1,9 +1,9 @@
 in:
   type: postgresql
-  host: localhost
-  database: test_db
-  user: test_user
-  password: test_pw
+  host: #host#
+  database: #database#
+  user: #user#
+  password: #password#
   table: input_hstore
   select: "*"
   column_options:

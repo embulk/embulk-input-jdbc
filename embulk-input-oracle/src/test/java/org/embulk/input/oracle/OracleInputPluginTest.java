@@ -45,6 +45,8 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
             return;
         }
 
+        enabled = true;
+
         String drop1 = "DROP TABLE TEST1";
         executeSQL(drop1, true);
 
@@ -80,8 +82,6 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
                 + "'2015-06-05 23:45:06',"
                 + "'2015-06-06 23:45:06.789')";
         executeSQL(insert2);
-
-        enabled = true;
     }
 
     @Test

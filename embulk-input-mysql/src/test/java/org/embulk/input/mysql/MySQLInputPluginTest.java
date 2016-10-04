@@ -35,6 +35,8 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
             return;
         }
 
+        enabled = true;
+
         String drop1 = "drop table if exists test1";
         executeSQL(drop1);
 
@@ -103,8 +105,6 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
 
         String insert3 = "insert into test2 values(18446744073709551615)";
         executeSQL(insert3);
-
-        enabled = true;
     }
 
     /*
