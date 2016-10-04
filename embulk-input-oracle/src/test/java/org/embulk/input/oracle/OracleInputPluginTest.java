@@ -1,5 +1,6 @@
 package org.embulk.input.oracle;
 
+import static java.util.Locale.ENGLISH;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -22,7 +23,8 @@ import org.junit.Test;
 public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
 {
     @Override
-    protected void prepare() throws SQLException {
+    protected void prepare() throws SQLException
+    {
         tester.addPlugin(InputPlugin.class, "oracle", OracleInputPlugin.class);
 
         try {
@@ -34,7 +36,7 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
 
         Connection connection;
         try {
-            connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/TESTDB", "TEST_USER", "test_pw");
+            connection = connect();
         } catch (SQLException e) {
             System.err.println(e);
             System.err.println("Warning: you should prepare a schema on Oracle (database = 'TESTDB', user = 'TEST_USER', password = 'test_pw').");
@@ -175,7 +177,9 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
     }
 
     @Override
-    protected Connection connect() throws SQLException {
-        return DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/TESTDB", "TEST_USER", "test_pw");
+    protected Connection connect() throws SQLException
+    {
+        return DriverManager.getConnection(String.format(ENGLISH, "jdbc:oracle:thin:@%s:%d:%s", getHost(), getPort(), getDatabase()),
+                getUser(), getPassword());
     }
 }
