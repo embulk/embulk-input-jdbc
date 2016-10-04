@@ -1,9 +1,9 @@
 in:
   type: oracle
-  host: localhost
-  database: TESTDB
-  user: TEST_USER
-  password: test_pw
+  host: #host#
+  database: #database#
+  user: #user#
+  password: #password#
   table: TEST1
   select: "C1, C2, C3, C4, C5, C6, C7"
   order_by: C1

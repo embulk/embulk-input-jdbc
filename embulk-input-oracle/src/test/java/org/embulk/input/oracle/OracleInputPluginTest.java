@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,62 +33,55 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
             return;
         }
 
-        Connection connection;
         try {
-            connection = connect();
+            connect();
         } catch (SQLException e) {
             System.err.println(e);
-            System.err.println("Warning: you should prepare a schema on Oracle (database = 'TESTDB', user = 'TEST_USER', password = 'test_pw').");
+            System.err.println(String.format(ENGLISH, "Warning: prepare a schema on Oracle 12c (server = %s, port = %d, database = %s, user = %s, password = %s, charset = UTF-8).",
+                    getHost(), getPort(), getDatabase(), getUser(), getPassword()));
+            // for example
+            //   CREATE USER TEST_USER IDENTIFIED BY "test_pw";
+            //   GRANT DBA TO TEST_USER;
             return;
         }
 
-        try {
-            try (Statement statement = connection.createStatement()) {
-                String drop1 = "DROP TABLE TEST1";
-                try {
-                    statement.execute(drop1);
-                } catch (SQLException e) {
-                    System.out.println(e);
-                }
+        String drop1 = "DROP TABLE TEST1";
+        executeSQL(drop1, true);
 
-                String create1 =
-                        "CREATE TABLE TEST1 ("
-                        + "C1  DECIMAL(12,2),"
-                        + "C2  CHAR(8),"
-                        + "C3  VARCHAR2(8),"
-                        + "C4  NVARCHAR2(8),"
-                        + "C5  DATE,"
-                        + "C6  TIMESTAMP,"
-                        + "C7  TIMESTAMP(3))";
-                statement.execute(create1);
+        String create1 =
+                "CREATE TABLE TEST1 ("
+                + "C1  DECIMAL(12,2),"
+                + "C2  CHAR(8),"
+                + "C3  VARCHAR2(8),"
+                + "C4  NVARCHAR2(8),"
+                + "C5  DATE,"
+                + "C6  TIMESTAMP,"
+                + "C7  TIMESTAMP(3))";
+        executeSQL(create1);
 
-                String insert1 =
-                        "INSERT INTO TEST1 VALUES("
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL)";
-                statement.executeUpdate(insert1);
+        String insert1 =
+                "INSERT INTO TEST1 VALUES("
+                + "NULL,"
+                + "NULL,"
+                + "NULL,"
+                + "NULL,"
+                + "NULL,"
+                + "NULL,"
+                + "NULL)";
+        executeSQL(insert1);
 
-                String insert2 =
-                        "INSERT INTO TEST1 VALUES("
-                        + "-1234567890.12,"
-                        + "'ABCDEF',"
-                        + "'XYZ',"
-                        + "'ＡＢＣＤＥＦＧＨ',"
-                        + "'2015-06-04',"
-                        + "'2015-06-05 23:45:06',"
-                        + "'2015-06-06 23:45:06.789')";
-                statement.executeUpdate(insert2);
-            }
+        String insert2 =
+                "INSERT INTO TEST1 VALUES("
+                + "-1234567890.12,"
+                + "'ABCDEF',"
+                + "'XYZ',"
+                + "'ＡＢＣＤＥＦＧＨ',"
+                + "'2015-06-04',"
+                + "'2015-06-05 23:45:06',"
+                + "'2015-06-06 23:45:06.789')";
+        executeSQL(insert2);
 
-        } finally {
-            connection.close();
-            enabled = true;
-        }
+        enabled = true;
     }
 
     @Test
