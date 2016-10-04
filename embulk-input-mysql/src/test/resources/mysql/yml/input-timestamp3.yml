@@ -1,9 +1,9 @@
 in:
   type: mysql
-  host: localhost
-  database: TESTDB
-  user: TEST_USER
-  password: test_pw
+  host: #host#
+  database: #database#
+  user: #user#
+  password: #password#
   table: test1
   select: "*"
   default_timezone: '+0900'
