@@ -2,9 +2,7 @@ package org.embulk.input.oracle;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -16,21 +14,17 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
-import org.embulk.input.EmbulkPluginTester;
+import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.OracleInputPlugin;
 import org.embulk.spi.InputPlugin;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class OracleInputPluginTest
+public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
 {
-    private static boolean prepared = false;
-    private static EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "oracle", OracleInputPlugin.class);
+    @Override
+    protected void prepare() throws SQLException {
+        tester.addPlugin(InputPlugin.class, "oracle", OracleInputPlugin.class);
 
-    @BeforeClass
-    public static void prepare() throws SQLException
-    {
         try {
             Class.forName("oracle.jdbc.OracleDriver");
         } catch (ClassNotFoundException e) {
@@ -43,7 +37,7 @@ public class OracleInputPluginTest
             connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/TESTDB", "TEST_USER", "test_pw");
         } catch (SQLException e) {
             System.err.println(e);
-            System.err.println("Warning: prepare a schema on Oracle (database = 'TESTDB', user = 'TEST_USER', password = 'test_pw').");
+            System.err.println("Warning: you should prepare a schema on Oracle (database = 'TESTDB', user = 'TEST_USER', password = 'test_pw').");
             return;
         }
 
@@ -92,21 +86,15 @@ public class OracleInputPluginTest
 
         } finally {
             connection.close();
-            prepared = true;
+            enabled = true;
         }
-    }
-
-    @AfterClass
-    public static void dispose()
-    {
-        tester.destroy();
     }
 
     @Test
     public void test() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input.yml"));
+        if (enabled) {
+            test("/oracle/yml/input.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789",
@@ -118,8 +106,8 @@ public class OracleInputPluginTest
     @Test
     public void testLower() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-lower.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-lower.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789",
@@ -131,8 +119,8 @@ public class OracleInputPluginTest
     @Test
     public void testQuery() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-query.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-query.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     ",,,,,,",
@@ -144,8 +132,8 @@ public class OracleInputPluginTest
     @Test
     public void testQueryLower() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-query-lower.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-query-lower.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     ",,,,,,",
@@ -157,8 +145,8 @@ public class OracleInputPluginTest
     @Test
     public void testColumnOptions() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-column-options.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-column-options.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     ",,,,,,",
@@ -170,8 +158,8 @@ public class OracleInputPluginTest
     @Test
     public void testColumnOptionsLower() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-column-options-lower.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-column-options-lower.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     ",,,,,,",
@@ -186,11 +174,8 @@ public class OracleInputPluginTest
         return Files.readAllLines(fs.getPath(path), Charset.forName("UTF8"));
     }
 
-    private String convertPath(String name) throws URISyntaxException
-    {
-        if (getClass().getResource(name) == null) {
-            return name;
-        }
-        return new File(getClass().getResource(name).toURI()).getAbsolutePath();
+    @Override
+    protected Connection connect() throws SQLException {
+        return DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/TESTDB", "TEST_USER", "test_pw");
     }
 }

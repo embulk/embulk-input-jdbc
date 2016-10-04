@@ -3,40 +3,35 @@ package org.embulk.input.postgresql;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
-import org.embulk.input.EmbulkPluginTester;
+import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.PostgreSQLInputPlugin;
 import org.embulk.spi.InputPlugin;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class PostgreSQLInputPluginTest
+public class PostgreSQLInputPluginTest extends AbstractJdbcInputPluginTest
 {
     private static final String DATABASE = "test_db";
     private static final String USER = "test_user";
     private static final String PASSWORD = "test_pw";
     private static final String URL = "jdbc:postgresql://localhost:5432/" + DATABASE;
 
-    private static boolean prepared = false;
-    private static EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "postgresql", PostgreSQLInputPlugin.class);
+    @Override
+    protected void prepare() throws SQLException {
+        tester.addPlugin(InputPlugin.class, "postgresql", PostgreSQLInputPlugin.class);
 
-    @BeforeClass
-    public static void prepare() throws Exception
-    {
         try {
             // Create User and Database
             psql(String.format("DROP DATABASE IF EXISTS %s;", DATABASE));
@@ -50,9 +45,11 @@ public class PostgreSQLInputPluginTest
             // 2. add bin directory to path.
             // 3. set environment variable PGPASSWORD
             return;
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
-        prepared = true;
+        enabled = true;
 
         // Insert Data
         try(Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
@@ -67,17 +64,11 @@ public class PostgreSQLInputPluginTest
         }
     }
 
-    @AfterClass
-    public static void dispose()
-    {
-        tester.destroy();
-    }
-
     @Test
     public void testHstoreAsString() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/yml/input_hstore.yml"));
+        if (enabled) {
+            test("/yml/input_hstore.yml");
             assertEquals(Arrays.asList("c1", "\"\"\"a\"\"=>\"\"b\"\"\""),
                     read("postgresql-input000.00.csv"));
         }
@@ -86,8 +77,8 @@ public class PostgreSQLInputPluginTest
     @Test
     public void testHstoreAsJson() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/yml/input_hstore2.yml"));
+        if (enabled) {
+            test("/yml/input_hstore2.yml");
             assertEquals(Arrays.asList("c1", "\"{\"\"a\"\":\"\"b\"\"}\""),
                     read("postgresql-input000.00.csv"));
         }
@@ -97,14 +88,6 @@ public class PostgreSQLInputPluginTest
     {
         FileSystem fs = FileSystems.getDefault();
         return Files.readAllLines(fs.getPath(path), Charset.defaultCharset());
-    }
-
-    private String convertPath(String name) throws URISyntaxException
-    {
-        if (getClass().getResource(name) == null) {
-            return name;
-        }
-        return new File(getClass().getResource(name).toURI()).getAbsolutePath();
     }
 
     private static void psql(String sql) throws IOException, InterruptedException {
@@ -122,5 +105,10 @@ public class PostgreSQLInputPluginTest
             throw new IOException(String.format(
                     "Command finished with non-zero exit code. Exit code is %d.", code));
         }
+    }
+
+    @Override
+    protected Connection connect() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 }
