@@ -187,7 +187,7 @@ public abstract class AbstractJdbcInputPlugin
             // TODO incremental_columns is not set => get primary key
             schema = setupTask(con, task);
         } catch (SQLException ex) {
-            throw Throwables.propagate(ex);
+            throw new ConfigException(ex);
         }
 
         return buildNextConfigDiff(task, control.run(task.dump(), schema, 1));
