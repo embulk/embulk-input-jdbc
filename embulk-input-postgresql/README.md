@@ -1,6 +1,6 @@
-# PostgreSQL input plugins for Embulk
+# PostgreSQL input plugin for Embulk
 
-PostgreSQL input plugins for Embulk loads records from PostgreSQL.
+PostgreSQL input plugin for Embulk loads records from PostgreSQL.
 
 ## Overview
 
