@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.PostgreSQLInputPlugin;
 import org.embulk.spi.InputPlugin;
@@ -39,7 +40,7 @@ public class PostgreSQLInputPluginTest extends AbstractJdbcInputPluginTest
             System.err.println("Warning: cannot prepare a database for testing embulk-input-postgresql.");
             // 1. install postgresql.
             // 2. add bin directory to path.
-            // 3. set environment variable PGPASSWORD
+            // 3. set environment variable PGPASSWORD or write pgpassword in tests.yml
             return;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -82,8 +83,12 @@ public class PostgreSQLInputPluginTest extends AbstractJdbcInputPluginTest
         return Files.readAllLines(fs.getPath(path), Charset.defaultCharset());
     }
 
-    private static void psql(String sql) throws IOException, InterruptedException {
+    private void psql(String sql) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder("psql", "-w", "-c", sql);
+        String pgPassword = (String)getTestConfig("pgpassword", false);
+        if (!StringUtils.isEmpty(pgPassword)) {
+            pb.environment().put("PGPASSWORD", pgPassword);
+        }
         System.out.println("PSQL: " + pb.command().toString());
         final Process process = pb.start();
         final int code = process.waitFor();

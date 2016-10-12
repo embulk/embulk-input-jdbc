@@ -89,14 +89,22 @@ public abstract class AbstractJdbcInputPluginTest
         return testConfigurations;
     }
 
-    private Object getTestConfig(String name)
+    protected Object getTestConfig(String name, boolean required)
     {
         Map<String, ?> testConfigs = getTestConfigs();
         if (!testConfigs.containsKey(name)) {
-            throw new ConfigException(String.format(ENGLISH, "\"%s\" element in \"%s\" doesn't contain \"%s\" element.",
-                    pluginName, CONFIG_FILE_NAME, name));
+            if (required) {
+                throw new ConfigException(String.format(ENGLISH, "\"%s\" element in \"%s\" doesn't contain \"%s\" element.",
+                        pluginName, CONFIG_FILE_NAME, name));
+            }
+            return null;
         }
         return testConfigs.get(name);
+    }
+
+    protected Object getTestConfig(String name)
+    {
+        return getTestConfig(name, true);
     }
 
     protected String getHost()

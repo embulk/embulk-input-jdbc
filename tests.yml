@@ -25,3 +25,4 @@ postgresql:
   database: test_db
   user: test_user
   password: test_pw
+  pgpassword:
