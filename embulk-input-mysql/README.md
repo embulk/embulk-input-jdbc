@@ -1,6 +1,6 @@
-# MySQL input plugins for Embulk
+# MySQL input plugin for Embulk
 
-MySQL input plugins for Embulk loads records from MySQL.
+MySQL input plugin for Embulk loads records from MySQL.
 
 ## Overview
 

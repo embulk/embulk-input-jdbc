@@ -1,6 +1,6 @@
-# Redshift input plugins for Embulk
+# Redshift input plugin for Embulk
 
-Redshift input plugins for Embulk loads records from Redshift.
+Redshift input plugin for Embulk loads records from Redshift.
 
 ## Overview
 

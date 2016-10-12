@@ -1,6 +1,6 @@
-# Oracle input plugins for Embulk
+# Oracle input plugin for Embulk
 
-Oracle input plugins for Embulk loads records from Oracle.
+Oracle input plugin for Embulk loads records from Oracle.
 
 ## Overview
 
