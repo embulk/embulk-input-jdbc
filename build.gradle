@@ -14,6 +14,7 @@ def bintrayReleaseProjects = [
     project(":embulk-input-redshift"),
     project(":embulk-input-oracle"),
     project(":embulk-input-sqlserver"),
+    project(":embulk-input-db2"),
 ]
 
 allprojects {
@@ -194,4 +195,5 @@ task gemPush << {
     "gem push pkg/embulk-input-redshift-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-oracle-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-sqlserver-${project.version}.gem".execute().waitFor()
+    "gem push pkg/embulk-input-db2-${project.version}.gem".execute().waitFor()
 }

@@ -22,6 +22,10 @@ See [embulk-input-redshift](embulk-input-redshift/).
 
 See [embulk-input-sqlserver](embulk-input-sqlserver/).
 
+## DB2
+
+See [embulk-input-db2](embulk-input-db2/).
+
 ## Others (generic JDBC)
 
 See [embulk-input-jdbc](embulk-input-jdbc/).
