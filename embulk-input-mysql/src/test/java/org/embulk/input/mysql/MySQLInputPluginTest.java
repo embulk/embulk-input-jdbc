@@ -1,8 +1,6 @@
 package org.embulk.input.mysql;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -10,125 +8,118 @@ import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
-import org.embulk.input.EmbulkPluginTester;
+import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.MySQLInputPlugin;
 import org.embulk.spi.InputPlugin;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static java.util.Locale.ENGLISH;
 
-public class MySQLInputPluginTest
+public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
 {
-    private static boolean prepared = false;
-    private static EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "mysql", MySQLInputPlugin.class);
-
-    @BeforeClass
-    public static void prepare() throws SQLException
+    @Override
+    protected void prepare() throws SQLException
     {
-        Connection connection;
+        tester.addPlugin(InputPlugin.class, "mysql", MySQLInputPlugin.class);
+
         try {
-            connection = DriverManager.getConnection("jdbc:mysql://localhost/TESTDB", "TEST_USER", "test_pw");
+            connect();
         } catch (SQLException e) {
             System.err.println(e);
-            System.err.println("Warning: prepare a schema on MySQL (database = 'TESTDB', user = 'TEST_USER', password = 'test_pw').");
+            System.err.println(String.format(ENGLISH, "Warning: prepare a schema on MySQL (server = %s, port = %d, database = %s, user = %s, password = %s).",
+                    getHost(), getPort(), getDatabase(), getUser(), getPassword()));
             return;
         }
 
-        try {
-            try (Statement statement = connection.createStatement()) {
-                String drop1 = "drop table if exists test1";
-                statement.execute(drop1);
+        enabled = true;
 
-                String create1 =
-                        "create table test1 ("
-                        + "c1  tinyint,"
-                        + "c2  smallint,"
-                        + "c3  int,"
-                        + "c4  bigint,"
-                        + "c5  float,"
-                        + "c6  double,"
-                        + "c7  decimal(4,0),"
-                        + "c8  decimal(20,2),"
-                        + "c9  char(4),"
-                        + "c10 varchar(4),"
-                        + "c11 date,"
-                        + "c12 datetime,"
-                        + "c13 timestamp,"
-                        + "c14 time,"
-                        + "c15 datetime(6));";
-                statement.execute(create1);
+        String drop1 = "drop table if exists test1";
+        executeSQL(drop1);
 
-                String insert1 =
-                        "insert into test1 values("
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "null,"
-                        + "'2015-06-04 23:45:06',"
-                        + "null,"
-                        + "null);";
-                statement.executeUpdate(insert1);
+        String create1 =
+                "create table test1 ("
+                + "c1  tinyint,"
+                + "c2  smallint,"
+                + "c3  int,"
+                + "c4  bigint,"
+                + "c5  float,"
+                + "c6  double,"
+                + "c7  decimal(4,0),"
+                + "c8  decimal(20,2),"
+                + "c9  char(4),"
+                + "c10 varchar(4),"
+                + "c11 date,"
+                + "c12 datetime,"
+                + "c13 timestamp,"
+                + "c14 time,"
+                + "c15 datetime(6));";
+        executeSQL(create1);
 
-                String insert2 =
-                        "insert into test1 values("
-                        + "99,"
-                        + "9999,"
-                        + "-99999999,"
-                        + "-9999999999999999,"
-                        + "1.2345,"
-                        + "1.234567890123,"
-                        + "-1234,"
-                        + "123456789012345678.12,"
-                        + "'5678',"
-                        + "'xy',"
-                        + "'2015-06-04',"
-                        + "'2015-06-04 12:34:56',"
-                        + "'2015-06-04 23:45:06',"
-                        + "'08:04:02',"
-                        + "'2015-06-04 01:02:03.123456');";
-                statement.executeUpdate(insert2);
+        String insert1 =
+                "insert into test1 values("
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "'2015-06-04 23:45:06',"
+                + "null,"
+                + "null);";
+        executeSQL(insert1);
 
-                String drop2 = "drop table if exists test2";
-                statement.execute(drop2);
+        String insert2 =
+                "insert into test1 values("
+                + "99,"
+                + "9999,"
+                + "-99999999,"
+                + "-9999999999999999,"
+                + "1.2345,"
+                + "1.234567890123,"
+                + "-1234,"
+                + "123456789012345678.12,"
+                + "'5678',"
+                + "'xy',"
+                + "'2015-06-04',"
+                + "'2015-06-04 12:34:56',"
+                + "'2015-06-04 23:45:06',"
+                + "'08:04:02',"
+                + "'2015-06-04 01:02:03.123456');";
+        executeSQL(insert2);
 
-                String create2 = "create table test2 (c1 bigint unsigned);";
-                statement.execute(create2);
+        String drop2 = "drop table if exists test2";
+        executeSQL(drop2);
 
-                String insert3 = "insert into test2 values(18446744073709551615)";
-                statement.executeUpdate(insert3);
-            }
+        String create2 = "create table test2 (c1 bigint unsigned);";
+        executeSQL(create2);
 
-        } finally {
-            connection.close();
-            prepared = true;
-        }
+        String insert3 = "insert into test2 values(18446744073709551615)";
+        executeSQL(insert3);
     }
 
+    /*
     @AfterClass
     public static void dispose()
     {
         tester.destroy();
     }
+    */
 
     @Test
     public void test() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input.yml"));
+        if (enabled) {
+            test("/mysql/yml/input.yml");
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -140,8 +131,8 @@ public class MySQLInputPluginTest
     @Test
     public void testString() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-string.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-string.yml");
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -153,8 +144,8 @@ public class MySQLInputPluginTest
     @Test
     public void testBoolean() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-boolean.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-boolean.yml");
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -166,8 +157,8 @@ public class MySQLInputPluginTest
     @Test
     public void testLong() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-long.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-long.yml");
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -179,8 +170,8 @@ public class MySQLInputPluginTest
     @Test
     public void testDouble() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-double.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-double.yml");
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015-06-04 14:45:06,,",
@@ -192,8 +183,8 @@ public class MySQLInputPluginTest
     @Test
     public void testTimestamp1() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-timestamp1.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-timestamp1.yml");
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015/06/04 14:45:06,,",
@@ -205,8 +196,8 @@ public class MySQLInputPluginTest
     @Test
     public void testTimestamp2() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-timestamp2.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-timestamp2.yml");
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015/06/04 23:45:06,,",
@@ -218,8 +209,8 @@ public class MySQLInputPluginTest
     @Test
     public void testTimestamp3() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-timestamp3.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-timestamp3.yml");
             assertEquals(Arrays.asList(
                     "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
                     ",,,,,,,,,,,,2015/06/04 23:45:06,,",
@@ -231,8 +222,8 @@ public class MySQLInputPluginTest
     @Test
     public void testValueTypeString() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-valuetype-string.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-valuetype-string.yml");
             assertEquals(Arrays.asList(
                     "c1",
                     "18446744073709551615"),
@@ -243,8 +234,8 @@ public class MySQLInputPluginTest
     @Test
     public void testValueTypeDecimal() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/mysql/yml/input-valuetype-decimal.yml"));
+        if (enabled) {
+            test("/mysql/yml/input-valuetype-decimal.yml");
             assertEquals(Arrays.asList(
                     "c1",
                     "1.8446744073709552E19"),
@@ -258,11 +249,20 @@ public class MySQLInputPluginTest
         return Files.readAllLines(fs.getPath(path), Charset.defaultCharset());
     }
 
+    /*
     private String convertPath(String name) throws URISyntaxException
     {
         if (getClass().getResource(name) == null) {
             return name;
         }
         return new File(getClass().getResource(name).toURI()).getAbsolutePath();
+    }
+    */
+
+    @Override
+    protected Connection connect() throws SQLException
+    {
+        return DriverManager.getConnection(String.format(ENGLISH, "jdbc:mysql://%s:%d/%s", getHost(), getPort(), getDatabase()),
+                getUser(), getPassword());
     }
 }

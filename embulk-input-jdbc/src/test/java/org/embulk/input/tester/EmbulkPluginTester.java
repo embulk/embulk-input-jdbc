@@ -1,6 +1,5 @@
-package org.embulk.input;
+package org.embulk.input.tester;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import com.google.inject.Module;
 
 public class EmbulkPluginTester
 {
-    private static class PluginDefinition
+    public static class PluginDefinition
     {
         public final Class<?> iface;
         public final String name;
@@ -48,7 +47,12 @@ public class EmbulkPluginTester
         plugins.add(new PluginDefinition(iface, name, impl));
     }
 
-    public void run(String ymlPath) throws Exception
+    public List<PluginDefinition> getPlugins()
+    {
+        return plugins;
+    }
+
+    public void run(String yml) throws Exception
     {
         if (embulk == null) {
             Bootstrap bootstrap = new EmbulkEmbed.Bootstrap();
@@ -64,8 +68,7 @@ public class EmbulkPluginTester
             });
             embulk = bootstrap.initializeCloseable();
         }
-
-        ConfigSource config = embulk.newConfigLoader().fromYamlFile(new File(ymlPath));
+        ConfigSource config = embulk.newConfigLoader().fromYamlString(yml);
         embulk.run(config);
     }
 

@@ -1,10 +1,9 @@
 package org.embulk.input.oracle;
 
+import static java.util.Locale.ENGLISH;
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -12,25 +11,21 @@ import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 
-import org.embulk.input.EmbulkPluginTester;
+import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.OracleInputPlugin;
 import org.embulk.spi.InputPlugin;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class OracleInputPluginTest
+public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
 {
-    private static boolean prepared = false;
-    private static EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "oracle", OracleInputPlugin.class);
-
-    @BeforeClass
-    public static void prepare() throws SQLException
+    @Override
+    protected void prepare() throws SQLException
     {
+        tester.addPlugin(InputPlugin.class, "oracle", OracleInputPlugin.class);
+
         try {
             Class.forName("oracle.jdbc.OracleDriver");
         } catch (ClassNotFoundException e) {
@@ -38,75 +33,62 @@ public class OracleInputPluginTest
             return;
         }
 
-        Connection connection;
         try {
-            connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/TESTDB", "TEST_USER", "test_pw");
+            connect();
         } catch (SQLException e) {
             System.err.println(e);
-            System.err.println("Warning: prepare a schema on Oracle (database = 'TESTDB', user = 'TEST_USER', password = 'test_pw').");
+            System.err.println(String.format(ENGLISH, "Warning: prepare a schema on Oracle 12c (server = %s, port = %d, database = %s, user = %s, password = %s, charset = UTF-8).",
+                    getHost(), getPort(), getDatabase(), getUser(), getPassword()));
+            // for example
+            //   CREATE USER TEST_USER IDENTIFIED BY "test_pw";
+            //   GRANT DBA TO TEST_USER;
             return;
         }
 
-        try {
-            try (Statement statement = connection.createStatement()) {
-                String drop1 = "DROP TABLE TEST1";
-                try {
-                    statement.execute(drop1);
-                } catch (SQLException e) {
-                    System.out.println(e);
-                }
+        enabled = true;
 
-                String create1 =
-                        "CREATE TABLE TEST1 ("
-                        + "C1  DECIMAL(12,2),"
-                        + "C2  CHAR(8),"
-                        + "C3  VARCHAR2(8),"
-                        + "C4  NVARCHAR2(8),"
-                        + "C5  DATE,"
-                        + "C6  TIMESTAMP,"
-                        + "C7  TIMESTAMP(3))";
-                statement.execute(create1);
+        String drop1 = "DROP TABLE TEST1";
+        executeSQL(drop1, true);
 
-                String insert1 =
-                        "INSERT INTO TEST1 VALUES("
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL,"
-                        + "NULL)";
-                statement.executeUpdate(insert1);
+        String create1 =
+                "CREATE TABLE TEST1 ("
+                + "C1  DECIMAL(12,2),"
+                + "C2  CHAR(8),"
+                + "C3  VARCHAR2(8),"
+                + "C4  NVARCHAR2(8),"
+                + "C5  DATE,"
+                + "C6  TIMESTAMP,"
+                + "C7  TIMESTAMP(3))";
+        executeSQL(create1);
 
-                String insert2 =
-                        "INSERT INTO TEST1 VALUES("
-                        + "-1234567890.12,"
-                        + "'ABCDEF',"
-                        + "'XYZ',"
-                        + "'ＡＢＣＤＥＦＧＨ',"
-                        + "'2015-06-04',"
-                        + "'2015-06-05 23:45:06',"
-                        + "'2015-06-06 23:45:06.789')";
-                statement.executeUpdate(insert2);
-            }
+        String insert1 =
+                "INSERT INTO TEST1 VALUES("
+                + "NULL,"
+                + "NULL,"
+                + "NULL,"
+                + "NULL,"
+                + "NULL,"
+                + "NULL,"
+                + "NULL)";
+        executeSQL(insert1);
 
-        } finally {
-            connection.close();
-            prepared = true;
-        }
-    }
-
-    @AfterClass
-    public static void dispose()
-    {
-        tester.destroy();
+        String insert2 =
+                "INSERT INTO TEST1 VALUES("
+                + "-1234567890.12,"
+                + "'ABCDEF',"
+                + "'XYZ',"
+                + "'ＡＢＣＤＥＦＧＨ',"
+                + "'2015-06-04',"
+                + "'2015-06-05 23:45:06',"
+                + "'2015-06-06 23:45:06.789')";
+        executeSQL(insert2);
     }
 
     @Test
     public void test() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input.yml"));
+        if (enabled) {
+            test("/oracle/yml/input.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789",
@@ -118,8 +100,8 @@ public class OracleInputPluginTest
     @Test
     public void testLower() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-lower.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-lower.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789",
@@ -131,8 +113,8 @@ public class OracleInputPluginTest
     @Test
     public void testQuery() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-query.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-query.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     ",,,,,,",
@@ -144,8 +126,8 @@ public class OracleInputPluginTest
     @Test
     public void testQueryLower() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-query-lower.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-query-lower.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     ",,,,,,",
@@ -157,8 +139,8 @@ public class OracleInputPluginTest
     @Test
     public void testColumnOptions() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-column-options.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-column-options.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     ",,,,,,",
@@ -170,8 +152,8 @@ public class OracleInputPluginTest
     @Test
     public void testColumnOptionsLower() throws Exception
     {
-        if (prepared) {
-            tester.run(convertPath("/oracle/yml/input-column-options-lower.yml"));
+        if (enabled) {
+            test("/oracle/yml/input-column-options-lower.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
                     ",,,,,,",
@@ -186,11 +168,10 @@ public class OracleInputPluginTest
         return Files.readAllLines(fs.getPath(path), Charset.forName("UTF8"));
     }
 
-    private String convertPath(String name) throws URISyntaxException
+    @Override
+    protected Connection connect() throws SQLException
     {
-        if (getClass().getResource(name) == null) {
-            return name;
-        }
-        return new File(getClass().getResource(name).toURI()).getAbsolutePath();
+        return DriverManager.getConnection(String.format(ENGLISH, "jdbc:oracle:thin:@%s:%d:%s", getHost(), getPort(), getDatabase()),
+                getUser(), getPassword());
     }
 }

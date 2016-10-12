@@ -1,9 +1,9 @@
 in:
   type: oracle
-  host: localhost
-  database: TESTDB
-  user: TEST_USER
-  password: test_pw
+  host: #host#
+  database: #database#
+  user: #user#
+  password: #password#
   query: "SELECT C1, C2, C3, C4, C5, C6, C7 FROM TEST1"
 
 out:
