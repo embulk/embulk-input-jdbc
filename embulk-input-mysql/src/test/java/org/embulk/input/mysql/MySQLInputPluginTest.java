@@ -1,15 +1,9 @@
 package org.embulk.input.mysql;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.MySQLInputPlugin;
@@ -106,14 +100,6 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         String insert3 = "insert into test2 values(18446744073709551615)";
         executeSQL(insert3);
     }
-
-    /*
-    @AfterClass
-    public static void dispose()
-    {
-        tester.destroy();
-    }
-    */
 
     @Test
     public void test() throws Exception
@@ -242,22 +228,6 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
                     read("mysql-input000.00.csv"));
         }
     }
-
-    private List<String> read(String path) throws IOException
-    {
-        FileSystem fs = FileSystems.getDefault();
-        return Files.readAllLines(fs.getPath(path), Charset.defaultCharset());
-    }
-
-    /*
-    private String convertPath(String name) throws URISyntaxException
-    {
-        if (getClass().getResource(name) == null) {
-            return name;
-        }
-        return new File(getClass().getResource(name).toURI()).getAbsolutePath();
-    }
-    */
 
     @Override
     protected Connection connect() throws SQLException

@@ -3,16 +3,10 @@ package org.embulk.input.oracle;
 import static java.util.Locale.ENGLISH;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.OracleInputPlugin;
@@ -160,12 +154,6 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
                     "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015/06/04,2015/06/05 23:45:06,2015/06/06 23:45:06.789"),
                     read("oracle-input000.00.csv"));
         }
-    }
-
-    private List<String> read(String path) throws IOException
-    {
-        FileSystem fs = FileSystems.getDefault();
-        return Files.readAllLines(fs.getPath(path), Charset.forName("UTF8"));
     }
 
     @Override
