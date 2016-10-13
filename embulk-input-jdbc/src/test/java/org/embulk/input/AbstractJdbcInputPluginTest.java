@@ -1,5 +1,7 @@
 package org.embulk.input;
 
+import static java.util.Locale.ENGLISH;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,8 +27,6 @@ import org.embulk.input.tester.EmbulkPluginTester.PluginDefinition;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.io.Files;
-
-import static java.util.Locale.ENGLISH;
 
 public abstract class AbstractJdbcInputPluginTest
 {
@@ -242,6 +242,11 @@ public abstract class AbstractJdbcInputPluginTest
     protected File convertPath(String name) throws URISyntaxException
     {
         return new File(getClass().getResource(name).toURI());
+    }
+
+    protected List<String> read(String path) throws IOException
+    {
+        return Files.readLines(new File(path), Charset.forName("UTF8"));
     }
 
     protected abstract Connection connect() throws SQLException;

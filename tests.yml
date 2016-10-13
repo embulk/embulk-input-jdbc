@@ -26,3 +26,11 @@ postgresql:
   user: test_user
   password: test_pw
   pgpassword:
+
+db2:
+  host: localhost
+  port: 50000
+  database: TESTDB
+  user: TEST_USER
+  password: test_pw
+

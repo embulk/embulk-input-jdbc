@@ -6,15 +6,10 @@ import static org.junit.Assert.assertEquals;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.embulk.input.AbstractJdbcInputPluginTest;
@@ -75,12 +70,6 @@ public class PostgreSQLInputPluginTest extends AbstractJdbcInputPluginTest
             assertEquals(Arrays.asList("c1", "\"{\"\"a\"\":\"\"b\"\"}\""),
                     read("postgresql-input000.00.csv"));
         }
-    }
-
-    private List<String> read(String path) throws IOException
-    {
-        FileSystem fs = FileSystems.getDefault();
-        return Files.readAllLines(fs.getPath(path), Charset.defaultCharset());
     }
 
     private void psql(String sql) throws IOException, InterruptedException {

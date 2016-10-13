@@ -6,6 +6,7 @@ in:
   password: #password#
   table: test1
   select: "*"
+  order_by: "id"
   default_timezone: '+0900'
   column_options:
     c11: {type: string, timestamp_format: '%Y/%m/%d'}

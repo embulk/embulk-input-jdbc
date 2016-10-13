@@ -3,16 +3,10 @@ package org.embulk.input.oracle;
 import static java.util.Locale.ENGLISH;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.OracleInputPlugin;
@@ -52,17 +46,20 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
 
         String create1 =
                 "CREATE TABLE TEST1 ("
+                + "ID  CHAR(2),"
                 + "C1  DECIMAL(12,2),"
                 + "C2  CHAR(8),"
                 + "C3  VARCHAR2(8),"
                 + "C4  NVARCHAR2(8),"
                 + "C5  DATE,"
                 + "C6  TIMESTAMP,"
-                + "C7  TIMESTAMP(3))";
+                + "C7  TIMESTAMP(3),"
+                + "PRIMARY KEY(ID))";
         executeSQL(create1);
 
         String insert1 =
                 "INSERT INTO TEST1 VALUES("
+                + "'10',"
                 + "NULL,"
                 + "NULL,"
                 + "NULL,"
@@ -74,6 +71,7 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
 
         String insert2 =
                 "INSERT INTO TEST1 VALUES("
+                + "'11',"
                 + "-1234567890.12,"
                 + "'ABCDEF',"
                 + "'XYZ',"
@@ -117,8 +115,8 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
             test("/oracle/yml/input-query.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
-                    ",,,,,,",
-                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789"),
+                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789",
+                    ",,,,,,"),
                     read("oracle-input000.00.csv"));
         }
     }
@@ -130,8 +128,8 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
             test("/oracle/yml/input-query-lower.yml");
             assertEquals(Arrays.asList(
                     "C1,C2,C3,C4,C5,C6,C7",
-                    ",,,,,,",
-                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789"),
+                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015-06-04,2015-06-05 23:45:06,2015-06-06 23:45:06.789",
+                    ",,,,,,"),
                     read("oracle-input000.00.csv"));
         }
     }
@@ -142,9 +140,9 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/oracle/yml/input-column-options.yml");
             assertEquals(Arrays.asList(
-                    "C1,C2,C3,C4,C5,C6,C7",
-                    ",,,,,,",
-                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015/06/04,2015/06/05 23:45:06,2015/06/06 23:45:06.789"),
+                    "ID,C1,C2,C3,C4,C5,C6,C7",
+                    "10,,,,,,,",
+                    "11,-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015/06/04,2015/06/05 23:45:06,2015/06/06 23:45:06.789"),
                     read("oracle-input000.00.csv"));
         }
     }
@@ -155,17 +153,11 @@ public class OracleInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/oracle/yml/input-column-options-lower.yml");
             assertEquals(Arrays.asList(
-                    "C1,C2,C3,C4,C5,C6,C7",
-                    ",,,,,,",
-                    "-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015/06/04,2015/06/05 23:45:06,2015/06/06 23:45:06.789"),
+                    "ID,C1,C2,C3,C4,C5,C6,C7",
+                    "10,,,,,,,",
+                    "11,-1.23456789012E9,ABCDEF  ,XYZ,ＡＢＣＤＥＦＧＨ,2015/06/04,2015/06/05 23:45:06,2015/06/06 23:45:06.789"),
                     read("oracle-input000.00.csv"));
         }
-    }
-
-    private List<String> read(String path) throws IOException
-    {
-        FileSystem fs = FileSystems.getDefault();
-        return Files.readAllLines(fs.getPath(path), Charset.forName("UTF8"));
     }
 
     @Override

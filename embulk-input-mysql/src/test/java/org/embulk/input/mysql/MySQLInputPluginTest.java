@@ -1,15 +1,9 @@
 package org.embulk.input.mysql;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.embulk.input.AbstractJdbcInputPluginTest;
 import org.embulk.input.MySQLInputPlugin;
@@ -42,6 +36,7 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
 
         String create1 =
                 "create table test1 ("
+                + "id  char(2),"
                 + "c1  tinyint,"
                 + "c2  smallint,"
                 + "c3  int,"
@@ -56,11 +51,13 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
                 + "c12 datetime,"
                 + "c13 timestamp,"
                 + "c14 time,"
-                + "c15 datetime(6));";
+                + "c15 datetime(6),"
+                + "primary key(id));";
         executeSQL(create1);
 
         String insert1 =
                 "insert into test1 values("
+                + "'10',"
                 + "null,"
                 + "null,"
                 + "null,"
@@ -80,6 +77,7 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
 
         String insert2 =
                 "insert into test1 values("
+                + "'11',"
                 + "99,"
                 + "9999,"
                 + "-99999999,"
@@ -107,23 +105,15 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         executeSQL(insert3);
     }
 
-    /*
-    @AfterClass
-    public static void dispose()
-    {
-        tester.destroy();
-    }
-    */
-
     @Test
     public void test() throws Exception
     {
         if (enabled) {
             test("/mysql/yml/input.yml");
             assertEquals(Arrays.asList(
-                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
-                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
-                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    "id,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    "10,,,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "11,99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
                     read("mysql-input000.00.csv"));
         }
     }
@@ -134,9 +124,9 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/mysql/yml/input-string.yml");
             assertEquals(Arrays.asList(
-                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
-                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
-                    "99,9999,-99999999,-9999999999999999,1.2345,1.234567890123,-1234,123456789012345678.12,5678,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    "id,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    "10,,,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "11,99,9999,-99999999,-9999999999999999,1.2345,1.234567890123,-1234,123456789012345678.12,5678,xy,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
                     read("mysql-input000.00.csv"));
         }
     }
@@ -147,9 +137,9 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/mysql/yml/input-boolean.yml");
             assertEquals(Arrays.asList(
-                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
-                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
-                    "true,true,false,false,true,true,false,true,,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    "id,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    "10,,,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "11,true,true,false,false,true,true,false,true,,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
                     read("mysql-input000.00.csv"));
         }
     }
@@ -160,9 +150,9 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/mysql/yml/input-long.yml");
             assertEquals(Arrays.asList(
-                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
-                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
-                    "99,9999,-99999999,-9999999999999999,1,1,-1234,123456789012345678,5678,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    "id,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    "10,,,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "11,99,9999,-99999999,-9999999999999999,1,1,-1234,123456789012345678,5678,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
                     read("mysql-input000.00.csv"));
         }
     }
@@ -173,9 +163,9 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/mysql/yml/input-double.yml");
             assertEquals(Arrays.asList(
-                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
-                    ",,,,,,,,,,,,2015-06-04 14:45:06,,",
-                    "99.0,9999.0,-9.9999999E7,-1.0E16,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678.0,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
+                    "id,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    "10,,,,,,,,,,,,,2015-06-04 14:45:06,,",
+                    "11,99.0,9999.0,-9.9999999E7,-1.0E16,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678.0,,2015-06-03,2015-06-04 03:34:56,2015-06-04 14:45:06,23:04:02,2015-06-03 16:02:03"),
                     read("mysql-input000.00.csv"));
         }
     }
@@ -186,9 +176,9 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/mysql/yml/input-timestamp1.yml");
             assertEquals(Arrays.asList(
-                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
-                    ",,,,,,,,,,,,2015/06/04 14:45:06,,",
-                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/03,2015/06/04 03:34:56,2015/06/04 14:45:06,23-04-02,2015/06/03 16:02:03.123456"),
+                    "id,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    "10,,,,,,,,,,,,,2015/06/04 14:45:06,,",
+                    "11,99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/03,2015/06/04 03:34:56,2015/06/04 14:45:06,23-04-02,2015/06/03 16:02:03.123456"),
                     read("mysql-input000.00.csv"));
         }
     }
@@ -199,9 +189,9 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/mysql/yml/input-timestamp2.yml");
             assertEquals(Arrays.asList(
-                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
-                    ",,,,,,,,,,,,2015/06/04 23:45:06,,",
-                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/03,2015/06/04 03:34:56,2015/06/04 23:45:06,08-04-02,2015/06/03 16:02:03.123456"),
+                    "id,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    "10,,,,,,,,,,,,,2015/06/04 23:45:06,,",
+                    "11,99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/03,2015/06/04 03:34:56,2015/06/04 23:45:06,08-04-02,2015/06/03 16:02:03.123456"),
                     read("mysql-input000.00.csv"));
         }
     }
@@ -212,9 +202,9 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
         if (enabled) {
             test("/mysql/yml/input-timestamp3.yml");
             assertEquals(Arrays.asList(
-                    "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
-                    ",,,,,,,,,,,,2015/06/04 23:45:06,,",
-                    "99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/04,2015/06/04 12:34:56,2015/06/04 23:45:06,02-04-02,2015/06/04 01:02:03.123456"),
+                    "id,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15",
+                    "10,,,,,,,,,,,,,2015/06/04 23:45:06,,",
+                    "11,99,9999,-99999999,-9999999999999999,1.2345000505447388,1.234567890123,-1234.0,1.2345678901234568E17,5678,xy,2015/06/04,2015/06/04 12:34:56,2015/06/04 23:45:06,02-04-02,2015/06/04 01:02:03.123456"),
                     read("mysql-input000.00.csv"));
         }
     }
@@ -242,22 +232,6 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
                     read("mysql-input000.00.csv"));
         }
     }
-
-    private List<String> read(String path) throws IOException
-    {
-        FileSystem fs = FileSystems.getDefault();
-        return Files.readAllLines(fs.getPath(path), Charset.defaultCharset());
-    }
-
-    /*
-    private String convertPath(String name) throws URISyntaxException
-    {
-        if (getClass().getResource(name) == null) {
-            return name;
-        }
-        return new File(getClass().getResource(name).toURI()).getAbsolutePath();
-    }
-    */
 
     @Override
     protected Connection connect() throws SQLException
