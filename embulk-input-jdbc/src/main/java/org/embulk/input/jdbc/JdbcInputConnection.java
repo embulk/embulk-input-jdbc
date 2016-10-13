@@ -248,48 +248,111 @@ public class JdbcInputConnection
         return sb.toString();
     }
 
-    public PreparedQuery buildIncrementalQuery(String rawQuery, JdbcSchema querySchema,
+    public PreparedQuery rebuildIncrementalQuery(String tableName,
+            Optional<String> selectExpression, Optional<String> whereCondition,
+            JdbcSchema querySchema,
+            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues) throws SQLException
+    {
+        List<JdbcLiteral> parameters = ImmutableList.of();
+
+        Optional<String> newWhereCondition;
+        if (incrementalValues != null) {
+            StringBuilder sb = new StringBuilder();
+
+            if (whereCondition.isPresent()) {
+                sb.append("(");
+                sb.append(whereCondition.get());
+                sb.append(") AND ");
+            }
+
+            sb.append("(");
+            parameters = buildIncrementalConditionTo(sb,
+                    querySchema, incrementalColumnIndexes, incrementalValues);
+            sb.append(")");
+
+            newWhereCondition = Optional.of(sb.toString());
+        }
+        else {
+            newWhereCondition = whereCondition;
+        }
+
+        Optional<String> newOrderByExpression;
+        {
+            StringBuilder sb = new StringBuilder();
+            buildIncrementalOrderTo(sb, querySchema, incrementalColumnIndexes);
+            newOrderByExpression = Optional.of(sb.toString());
+        }
+
+        String newQuery = buildSelectQuery(
+                tableName, selectExpression, newWhereCondition,
+                newOrderByExpression);
+
+        return new PreparedQuery(newQuery, parameters);
+    }
+
+    public PreparedQuery wrapIncrementalQuery(String rawQuery, JdbcSchema querySchema,
             List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues) throws SQLException
     {
         StringBuilder sb = new StringBuilder();
-        ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
+        List<JdbcLiteral> parameters = ImmutableList.of();
 
         sb.append("SELECT * FROM (");
         sb.append(truncateStatementDelimiter(rawQuery));
         sb.append(") embulk_incremental_");
+
         if (incrementalValues != null) {
             sb.append(" WHERE ");
-
-            List<String> leftColumnNames = new ArrayList<>();
-            List<JdbcLiteral> rightLiterals = new ArrayList<>();
-            for (int n = 0; n < incrementalColumnIndexes.size(); n++) {
-                int columnIndex = incrementalColumnIndexes.get(n);
-                JsonNode value = incrementalValues.get(n);
-                leftColumnNames.add(querySchema.getColumnName(columnIndex));
-                rightLiterals.add(new JdbcLiteral(columnIndex, value));
-            }
-
-            for (int n = 0; n < leftColumnNames.size(); n++) {
-                if (n > 0) {
-                    sb.append(" OR ");
-                }
-                sb.append("(");
-
-                for (int i = 0; i < n; i++) {
-                    sb.append(quoteIdentifierString(leftColumnNames.get(i)));
-                    sb.append(" = ?");
-                    parameters.add(rightLiterals.get(i));
-                    sb.append(" AND ");
-                }
-                sb.append(quoteIdentifierString(leftColumnNames.get(n)));
-                sb.append(" > ?");
-                parameters.add(rightLiterals.get(n));
-
-                sb.append(")");
-            }
+            parameters = buildIncrementalConditionTo(sb,
+                    querySchema, incrementalColumnIndexes, incrementalValues);
         }
-        sb.append(" ORDER BY ");
 
+        sb.append(" ORDER BY ");
+        buildIncrementalOrderTo(sb, querySchema, incrementalColumnIndexes);
+
+        return new PreparedQuery(sb.toString(), parameters);
+    }
+
+    private List<JdbcLiteral> buildIncrementalConditionTo(
+            StringBuilder sb,
+            JdbcSchema querySchema,
+            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues) throws SQLException
+    {
+        ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
+
+        List<String> leftColumnNames = new ArrayList<>();
+        List<JdbcLiteral> rightLiterals = new ArrayList<>();
+        for (int n = 0; n < incrementalColumnIndexes.size(); n++) {
+            int columnIndex = incrementalColumnIndexes.get(n);
+            JsonNode value = incrementalValues.get(n);
+            leftColumnNames.add(querySchema.getColumnName(columnIndex));
+            rightLiterals.add(new JdbcLiteral(columnIndex, value));
+        }
+
+        for (int n = 0; n < leftColumnNames.size(); n++) {
+            if (n > 0) {
+                sb.append(" OR ");
+            }
+            sb.append("(");
+
+            for (int i = 0; i < n; i++) {
+                sb.append(quoteIdentifierString(leftColumnNames.get(i)));
+                sb.append(" = ?");
+                parameters.add(rightLiterals.get(i));
+                sb.append(" AND ");
+            }
+            sb.append(quoteIdentifierString(leftColumnNames.get(n)));
+            sb.append(" > ?");
+            parameters.add(rightLiterals.get(n));
+
+            sb.append(")");
+        }
+
+        return parameters.build();
+    }
+
+    private void buildIncrementalOrderTo(StringBuilder sb,
+            JdbcSchema querySchema, List<Integer> incrementalColumnIndexes)
+    {
         boolean first = true;
         for (int i : incrementalColumnIndexes) {
             if (first) {
@@ -299,8 +362,6 @@ public class JdbcInputConnection
             }
             sb.append(quoteIdentifierString(querySchema.getColumnName(i)));
         }
-
-        return new PreparedQuery(sb.toString(), parameters.build());
     }
 
     protected String truncateStatementDelimiter(String rawQuery) throws SQLException
