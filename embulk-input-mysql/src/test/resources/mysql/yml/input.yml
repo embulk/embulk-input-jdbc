@@ -6,6 +6,7 @@ in:
   password: #password#
   table: test1
   select: "*"
+  order_by: "id"
 
 out:
   type: file

@@ -36,6 +36,7 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
 
         String create1 =
                 "create table test1 ("
+                + "id  char(2),"
                 + "c1  tinyint,"
                 + "c2  smallint,"
                 + "c3  int,"
@@ -50,11 +51,13 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
                 + "c12 datetime,"
                 + "c13 timestamp,"
                 + "c14 time,"
-                + "c15 datetime(6));";
+                + "c15 datetime(6),"
+                + "primary key(id));";
         executeSQL(create1);
 
         String insert1 =
                 "insert into test1 values("
+                + "10"
                 + "null,"
                 + "null,"
                 + "null,"
@@ -74,6 +77,7 @@ public class MySQLInputPluginTest extends AbstractJdbcInputPluginTest
 
         String insert2 =
                 "insert into test1 values("
+                + "11,"
                 + "99,"
                 + "9999,"
                 + "-99999999,"

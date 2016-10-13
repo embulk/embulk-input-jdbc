@@ -6,6 +6,7 @@ in:
   password: #password#
   table: test1
   select: "*"
+  order_by: "id"
   column_options:
     c1: {type: boolean}
     c2: {type: boolean}
