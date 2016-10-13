@@ -6,7 +6,6 @@ in:
   password: #password#
   table: test2
   select: "*"
-  order_by: "id"
   column_options:
     c1: {value_type: string}
 

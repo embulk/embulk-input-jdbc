@@ -4,7 +4,7 @@ in:
   database: #database#
   user: #user#
   password: #password#
-  query: "SELECT C1, C2, C3, C4, C5, C6, C7 FROM TEST1"
+  query: "SELECT C1, C2, C3, C4, C5, C6, C7 FROM TEST1 ORDER BY C1"
 
 out:
   type: file

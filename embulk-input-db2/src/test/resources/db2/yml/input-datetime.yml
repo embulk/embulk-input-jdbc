@@ -6,6 +6,7 @@ in:
   password: #password#
   table: TEST_DATETIME
   select: "*"
+  order_by: "id"
   default_timezone: '+0900'
 
 out:
