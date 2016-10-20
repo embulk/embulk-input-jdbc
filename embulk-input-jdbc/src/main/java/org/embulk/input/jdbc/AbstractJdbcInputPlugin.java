@@ -201,9 +201,9 @@ public abstract class AbstractJdbcInputPlugin
         }
 
         // build SELECT query and gets schema of its result
-        String query = getQuery(task, con);
+        String rawQuery = getRawQuery(task, con);
 
-        JdbcSchema querySchema = con.getSchemaOfQuery(query);
+        JdbcSchema querySchema = con.getSchemaOfQuery(rawQuery);
         task.setQuerySchema(querySchema);
         // query schema should not change after incremental query
 
@@ -232,20 +232,30 @@ public abstract class AbstractJdbcInputPlugin
             List<Integer> incrementalColumnIndexes = findIncrementalColumnIndexes(querySchema, incrementalColumns);
             task.setIncrementalColumnIndexes(incrementalColumnIndexes);
 
+            List<JsonNode> lastRecord;
             if (task.getLastRecord().isPresent()) {
-                List<JsonNode> lastRecord = task.getLastRecord().get();
+                lastRecord = task.getLastRecord().get();
                 if (lastRecord.size() != incrementalColumnIndexes.size()) {
                     throw new ConfigException("Number of values set at last_record must be same with number of columns set at incremental_columns");
                 }
-                preparedQuery = con.buildIncrementalQuery(query, querySchema, incrementalColumnIndexes, lastRecord);
             }
             else {
-                preparedQuery = con.buildIncrementalQuery(query, querySchema, incrementalColumnIndexes, null);
+                lastRecord = null;
+            }
+
+            if (task.getQuery().isPresent()) {
+                preparedQuery = con.wrapIncrementalQuery(rawQuery, querySchema, incrementalColumnIndexes, lastRecord);
+            }
+            else {
+                preparedQuery = con.rebuildIncrementalQuery(
+                        task.getTable().get(), task.getSelect(),
+                        task.getWhere(),
+                        querySchema, incrementalColumnIndexes, lastRecord);
             }
         }
         else {
             task.setIncrementalColumnIndexes(ImmutableList.<Integer>of());
-            preparedQuery = new PreparedQuery(query, ImmutableList.<JdbcLiteral>of());
+            preparedQuery = new PreparedQuery(rawQuery, ImmutableList.<JdbcLiteral>of());
         }
 
         task.setBuiltQuery(preparedQuery);
@@ -307,7 +317,7 @@ public abstract class AbstractJdbcInputPlugin
         return builder.build();
     }
 
-    private String getQuery(PluginTask task, JdbcInputConnection con) throws SQLException
+    private String getRawQuery(PluginTask task, JdbcInputConnection con) throws SQLException
     {
         if (task.getQuery().isPresent()) {
             if (task.getTable().isPresent() || task.getSelect().isPresent() ||
