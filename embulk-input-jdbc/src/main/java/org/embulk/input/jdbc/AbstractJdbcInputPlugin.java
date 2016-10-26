@@ -1,6 +1,7 @@
 package org.embulk.input.jdbc;
 
 import java.nio.file.Path;
+import java.sql.Array;
 import java.util.List;
 import java.util.Map;
 import java.nio.file.Paths;
@@ -243,6 +244,8 @@ public abstract class AbstractJdbcInputPlugin
                 lastRecord = null;
             }
 
+            checkIfValidIncrementalColumnType(con, incrementalColumns, rawQuery);
+
             if (task.getQuery().isPresent()) {
                 preparedQuery = con.wrapIncrementalQuery(rawQuery, querySchema, incrementalColumnIndexes, lastRecord);
             }
@@ -315,6 +318,29 @@ public abstract class AbstractJdbcInputPlugin
             }
         }
         return builder.build();
+    }
+
+    private void checkIfValidIncrementalColumnType(JdbcInputConnection con, List<String> incrementalColumns, String rawQuery)
+            throws SQLException
+    {
+        String taskType = getTaskClass().getSimpleName();
+        for (JdbcColumn c : con.getSchemaOfQuery(rawQuery).getColumns()) {
+            String columnType = c.getTypeName().toLowerCase();
+            if (incrementalColumns.contains(c.getName())) {
+                switch (columnType) {
+                    case "timestamp":
+                    case "timestamptz":
+                        if (!taskType.equals("PostgreSQLPluginTask")) {
+                            throw new ConfigException("timestamp type columns as incremental_columns are only support at PostgreSQL.");
+                        }
+                        break;
+                    case "time":
+                    case "timetz":
+                    case "date":
+                        throw new ConfigException(String.format("Column type '%s' set at incremental_columns option is not supported", columnType));
+                }
+            }
+        }
     }
 
     private String getRawQuery(PluginTask task, JdbcInputConnection con) throws SQLException
