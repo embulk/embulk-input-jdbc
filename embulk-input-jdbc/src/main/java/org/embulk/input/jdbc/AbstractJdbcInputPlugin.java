@@ -330,8 +330,8 @@ public abstract class AbstractJdbcInputPlugin
                 switch (columnType) {
                     case "datetime":
                     case "timestamp":
-                        if (!taskType.equals("PostgreSQLPluginTask")) {
-                            throw new ConfigException("datetime and timestamp type columns as incremental_columns are only support at PostgreSQL.");
+                        if (!taskType.equals("PostgreSQLPluginTask") && !taskType.equals("MySQLPluginTask")) {
+                            throw new ConfigException("datetime and timestamp type columns as incremental_columns are only support at PostgreSQL and MySQL.");
                         }
                         break;
                     case "time":
