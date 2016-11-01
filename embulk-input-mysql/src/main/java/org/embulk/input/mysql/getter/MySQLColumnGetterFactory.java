@@ -1,4 +1,4 @@
-package org.embulk.input.postgresql.getter;
+package org.embulk.input.mysql.getter;
 
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
@@ -8,13 +8,12 @@ import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.TimestampFormatter;
 import org.joda.time.DateTimeZone;
 
-public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
+public class MySQLColumnGetterFactory extends ColumnGetterFactory
 {
     private final DateTimeZone defaultTimeZone;
     private static final String DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S.%6N";
-    private static final String TIMETZ_DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S.%6N %z";
 
-    public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
+    public MySQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
     {
         super(to, defaultTimeZone);
         this.defaultTimeZone = defaultTimeZone;
@@ -24,12 +23,9 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
     {
         switch(column.getTypeName()) {
-            case "hstore":
-                return new HstoreColumnGetter(to, getToType(option));
-            case "timestamp":
+            case "DATETIME":
+            case "TIMESTAMP":
                 return new TimestampColumnGetter(to, getToType(option), newTimestampFormatter(option, DEFAULT_FORMAT));
-            case "timestamptz":
-                return new TimestampColumnGetter(to, getToType(option), newTimestampFormatter(option, TIMETZ_DEFAULT_FORMAT));
             default:
                 return super.newColumnGetter(column, option);
         }
