@@ -103,6 +103,11 @@ subprojects {
         }
     }
 
+    test {
+        // JDBC input plugins depend on local time zone to parse timestamp without time stamp and datetime types.
+        jvmArgs "-Duser.timezone=Europe/Helsinki"
+    }
+
     task classpath(type: Copy, dependsOn: ["jar"]) {
         doFirst { file('classpath').deleteDir() }
         from (configurations.runtime - configurations.provided + files(jar.archivePath))
