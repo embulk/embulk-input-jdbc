@@ -62,4 +62,68 @@ public class IncrementalTest
                 result2.getConfigDiff(),
                 is((ConfigDiff) embulk.loadYamlResource("expect/incremental/int/expected_2.diff")));
     }
+
+    @Test
+    public void simpleTimestampWithoutTimeZone() throws Exception
+    {
+        // setup first rows
+        execute(readResource("expect/incremental/timestamp/setup.sql"));
+
+        Path out1 = embulk.createTempFile("csv");
+        RunResult result1 = embulk.runInput(
+                baseConfig.merge(embulk.loadYamlResource("expect/incremental/timestamp/config_1.yml")),
+                out1);
+        assertThat(
+                readSortedFile(out1),
+                is(readResource("expect/incremental/timestamp/expected_1.csv")));
+        assertThat(
+                result1.getConfigDiff(),
+                is((ConfigDiff) embulk.loadYamlResource("expect/incremental/timestamp/expected_1.diff")));
+
+        // insert more rows
+        execute(readResource("expect/incremental/timestamp/insert_more.sql"));
+
+        Path out2 = embulk.createTempFile("csv");
+        RunResult result2 = embulk.runInput(
+                baseConfig.merge(embulk.loadYamlResource("expect/incremental/timestamp/config_2.yml")),
+                out2);
+        assertThat(
+                readSortedFile(out2),
+                is(readResource("expect/incremental/timestamp/expected_2.csv")));
+        assertThat(
+                result2.getConfigDiff(),
+                is((ConfigDiff) embulk.loadYamlResource("expect/incremental/timestamp/expected_2.diff")));
+    }
+
+    @Test
+    public void simpleTimestampWithTimeZone() throws Exception
+    {
+        // setup first rows
+        execute(readResource("expect/incremental/timestamptz/setup.sql"));
+
+        Path out1 = embulk.createTempFile("csv");
+        RunResult result1 = embulk.runInput(
+                baseConfig.merge(embulk.loadYamlResource("expect/incremental/timestamptz/config_1.yml")),
+                out1);
+        assertThat(
+                readSortedFile(out1),
+                is(readResource("expect/incremental/timestamptz/expected_1.csv")));
+        assertThat(
+                result1.getConfigDiff(),
+                is((ConfigDiff) embulk.loadYamlResource("expect/incremental/timestamptz/expected_1.diff")));
+
+        // insert more rows
+        execute(readResource("expect/incremental/timestamptz/insert_more.sql"));
+
+        Path out2 = embulk.createTempFile("csv");
+        RunResult result2 = embulk.runInput(
+                baseConfig.merge(embulk.loadYamlResource("expect/incremental/timestamptz/config_2.yml")),
+                out2);
+        assertThat(
+                readSortedFile(out2),
+                is(readResource("expect/incremental/timestamptz/expected_2.csv")));
+        assertThat(
+                result2.getConfigDiff(),
+                is((ConfigDiff) embulk.loadYamlResource("expect/incremental/timestamptz/expected_2.diff")));
+    }
 }
