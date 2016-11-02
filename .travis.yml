@@ -1,0 +1,17 @@
+# TODO this is not complete setting yet. further work is necessary once a new embulk version is released
+language: java
+sudo: false
+addons:
+  postgresql: "9.5"
+services:
+  - postgresql
+jdk:
+  - oraclejdk8
+cache:
+  directories:  # run "travis cache --delete" to delete caches
+    - $HOME/.gradle
+script:
+  - ./gradlew --info check
+env:
+  global:
+    - EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=`pwd`/ci/travis_postgresql.yml
