@@ -6,6 +6,7 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.TimestampFormatter;
+import org.embulk.spi.time.TimestampParser;
 import org.joda.time.DateTimeZone;
 
 public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
@@ -24,14 +25,15 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
     {
         String columnTypeName = column.getTypeName().toLowerCase();
-        DateTimeZone timezone = option.getTimeZone().or(defaultTimeZone);
         switch(columnTypeName) {
             case "hstore":
                 return new HstoreColumnGetter(to, getToType(option));
             case "timestamp":
-                return new TimestampColumnGetter(to, getToType(option), columnTypeName, newTimestampFormatter(option, TIMESTAMP_DEFAULT_FORMAT), timezone);
+                return new TimestampColumnGetter(to, getToType(option), columnTypeName,
+                        newTimestampFormatter(option, TIMESTAMP_DEFAULT_FORMAT), newTimestampParser(option, TIMESTAMP_DEFAULT_FORMAT));
             case "timestamptz":
-                return new TimestampColumnGetter(to, getToType(option), columnTypeName, newTimestampFormatter(option, TIMESTAMPTZ_DEFAULT_FORMAT), timezone);
+                return new TimestampColumnGetter(to, getToType(option), columnTypeName,
+                        newTimestampFormatter(option, TIMESTAMPTZ_DEFAULT_FORMAT), newTimestampParser(option, TIMESTAMPTZ_DEFAULT_FORMAT));
             default:
                 return super.newColumnGetter(column, option);
         }
@@ -50,6 +52,14 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
     private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat)
     {
         return new TimestampFormatter(
+                option.getJRuby(),
+                option.getTimestampFormat().isPresent() ? option.getTimestampFormat().get().getFormat() : defaultTimestampFormat,
+                option.getTimeZone().or(defaultTimeZone));
+    }
+
+    private TimestampParser newTimestampParser(JdbcColumnOption option, String defaultTimestampFormat)
+    {
+        return new TimestampParser(
                 option.getJRuby(),
                 option.getTimestampFormat().isPresent() ? option.getTimestampFormat().get().getFormat() : defaultTimestampFormat,
                 option.getTimeZone().or(defaultTimeZone));

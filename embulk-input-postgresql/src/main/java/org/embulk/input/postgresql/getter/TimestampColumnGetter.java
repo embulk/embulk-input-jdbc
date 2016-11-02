@@ -6,30 +6,29 @@ import org.embulk.input.jdbc.getter.AbstractTimestampColumnGetter;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.time.TimestampFormatter;
+import org.embulk.spi.time.TimestampParseException;
+import org.embulk.spi.time.TimestampParser;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
-import org.joda.time.DateTimeZone;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 public class TimestampColumnGetter
         extends AbstractTimestampColumnGetter
 {
     private static final String DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S";
     private final TimestampFormatter formatter;
+    private final TimestampParser parser;
     private final String columnTypeName;
-    private final DateTimeZone timezone;
 
-    public TimestampColumnGetter(PageBuilder to, Type toType, String columnTypeName, TimestampFormatter timestampFormatter, DateTimeZone timezone)
+    public TimestampColumnGetter(PageBuilder to, Type toType, String columnTypeName, TimestampFormatter timestampFormatter, TimestampParser timestampParser)
     {
         super(to, toType, timestampFormatter);
         this.formatter = timestampFormatter;
+        this.parser = timestampParser;
         this.columnTypeName = columnTypeName;
-        this.timezone = timezone;
     }
 
     @Override
@@ -62,13 +61,14 @@ public class TimestampColumnGetter
                 toStatement.setTimestamp(toIndex, java.sql.Timestamp.valueOf(fromValue.asText()));
                 break;
             case "timestamptz":
-                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS z");
-                dateFormatter.setTimeZone(timezone.toTimeZone());
                 try {
-                    java.sql.Timestamp t = new java.sql.Timestamp(dateFormatter.parse(fromValue.asText()).getTime());
-                    toStatement.setTimestamp(toIndex, t);
-                } catch (ParseException e) {
-                    throw new ConfigException(e);
+                    // TODO parse error happens
+                    Timestamp ts = parser.parse(fromValue.textValue());
+                    // TODO
+                    toStatement.setTimestamp(toIndex, java.sql.Timestamp.valueOf("TODO"));
+                }
+                catch (TimestampParseException ex) {
+                    throw new ConfigException(ex);
                 }
                 break;
             default:
