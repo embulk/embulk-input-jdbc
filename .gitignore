@@ -6,3 +6,4 @@ classpath/
 build/
 .idea
 /out/
+ci/postgresql.yml

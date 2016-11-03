@@ -1,0 +1,6 @@
+type: postgresql
+host: localhost
+port: 5432
+database: travis_ci_test
+user: postgres
+password: ""
