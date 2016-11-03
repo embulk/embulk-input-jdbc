@@ -16,7 +16,7 @@ import static org.embulk.test.EmbulkTests.readSortedFile;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class IncrementalTest
+public class HstoreTest
 {
     @Rule
     public TestingEmbulk embulk = TestingEmbulk.builder()
@@ -32,34 +32,30 @@ public class IncrementalTest
     }
 
     @Test
-    public void simpleInt() throws Exception
+    public void loadAsStringByDefault() throws Exception
     {
-        // setup first rows
-        execute(readResource("expect/incremental/int/setup.sql"));
+        execute(readResource("expect/hstore/setup.sql"));
 
         Path out1 = embulk.createTempFile("csv");
         RunResult result1 = embulk.runInput(
-                baseConfig.merge(embulk.loadYamlResource("expect/incremental/int/config_1.yml")),
+                baseConfig.merge(embulk.loadYamlResource("expect/hstore/as_string.yml")),
                 out1);
         assertThat(
                 readSortedFile(out1),
-                is(readResource("expect/incremental/int/expected_1.csv")));
-        assertThat(
-                result1.getConfigDiff(),
-                is((ConfigDiff) embulk.loadYamlResource("expect/incremental/int/expected_1.diff")));
+                is(readResource("expect/hstore/expected_string.csv")));
+    }
 
-        // insert more rows
-        execute(readResource("expect/incremental/int/insert_more.sql"));
+    @Test
+    public void loadAsJson() throws Exception
+    {
+        execute(readResource("expect/hstore/setup.sql"));
 
-        Path out2 = embulk.createTempFile("csv");
-        RunResult result2 = embulk.runInput(
-                baseConfig.merge(embulk.loadYamlResource("expect/incremental/int/config_2.yml")),
-                out2);
+        Path out1 = embulk.createTempFile("csv");
+        RunResult result1 = embulk.runInput(
+                baseConfig.merge(embulk.loadYamlResource("expect/hstore/as_json.yml")),
+                out1);
         assertThat(
-                readSortedFile(out2),
-                is(readResource("expect/incremental/int/expected_2.csv")));
-        assertThat(
-                result2.getConfigDiff(),
-                is((ConfigDiff) embulk.loadYamlResource("expect/incremental/int/expected_2.diff")));
+                readSortedFile(out1),
+                is(readResource("expect/hstore/expected_json.csv")));
     }
 }
