@@ -4,6 +4,8 @@ import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
+import org.embulk.input.jdbc.getter.TimestampWithTimeZoneIncrementalHandler;
+import org.embulk.input.jdbc.getter.TimestampWithoutTimeZoneIncrementalHandler;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Types;
 import org.joda.time.DateTimeZone;
@@ -19,9 +21,20 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
     {
         if (column.getTypeName().equals("hstore") && getToType(option) == Types.JSON) {
+            // converting hstore to json needs a special handling
             return new HstoreToJsonColumnGetter(to, Types.JSON);
-        } else {
-            return super.newColumnGetter(column, option);
+        }
+
+        ColumnGetter getter = super.newColumnGetter(column, option);
+
+        // incremental loading wrapper
+        switch (column.getTypeName()) {
+        case "timestamptz":
+            return new TimestampWithTimeZoneIncrementalHandler(getter);
+        case "timestamp":
+            return new TimestampWithoutTimeZoneIncrementalHandler(getter);
+        default:
+            return getter;
         }
     }
 

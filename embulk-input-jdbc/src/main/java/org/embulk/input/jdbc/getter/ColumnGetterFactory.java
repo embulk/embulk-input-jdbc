@@ -38,6 +38,7 @@ public class ColumnGetterFactory
         Type toType = getToType(option);
         switch(valueType) {
         case "coalesce":
+            // resolve actual valueType using sqlTypeToValueType() method and retry.
             return newColumnGetter(column, option, sqlTypeToValueType(column, column.getSqlType()));
         case "long":
             return new LongColumnGetter(to, toType);
