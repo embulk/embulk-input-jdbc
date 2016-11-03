@@ -6,6 +6,7 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.TimestampFormatter;
+import org.embulk.spi.type.Types;
 import org.joda.time.DateTimeZone;
 
 public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
@@ -24,25 +25,24 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
     public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
     {
         String columnTypeName = column.getTypeName().toLowerCase();
-        DateTimeZone timezone = option.getTimeZone().or(defaultTimeZone);
-        switch(columnTypeName) {
-            case "hstore":
-                return new HstoreColumnGetter(to, getToType(option));
-            case "timestamp":
-                return new TimestampColumnGetter(to, getToType(option), columnTypeName, newTimestampFormatter(option, TIMESTAMP_DEFAULT_FORMAT), timezone);
-            case "timestamptz":
-                return new TimestampColumnGetter(to, getToType(option), columnTypeName, newTimestampFormatter(option, TIMESTAMPTZ_DEFAULT_FORMAT), timezone);
-            default:
-                return super.newColumnGetter(column, option);
+        if (columnTypeName.equals("hstore") && getToType(option) == Types.JSON) {
+            // converting hstore to json needs special handling
+            return new HstoreToJsonColumnGetter(to, Types.JSON);
         }
+        return super.newColumnGetter(column, option);
     }
 
     @Override
     protected String sqlTypeToValueType(JdbcColumn column, int sqlType)
     {
-        if (column.getTypeName().equals("json") || column.getTypeName().equals("jsonb")) {
+        switch(column.getTypeName()) {
+        case "json":
+        case "jsonb":
             return "json";
-        } else {
+        case "hstore":
+            // hstore is converted to string by default
+            return "string";
+        default:
             return super.sqlTypeToValueType(column, sqlType);
         }
     }
