@@ -9,7 +9,7 @@ import org.embulk.spi.type.Type;
 public abstract class AbstractTimestampColumnGetter
         extends AbstractColumnGetter
 {
-    private final TimestampFormatter timestampFormatter;
+    protected final TimestampFormatter timestampFormatter;
     protected Timestamp value;
 
     public AbstractTimestampColumnGetter(PageBuilder to, Type toType, TimestampFormatter timestampFormatter)

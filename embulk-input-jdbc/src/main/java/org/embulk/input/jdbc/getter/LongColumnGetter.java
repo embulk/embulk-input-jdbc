@@ -12,7 +12,7 @@ import org.embulk.spi.type.Types;
 public class LongColumnGetter
         extends AbstractColumnGetter
 {
-    private long value;
+    protected long value;
 
     public LongColumnGetter(PageBuilder to, Type toType)
     {

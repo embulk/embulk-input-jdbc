@@ -12,7 +12,7 @@ import com.google.common.math.DoubleMath;
 public class FloatColumnGetter
         extends AbstractColumnGetter
 {
-    private float value;
+    protected float value;
 
     public FloatColumnGetter(PageBuilder to, Type toType)
     {
