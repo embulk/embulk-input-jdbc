@@ -64,6 +64,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()  // TODO this is temporary. once a new version of embulk is released with embulk-test package, this should be removed
         jcenter()
     }
 
@@ -75,9 +76,9 @@ subprojects {
     targetCompatibility = 1.7
 
     dependencies {
-        compile  'org.embulk:embulk-core:0.8.8'
-        provided 'org.embulk:embulk-core:0.8.8'
-        testCompile 'junit:junit:4.+'
+        compile  'org.embulk:embulk-core:0.8.14'
+        provided 'org.embulk:embulk-core:0.8.14'
+        testCompile 'org.embulk:embulk-test:0.8.14'
     }
 
     tasks.withType(JavaCompile) {
@@ -100,6 +101,11 @@ subprojects {
             locale = 'en_US'
             encoding = 'UTF-8'
         }
+    }
+
+    test {
+        // JDBC input plugins depend on local time zone to parse timestamp without time stamp and datetime types.
+        jvmArgs "-Duser.timezone=Europe/Helsinki"
     }
 
     task classpath(type: Copy, dependsOn: ["jar"]) {

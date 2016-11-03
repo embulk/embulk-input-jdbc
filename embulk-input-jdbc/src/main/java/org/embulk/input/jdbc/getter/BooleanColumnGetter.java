@@ -10,7 +10,7 @@ import org.embulk.spi.type.Types;
 public class BooleanColumnGetter
         extends AbstractColumnGetter
 {
-    private boolean value;
+    protected boolean value;
 
     public BooleanColumnGetter(PageBuilder to, Type toType)
     {
