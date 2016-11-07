@@ -160,3 +160,11 @@ in:
 ```
 $ ./gradlew gem
 ```
+
+Running tests:
+
+```
+$ cp ci/travis_postgresql.yml ci/postgresql.yml  # edit this file if necessary
+$ EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=`pwd`/ci/postgresql.yml ./gradlew :embulk-input-postgresql:check --info
+```
+

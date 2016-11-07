@@ -15,9 +15,9 @@ import org.msgpack.value.Value;
 public class JsonColumnGetter
         extends AbstractColumnGetter
 {
-    final JsonParser jsonParser = new JsonParser();
+    protected final JsonParser jsonParser = new JsonParser();
 
-    private String value;
+    protected String value;
 
     public JsonColumnGetter(PageBuilder to, Type toType)
     {
