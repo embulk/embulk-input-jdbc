@@ -1,9 +1,16 @@
 language: java
 sudo: false
+dist: trusty
 addons:
   postgresql: "9.5"
+  apt:
+    packages:
+      - mysql-server-5.6
+      - mysql-client-core-5.6
+      - mysql-client-5.6
 services:
   - postgresql
+  - mysql
 jdk:
   - oraclejdk8
 env:
@@ -14,6 +21,10 @@ env:
     - PG_VERSION=9.5
     - PG_DATABASE=travis_ci_test
     - PG_USER=postgres
+    # MySQL
+    - MYSQL_DATABASE=TESTDB
+    - MYSQL_USER=TEST_USER
+    - MYSQL_PASSWORD=test_pw
 sudo: required
 cache:
   directories:  # run "travis cache --delete" to delete caches
@@ -31,8 +42,13 @@ before_install:
   - sudo echo "host    all         all         ::1/128               trust" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf
   - sudo /etc/init.d/postgresql restart
   - psql --version
+  # MySQL
+  - mysql --version
 before_script:
   # PostgreSQL
   - psql -c "create database $PG_DATABASE;" -U $PG_USER
+  # MySQL
+  - mysql -u root -e "create database ${MYSQL_DATABASE};"
+  - mysql -uroot -e "grant all on ${MYSQL_DATABASE}.* to ${MYSQL_USER}@localhost identified by '${MYSQL_PASSWORD}';"
 script:
   - ./gradlew --info check
