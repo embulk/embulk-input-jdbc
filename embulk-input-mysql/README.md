@@ -150,3 +150,17 @@ in:
 ```
 $ ./gradlew gem
 ```
+
+Running tests:
+
+NOTE: Run your MySQL instance with `Europe/Helsinki` timezone.
+
+```
+$ cp ci/travis_mysql.yml ci/mysql.yml  # edit this file if necessary
+$ EMBULK_INPUT_MYSQL_TEST_CONFIG=`pwd`/ci/mysql.yml ./gradlew :embulk-input-mysql:check --info
+```
+
+* If you executes test from GUI enviroment(IDE), be sure to set following JVM options
+```
+-Duser.timezone=Europe/Helsinki
+```
