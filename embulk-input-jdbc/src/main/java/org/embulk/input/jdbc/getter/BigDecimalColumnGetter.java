@@ -11,7 +11,7 @@ import org.embulk.spi.type.Types;
 public class BigDecimalColumnGetter
         extends AbstractColumnGetter
 {
-    private BigDecimal value;
+    protected BigDecimal value;
 
     public BigDecimalColumnGetter(PageBuilder to, Type toType)
     {

@@ -1,0 +1,38 @@
+language: java
+sudo: false
+addons:
+  postgresql: "9.5"
+services:
+  - postgresql
+jdk:
+  - oraclejdk8
+env:
+  global:
+    # For Gradle
+    - EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=`pwd`/ci/travis_postgresql.yml
+    # PostgreSQL
+    - PG_VERSION=9.5
+    - PG_DATABASE=travis_ci_test
+    - PG_USER=postgres
+sudo: required
+cache:
+  directories:  # run "travis cache --delete" to delete caches
+    - $HOME/.gradle
+before_install:
+  # PostgreSQL
+  - sudo /etc/init.d/postgresql stop
+  - sudo apt-get -y --purge remove postgresql libpq-dev libpq5 postgresql-client-common postgresql-common
+  - sudo rm -rf /var/lib/postgresql
+  - sudo apt-get install language-pack-es postgresql-$PG_VERSION
+  - sudo chmod 777 /etc/postgresql/$PG_VERSION/main/pg_hba.conf
+  - sudo echo "local   all         postgres                          trust" > /etc/postgresql/$PG_VERSION/main/pg_hba.conf
+  - sudo echo "local   all         all                               trust" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf
+  - sudo echo "host    all         all         127.0.0.1/32          trust" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf
+  - sudo echo "host    all         all         ::1/128               trust" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf
+  - sudo /etc/init.d/postgresql restart
+  - psql --version
+before_script:
+  # PostgreSQL
+  - psql -c "create database $PG_DATABASE;" -U $PG_USER
+script:
+  - ./gradlew --info check
