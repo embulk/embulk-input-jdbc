@@ -64,7 +64,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        mavenLocal()  // TODO this is temporary. once a new version of embulk is released with embulk-test package, this should be removed
         jcenter()
     }
 
@@ -76,9 +75,9 @@ subprojects {
     targetCompatibility = 1.7
 
     dependencies {
-        compile  'org.embulk:embulk-core:0.8.14'
-        provided 'org.embulk:embulk-core:0.8.14'
-        testCompile 'org.embulk:embulk-test:0.8.14'
+        compile  'org.embulk:embulk-core:0.8.15'
+        provided 'org.embulk:embulk-core:0.8.15'
+        testCompile 'org.embulk:embulk-test:0.8.15'
     }
 
     tasks.withType(JavaCompile) {
