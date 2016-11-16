@@ -15,11 +15,11 @@ import org.embulk.spi.time.TimestampParser;
 public class TimestampWithTimeZoneIncrementalHandler
         extends AbstractIncrementalHandler
 {
-    private static final String ISO_USEC_FORMAT = "%Y-%m-%dT%H:%M:%S.%6NZ";
-    private static final String ISO_USEC_PATTERN = "%Y-%m-%dT%H:%M:%S.%N%z";
+    protected static final String ISO_USEC_FORMAT = "%Y-%m-%dT%H:%M:%S.%6NZ";
+    protected static final String ISO_USEC_PATTERN = "%Y-%m-%dT%H:%M:%S.%N%z";
 
-    private long epochSecond;
-    private int nano;
+    protected long epochSecond;
+    protected int nano;
 
     public TimestampWithTimeZoneIncrementalHandler(ColumnGetter next)
     {
@@ -33,11 +33,16 @@ public class TimestampWithTimeZoneIncrementalHandler
         // sniff the value
         Timestamp timestamp = from.getTimestamp(fromIndex);
         if (timestamp != null) {
-            epochSecond = timestamp.getTime() / 1000;
-            nano = timestamp.getNanos();
+            getAndSet(timestamp);
         }
 
         super.getAndSet(from, fromIndex, toColumn);
+    }
+
+    protected void getAndSet(Timestamp timestamp)
+    {
+        epochSecond = timestamp.getTime() / 1000;
+        nano = timestamp.getNanos();
     }
 
     @Override
@@ -60,9 +65,13 @@ public class TimestampWithTimeZoneIncrementalHandler
             .loadConfig(ParserTask.class);
         TimestampParser parser = new TimestampParser(ISO_USEC_PATTERN, task);
         org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
+        toStatement.setTimestamp(toIndex, toSqlTimestamp(epoch));
+    }
 
-        Timestamp sqlTimestamp = new Timestamp(epoch.getEpochSecond() * 1000);
-        sqlTimestamp.setNanos(epoch.getNano());
-        toStatement.setTimestamp(toIndex, sqlTimestamp);
+    protected Timestamp toSqlTimestamp(org.embulk.spi.time.Timestamp from)
+    {
+        Timestamp sqlTimestamp = new Timestamp(from.getEpochSecond() * 1000);
+        sqlTimestamp.setNanos(from.getNano());
+        return sqlTimestamp;
     }
 }
