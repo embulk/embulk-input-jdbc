@@ -102,10 +102,15 @@ subprojects {
         }
     }
 
-    test {
-        // JDBC input plugins depend on local time zone to parse timestamp without time stamp and datetime types.
-        jvmArgs "-Duser.country=FI -Duser.timezone=Europe/Helsinki"
-        environment "TZ", "Europe/Helsinki"
+    // TODO:
+    // The unit tests fail causes the test setting except postgresql project. It's better to apply
+    // the settings to all projects.
+    if (it.name.endsWith('-postgresql')) {
+        test {
+            // JDBC input plugins depend on local time zone to parse timestamp without time stamp and datetime types.
+            jvmArgs "-Duser.country=FI -Duser.timezone=Europe/Helsinki"
+            environment "TZ", "Europe/Helsinki"
+        }
     }
 
     task classpath(type: Copy, dependsOn: ["jar"]) {
