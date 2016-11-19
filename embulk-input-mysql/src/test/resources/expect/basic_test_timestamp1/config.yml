@@ -1,0 +1,13 @@
+table: test1
+order_by: 'id'
+column_options:
+  #c11: {type: timestamp, timestamp_format: '%Y/%m/%d'}
+  #c12: {type: timestamp, timestamp_format: '%Y/%m/%d %H:%M:%S'}
+  #c13: {type: timestamp, timestamp_format: '%Y/%m/%d %H:%M:%S', timezone: '+0900'}
+  #c14: {type: timestamp, timestamp_format: '%H-%M-%S', timezone: '+0900'}
+  #c15: {type: timestamp, timestamp_format: '%Y/%m/%d %H:%M:%S.%6N'}
+  c11: {type: timestamp}
+  c12: {type: timestamp}
+  c13: {type: timestamp}
+  c14: {type: timestamp}
+  c15: {type: timestamp}

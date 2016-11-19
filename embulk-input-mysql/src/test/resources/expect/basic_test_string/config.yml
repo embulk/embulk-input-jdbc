@@ -1,0 +1,13 @@
+table: test1
+order_by: 'id'
+column_options:
+  c1: {type: string}
+  c2: {type: string}
+  c3: {type: string}
+  c4: {type: string}
+  c5: {type: string}
+  c6: {type: string}
+  c7: {type: string}
+  c8: {type: string}
+  c9: {type: string}
+  c10: {type: string}
