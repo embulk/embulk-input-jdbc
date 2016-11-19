@@ -37,89 +37,89 @@ public class BasicTest
     public void test() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_expected.diff")));
     }
 
     @Test
     public void testString() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_string/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_string/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_string/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_string_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_string_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_string_expected.diff")));
     }
 
     @Test
     public void testBoolean() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_boolean/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_boolean/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_boolean/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_boolean_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_boolean_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_boolean_expected.diff")));
     }
 
     @Test
     public void testLong() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_long/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_long/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_long/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_long_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_long_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_long_expected.diff")));
     }
 
     @Test
     public void testDouble() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_double/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_double/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_double/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_double_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_double_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_double_expected.diff")));
     }
 
     @Test
     public void testTimestamp1() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_timestamp1/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_timestamp1/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_timestamp1/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_timestamp1_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_timestamp1_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_timestamp1_expected.diff")));
     }
 
     @Test
     public void testTimestamp2() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_timestamp2/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_timestamp2/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_timestamp2/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_timestamp2_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_timestamp2_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_timestamp2_expected.diff")));
     }
 
     @Test
     public void testTimestamp3() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_timestamp3/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_timestamp3/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_timestamp3/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_timestamp3_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_timestamp3_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_timestamp3_expected.diff")));
     }
 
     @Test
     public void testValueTypeString() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_value_type_string/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_value_type_string/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_value_type_string/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_valuetype_string_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_valuetype_string_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_valuetype_string_expected.diff")));
     }
 
     @Test
     public void testValueTypeDecimal() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");
-        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic_test_value_type_decimal/config.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("expect/basic_test_value_type_decimal/expected.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic_test_value_type_decimal/expected.diff")));
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(embulk.loadYamlResource("expect/basic/test_valuetype_decimal_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("expect/basic/test_valuetype_decimal_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) embulk.loadYamlResource("expect/basic/test_valuetype_decimal_expected.diff")));
     }
 }
