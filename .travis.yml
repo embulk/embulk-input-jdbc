@@ -1,7 +1,13 @@
 language: java
+dist: trusty
 sudo: required
 addons:
   postgresql: "9.4"
+  apt:
+    packages:
+      - mysql-server-5.6
+      - mysql-client-core-5.6
+      - mysql-client-5.6
 services:
   - postgresql
 jdk:
@@ -9,10 +15,13 @@ jdk:
 env:
   global:
     - EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=`pwd`/ci/travis_postgresql.yml
+    - EMBULK_INPUT_MYSQL_TEST_CONFIG=`pwd`/ci/travis_mysql.yml
 cache:
   directories:  # run "travis cache --delete" to delete caches
     - $HOME/.gradle
 before_script:
   - psql -c "create database travis_ci_test;" -U postgres
+  - mysql -u root -e "create database travis_ci_test;"
+  - mysql -u root -e "grant all on travis_ci_test.* to travis@localhost identified by '';" # give 'travis' user grant to create/drop tables.
 script:
   - ./gradlew --info check
