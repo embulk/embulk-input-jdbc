@@ -1,0 +1,13 @@
+table: test1
+order_by: 'id'
+column_options:
+  c1: {type: boolean}
+  c2: {type: boolean}
+  c3: {type: boolean}
+  c4: {type: boolean}
+  c5: {type: boolean}
+  c6: {type: boolean}
+  c7: {type: boolean}
+  c8: {type: boolean}
+  c9: {type: boolean}
+  c10: {type: boolean}

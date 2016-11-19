@@ -1,0 +1,6 @@
+type: mysql
+host: localhost
+port: 3306
+database: TESTDB
+user: TEST_USER
+password: test_pw
