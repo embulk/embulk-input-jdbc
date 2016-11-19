@@ -150,3 +150,10 @@ in:
 ```
 $ ./gradlew gem
 ```
+
+Running tests:
+
+```
+$ cp ci/travis_mysql.yml ci/mysql.yml  # edit this file if necessary
+$ EMBULK_INPUT_MYSQL_TEST_CONFIG=`pwd`/ci/mysql.yml ./gradlew :embulk-input-mysql:check --info
+```
