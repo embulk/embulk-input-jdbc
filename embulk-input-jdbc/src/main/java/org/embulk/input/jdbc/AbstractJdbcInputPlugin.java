@@ -229,7 +229,7 @@ public abstract class AbstractJdbcInputPlugin
                 incrementalColumns = primaryKeys;
             }
 
-            List<Integer> incrementalColumnIndexes = findIncrementalColumnIndexes(querySchema, incrementalColumns);
+            List<Integer> incrementalColumnIndexes = findIncrementalColumnIndexes(con, querySchema, incrementalColumns);
             task.setIncrementalColumnIndexes(incrementalColumnIndexes);
 
             List<JsonNode> lastRecord;
@@ -299,7 +299,7 @@ public abstract class AbstractJdbcInputPlugin
         }
     }
 
-    private List<Integer> findIncrementalColumnIndexes(JdbcSchema schema, List<String> incrementalColumns)
+    protected List<Integer> findIncrementalColumnIndexes(JdbcInputConnection con, JdbcSchema schema, List<String> incrementalColumns)
         throws SQLException
     {
         ImmutableList.Builder<Integer> builder = ImmutableList.builder();

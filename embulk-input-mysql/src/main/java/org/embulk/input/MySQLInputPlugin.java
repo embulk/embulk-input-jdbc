@@ -1,12 +1,18 @@
 package org.embulk.input;
 
+import java.util.List;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
+import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
+import org.embulk.input.jdbc.JdbcColumn;
+import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.JdbcSchema;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.mysql.MySQLInputConnection;
 import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
@@ -112,6 +118,21 @@ public class MySQLInputPlugin
                 con.close();
             }
         }
+    }
+
+    @Override
+    protected List<Integer> findIncrementalColumnIndexes(JdbcInputConnection con, JdbcSchema schema, List<String> incrementalColumns)
+            throws SQLException
+    {
+        List<Integer> indexes = super.findIncrementalColumnIndexes(con, schema, incrementalColumns);
+        boolean useLegacyDatetimeCode = ((MySQLInputConnection)con).getUseLegacyDatetimeCode();
+        for (Integer index : indexes) {
+            String type = schema.getColumn(index).getTypeName();
+            if (useLegacyDatetimeCode && (type.equals("DATETIME") || type.equals("TIMESTAMP"))) {
+                throw new ConfigException("Must use 'useLegacyDatetimeCode=false' if 'DATETIME' or 'TIMESTAMP' typed columns are used as incremental_columns:");
+            }
+        }
+        return indexes;
     }
 
     @Override
