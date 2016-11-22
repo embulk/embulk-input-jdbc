@@ -1,0 +1,4 @@
+table: ts_load
+options: {useLegacyDatetimeCode: false}
+incremental: true
+incremental_columns: [time]
