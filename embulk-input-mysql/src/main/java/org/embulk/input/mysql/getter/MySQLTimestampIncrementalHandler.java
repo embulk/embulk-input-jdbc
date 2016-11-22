@@ -1,38 +1,22 @@
 package org.embulk.input.mysql.getter;
 
 import org.embulk.input.jdbc.getter.ColumnGetter;
-import org.embulk.input.jdbc.getter.TimestampWithTimeZoneIncrementalHandler;
-import org.embulk.spi.Column;
-import org.joda.time.DateTimeZone;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class MySQLTimestampIncrementalHandler
-        extends TimestampWithTimeZoneIncrementalHandler
+        extends AbstractMySQLIncrementalHandler
 {
-    private DateTimeZone sessionTimeZone;
-
     public MySQLTimestampIncrementalHandler(ColumnGetter next)
     {
         super(next);
     }
 
     @Override
-    public void getAndSet(ResultSet from, int fromIndex, Column toColumn)
-            throws SQLException
+    public org.embulk.spi.time.Timestamp toEmbulkTimestamp(long epochSecond, int nano)
     {
-        if (sessionTimeZone == null) {
-            sessionTimeZone = MySQLColumnGetterFactory.getSessionTimeZone(from);
-        }
-        super.getAndSet(from, fromIndex, toColumn);
-    }
-
-    @Override
-    public void getAndSet(Timestamp timestamp)
-    {
-        epochSecond = sessionTimeZone.convertLocalToUTC(timestamp.getTime(), false) / 1000;
-        nano = timestamp.getNanos();
+        checkNotNull(sessionTimeZone);
+        long sec = sessionTimeZone.convertLocalToUTC(epochSecond * 1000, false) / 1000;
+        return org.embulk.spi.time.Timestamp.ofEpochSecond(sec, nano);
     }
 }

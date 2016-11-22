@@ -15,8 +15,8 @@ import org.embulk.spi.time.TimestampParser;
 public class TimestampWithTimeZoneIncrementalHandler
         extends AbstractIncrementalHandler
 {
-    protected static final String ISO_USEC_FORMAT = "%Y-%m-%dT%H:%M:%S.%6NZ";
-    protected static final String ISO_USEC_PATTERN = "%Y-%m-%dT%H:%M:%S.%N%z";
+    private static final String ISO_USEC_FORMAT = "%Y-%m-%dT%H:%M:%S.%6NZ";
+    private static final String ISO_USEC_PATTERN = "%Y-%m-%dT%H:%M:%S.%N%z";
 
     protected long epochSecond;
     protected int nano;
@@ -33,16 +33,11 @@ public class TimestampWithTimeZoneIncrementalHandler
         // sniff the value
         Timestamp timestamp = from.getTimestamp(fromIndex);
         if (timestamp != null) {
-            getAndSet(timestamp);
+            epochSecond = timestamp.getTime() / 1000;
+            nano = timestamp.getNanos();
         }
 
         super.getAndSet(from, fromIndex, toColumn);
-    }
-
-    protected void getAndSet(Timestamp timestamp)
-    {
-        epochSecond = timestamp.getTime() / 1000;
-        nano = timestamp.getNanos();
     }
 
     @Override
@@ -51,9 +46,19 @@ public class TimestampWithTimeZoneIncrementalHandler
         FormatterTask task = Exec.newConfigSource()
             .set("timezone", "UTC")
             .loadConfig(FormatterTask.class);
-        TimestampFormatter formatter = new TimestampFormatter(ISO_USEC_FORMAT, task);
-        String text = formatter.format(org.embulk.spi.time.Timestamp.ofEpochSecond(epochSecond, nano));
+        TimestampFormatter formatter = new TimestampFormatter(getUsecFormat(), task);
+        String text = formatter.format(toEmbulkTimestamp(epochSecond, nano));
         return jsonNodeFactory.textNode(text);
+    }
+
+    protected String getUsecFormat()
+    {
+        return ISO_USEC_FORMAT;
+    }
+
+    protected org.embulk.spi.time.Timestamp toEmbulkTimestamp(long epochSecond, int nano)
+    {
+        return org.embulk.spi.time.Timestamp.ofEpochSecond(epochSecond, nano);
     }
 
     @Override
@@ -63,9 +68,14 @@ public class TimestampWithTimeZoneIncrementalHandler
         ParserTask task = Exec.newConfigSource()
             .set("default_timezone", "UTC")
             .loadConfig(ParserTask.class);
-        TimestampParser parser = new TimestampParser(ISO_USEC_PATTERN, task);
+        TimestampParser parser = new TimestampParser(getUsecPattern(), task);
         org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
         toStatement.setTimestamp(toIndex, toSqlTimestamp(epoch));
+    }
+
+    protected String getUsecPattern()
+    {
+        return ISO_USEC_PATTERN;
     }
 
     protected Timestamp toSqlTimestamp(org.embulk.spi.time.Timestamp from)

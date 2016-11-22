@@ -1,59 +1,47 @@
 package org.embulk.input.mysql.getter;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.embulk.input.jdbc.getter.ColumnGetter;
-import org.embulk.input.jdbc.getter.TimestampWithTimeZoneIncrementalHandler;
-import org.embulk.spi.Column;
-import org.joda.time.DateTimeZone;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 
-public class MySQLDateTimeIncrementalHandler
-        extends TimestampWithTimeZoneIncrementalHandler
-{
-    private DateTimeZone sessionTimeZone;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+public class MySQLDateTimeIncrementalHandler
+        extends AbstractMySQLIncrementalHandler
+{
     public MySQLDateTimeIncrementalHandler(ColumnGetter next)
     {
         super(next);
     }
 
     @Override
-    public void getAndSet(ResultSet from, int fromIndex, Column toColumn)
-            throws SQLException
+    public String getUsecFormat()
     {
-        if (sessionTimeZone == null) {
-            sessionTimeZone = MySQLColumnGetterFactory.getSessionTimeZone(from);
-        }
-        super.getAndSet(from, fromIndex, toColumn);
+        return "%Y-%m-%d %H:%M:%S.%6N";
     }
 
     @Override
-    public void getAndSet(Timestamp timestamp)
+    public org.embulk.spi.time.Timestamp toEmbulkTimestamp(long epochSecond, int nano)
     {
+        checkNotNull(sessionTimeZone);
         // this Timestamp value is already converted by session time_zone.
-        epochSecond = sessionTimeZone.convertUTCToLocal(timestamp.getTime()) / 1000; // reconvert from session time_zone to UTC
-        nano = timestamp.getNanos();
+        long reconverted = sessionTimeZone.convertUTCToLocal(epochSecond * 1000) / 1000; // reconvert from session time_zone to UTC
+        return super.toEmbulkTimestamp(reconverted, nano);
     }
 
     @Override
-    public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
-            throws SQLException
+    public String getUsecPattern()
     {
-        if (sessionTimeZone == null) {
-            sessionTimeZone = MySQLColumnGetterFactory.getSessionTimeZone(toStatement);
-        }
-        super.decodeFromJsonTo(toStatement, toIndex, fromValue);
+        return "%Y-%m-%d %H:%M:%S.%N";
     }
 
     @Override
     public Timestamp toSqlTimestamp(org.embulk.spi.time.Timestamp from)
     {
+        checkNotNull(sessionTimeZone);
         // reconvert from UTC to session time_zone
-        Timestamp sqlTimestamp = new Timestamp(sessionTimeZone.convertLocalToUTC(from.getEpochSecond() * 1000, false));
+        long reconverted = sessionTimeZone.convertLocalToUTC(from.getEpochSecond() * 1000, false);
+        Timestamp sqlTimestamp = new Timestamp(reconverted);
         sqlTimestamp.setNanos(from.getNano());
         return sqlTimestamp;
     }
