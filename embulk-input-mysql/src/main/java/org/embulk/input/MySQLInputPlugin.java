@@ -128,6 +128,8 @@ public class MySQLInputPlugin
         boolean useLegacyDatetimeCode = ((MySQLInputConnection)con).getUseLegacyDatetimeCode();
         for (Integer index : indexes) {
             String type = schema.getColumn(index).getTypeName();
+            // As a limitation, users cannot use DATETIME or TIMESTAMP typed columns as incremental_columns: if 'useLegacyDatetimeCode=true'.
+            // That might be acceptable since mysql-connector-java v6.x will turn off, by default.
             if (useLegacyDatetimeCode && (type.equals("DATETIME") || type.equals("TIMESTAMP"))) {
                 throw new ConfigException("Must use 'useLegacyDatetimeCode=false' if 'DATETIME' or 'TIMESTAMP' typed columns are used as incremental_columns:");
             }
