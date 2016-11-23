@@ -1,5 +1,5 @@
 table: dt_load
+default_time_zone: +0300 # should be ignored
 options: {useLegacyDatetimeCode: false}
-last_record: ['2016-11-02 04:00:05.333003']
 incremental: true
 incremental_columns: [time]

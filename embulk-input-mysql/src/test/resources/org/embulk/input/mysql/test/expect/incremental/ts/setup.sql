@@ -1,3 +1,5 @@
+set time_zone = '+00:00';
+
 drop table if exists ts_load;
 
 create table ts_load (

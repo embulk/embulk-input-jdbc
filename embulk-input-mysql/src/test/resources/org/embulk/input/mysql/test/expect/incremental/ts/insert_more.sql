@@ -1,3 +1,4 @@
+set time_zone = '+00:00';
 
 insert into ts_load (time, note) values
 ('2016-11-02 04:00:00', 'more_skip'),

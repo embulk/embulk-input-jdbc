@@ -1,4 +1,5 @@
-table: ts_load
+table: dt_load
 options: {useLegacyDatetimeCode: false}
+last_record: ['2016-11-02T04:00:05.333003']
 incremental: true
 incremental_columns: [time]

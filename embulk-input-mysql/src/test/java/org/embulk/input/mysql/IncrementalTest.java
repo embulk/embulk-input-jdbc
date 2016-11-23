@@ -49,59 +49,59 @@ public class IncrementalTest
     public void testInt() throws Exception
     {
         // setup first rows
-        execute(readResource("int_setup.sql"));
+        execute(readResource("int/setup.sql"));
 
         Path out1 = embulk.createTempFile("csv");
-        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "int_config_1.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("int_expected_1.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "int_expected_1.diff")));
+        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "int/config_1.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("int/expected_1.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "int/expected_1.diff")));
 
         // insert more rows
-        execute(readResource("int_insert_more.sql"));
+        execute(readResource("int/insert_more.sql"));
 
         Path out2 = embulk.createTempFile("csv");
-        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "int_config_2.yml")), out2);
-        assertThat(readSortedFile(out2), is(readResource("int_expected_2.csv")));
-        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "int_expected_2.diff")));
+        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "int/config_2.yml")), out2);
+        assertThat(readSortedFile(out2), is(readResource("int/expected_2.csv")));
+        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "int/expected_2.diff")));
     }
 
     @Test
     public void testDateTime() throws Exception
     {
         // setup first rows
-        execute(readResource("dt_setup.sql"));
+        execute(readResource("dt/setup.sql"));
 
         Path out1 = embulk.createTempFile("csv");
-        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "dt_config_1.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("dt_expected_1.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "dt_expected_1.diff")));
+        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "dt/config_1.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("dt/expected_1.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "dt/expected_1.diff")));
 
         // insert more rows
-        execute(readResource("dt_insert_more.sql"));
+        execute(readResource("dt/insert_more.sql"));
 
         Path out2 = embulk.createTempFile("csv");
-        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "dt_config_2.yml")), out2);
-        assertThat(readSortedFile(out2), is(readResource("dt_expected_2.csv")));
-        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "dt_expected_2.diff")));
+        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "dt/config_2.yml")), out2);
+        assertThat(readSortedFile(out2), is(readResource("dt/expected_2.csv")));
+        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "dt/expected_2.diff")));
     }
 
     @Test
     public void testTimestamp() throws Exception
     {
         // setup first rows
-        execute(readResource("ts_setup.sql"));
+        execute(readResource("ts/setup.sql"));
 
         Path out1 = embulk.createTempFile("csv");
-        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "ts_config_1.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("ts_expected_1.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "ts_expected_1.diff")));
+        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "ts/config_1.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("ts/expected_1.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "ts/expected_1.diff")));
 
         // insert more rows
-        execute(readResource("ts_insert_more.sql"));
+        execute(readResource("ts/insert_more.sql"));
 
         Path out2 = embulk.createTempFile("csv");
-        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "ts_config_2.yml")), out2);
-        assertThat(readSortedFile(out2), is(readResource("ts_expected_2.csv")));
-        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "ts_expected_2.diff")));
+        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "ts/config_2.yml")), out2);
+        assertThat(readSortedFile(out2), is(readResource("ts/expected_2.csv")));
+        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "ts/expected_2.diff")));
     }
 }
