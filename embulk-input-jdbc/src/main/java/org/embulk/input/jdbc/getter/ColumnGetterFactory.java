@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.embulk.config.ConfigException;
+import org.embulk.input.jdbc.AbstractJdbcInputPlugin.PluginTask;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
+import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.type.TimestampType;
@@ -28,18 +30,18 @@ public class ColumnGetterFactory
         this.defaultTimeZone = defaultTimeZone;
     }
 
-    public ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option)
+    public ColumnGetter newColumnGetter(JdbcInputConnection con, PluginTask task, JdbcColumn column, JdbcColumnOption option)
     {
-        return newColumnGetter(column, option, option.getValueType());
+        return newColumnGetter(con, task, column, option, option.getValueType());
     }
 
-    private ColumnGetter newColumnGetter(JdbcColumn column, JdbcColumnOption option, String valueType)
+    private ColumnGetter newColumnGetter(JdbcInputConnection con, PluginTask task, JdbcColumn column, JdbcColumnOption option, String valueType)
     {
         Type toType = getToType(option);
         switch(valueType) {
         case "coalesce":
             // resolve actual valueType using sqlTypeToValueType() method and retry.
-            return newColumnGetter(column, option, sqlTypeToValueType(column, column.getSqlType()));
+            return newColumnGetter(con, task, column, option, sqlTypeToValueType(column, column.getSqlType()));
         case "long":
             return new LongColumnGetter(to, toType);
         case "float":

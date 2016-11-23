@@ -5,7 +5,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.TimeZone;
 
+import com.mysql.jdbc.ConnectionImpl;
 import com.mysql.jdbc.ConnectionProperties;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
@@ -50,6 +52,11 @@ public class MySQLInputConnection
 
     public boolean getUseLegacyDatetimeCode()
     {
-        return ((ConnectionProperties)connection).getUseLegacyDatetimeCode();
+        return ((ConnectionProperties) connection).getUseLegacyDatetimeCode();
+    }
+
+    public TimeZone getServerTimezoneTZ()
+    {
+        return ((ConnectionImpl) connection).getServerTimezoneTZ();
     }
 }

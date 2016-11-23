@@ -1,78 +1,75 @@
 package org.embulk.input.mysql.getter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.mysql.jdbc.ConnectionImpl;
-import com.mysql.jdbc.ResultSetImpl;
+import org.embulk.input.jdbc.getter.AbstractIncrementalHandler;
 import org.embulk.input.jdbc.getter.ColumnGetter;
-import org.embulk.input.jdbc.getter.TimestampWithTimeZoneIncrementalHandler;
 import org.embulk.spi.Column;
+import org.embulk.spi.Exec;
+import org.embulk.spi.time.TimestampFormatter;
+import org.embulk.spi.time.TimestampFormatter.FormatterTask;
+import org.embulk.spi.time.TimestampParser;
+import org.embulk.spi.time.TimestampParser.ParserTask;
 import org.joda.time.DateTimeZone;
 
-import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.TimeZone;
+import java.sql.Timestamp;
 
-public class AbstractMySQLIncrementalHandler
-        extends TimestampWithTimeZoneIncrementalHandler
+public abstract class AbstractMySQLIncrementalHandler
+        extends AbstractIncrementalHandler
 {
-    protected DateTimeZone sessionTimeZone;
+    protected final DateTimeZone sessionTimeZone;
+    protected long epochSecond;
+    protected int nano;
 
-    public AbstractMySQLIncrementalHandler(ColumnGetter next)
+    public AbstractMySQLIncrementalHandler(DateTimeZone sessionTimeZone, ColumnGetter next)
     {
         super(next);
+        this.sessionTimeZone = sessionTimeZone;
     }
 
     @Override
-    public void getAndSet(ResultSet from, int fromIndex,
-            Column toColumn) throws SQLException
+    public void getAndSet(ResultSet from, int fromIndex, Column toColumn)
+            throws SQLException
     {
-        if (sessionTimeZone == null) {
-            sessionTimeZone = getSessionTimeZone(from);
+        Timestamp timestamp = from.getTimestamp(fromIndex);
+        if (timestamp != null) {
+            epochSecond = timestamp.getTime() / 1000;
+            nano = timestamp.getNanos();
         }
-        super.getAndSet(from, fromIndex, toColumn); // sniff the value
+
+        super.getAndSet(from, fromIndex, toColumn);
     }
+
+    @Override
+    public JsonNode encodeToJson()
+    {
+        FormatterTask task = Exec.newConfigSource()
+            .set("timezone", "UTC")
+            .loadConfig(FormatterTask.class);
+        TimestampFormatter formatter = new TimestampFormatter(getTimestampFormat(), task);
+        String text = formatter.format(convertTimestamp(epochSecond, nano));
+        return jsonNodeFactory.textNode(text);
+    }
+
+    protected abstract String getTimestampFormat();
+
+    protected abstract org.embulk.spi.time.Timestamp convertTimestamp(long epochSecond, int nano);
 
     @Override
     public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
             throws SQLException
     {
-        if (sessionTimeZone == null) {
-            sessionTimeZone = getSessionTimeZone(toStatement);
-        }
-        super.decodeFromJsonTo(toStatement, toIndex, fromValue);
+        ParserTask task = Exec.newConfigSource()
+            .set("default_timezone", "UTC")
+            .loadConfig(ParserTask.class);
+        TimestampParser parser = new TimestampParser(getTimestampPattern(), task);
+        org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
+        toStatement.setTimestamp(toIndex, convertTimestamp(epoch));
     }
 
-    private DateTimeZone getSessionTimeZone(ResultSet from)
-    {
-        Field f = null;
-        try {
-            // Need to check if the processing works fine or not to upgrade mysql-connector-java version.
-            f = ResultSetImpl.class.getDeclaredField("serverTimeZoneTz");
-            f.setAccessible(true);
-            TimeZone timeZone = (TimeZone) f.get(from);
+    protected abstract String getTimestampPattern();
 
-            // Joda-Time's timezone mapping is probably not compatible with java.util.TimeZone if null is returned.
-            return Preconditions.checkNotNull(DateTimeZone.forTimeZone(timeZone));
-        }
-        catch (IllegalAccessException | NoSuchFieldException e) {
-            throw Throwables.propagate(e);
-        }
-        finally {
-            if (f != null) {
-                f.setAccessible(false);
-            }
-        }
-    }
-
-    private DateTimeZone getSessionTimeZone(java.sql.PreparedStatement from)
-            throws SQLException
-    {
-        TimeZone timeZone = ((ConnectionImpl) from.getConnection()).getServerTimezoneTZ();
-        // Joda-Time's timezone mapping is probably not compatible with java.util.TimeZone if null is returned.
-        return Preconditions.checkNotNull(DateTimeZone.forTimeZone(timeZone));
-    }
+    protected abstract Timestamp convertTimestamp(org.embulk.spi.time.Timestamp ts);
 }
