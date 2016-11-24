@@ -49,6 +49,8 @@ public class ColumnGetterFactory
             return new BooleanColumnGetter(to, toType);
         case "string":
             return new StringColumnGetter(to, toType);
+        case "snappy":
+            return new SnappyColumnGetter(to, toType);
         case "json":
             return new JsonColumnGetter(to, toType);
         case "date":

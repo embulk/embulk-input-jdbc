@@ -76,6 +76,7 @@ subprojects {
 
     dependencies {
         compile  'org.embulk:embulk-core:0.8.8'
+        compile  'org.xerial.snappy:snappy-java:1.1.2.6'
         provided 'org.embulk:embulk-core:0.8.8'
         testCompile 'junit:junit:4.+'
     }
