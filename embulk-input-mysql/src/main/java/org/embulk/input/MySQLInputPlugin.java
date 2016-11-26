@@ -1,9 +1,14 @@
 package org.embulk.input;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+
+import com.google.common.base.Throwables;
+import com.mysql.jdbc.TimeUtil;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
@@ -95,6 +100,9 @@ public class MySQLInputPlugin
 
         props.putAll(t.getOptions());
 
+        // load timezone mappings
+        loadTimezoneMappings();
+
         Driver driver;
         try {
             driver = new com.mysql.jdbc.Driver();  // new com.mysql.jdbc.Driver throws SQLException
@@ -118,5 +126,36 @@ public class MySQLInputPlugin
     protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
     {
         return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
+    }
+
+    private void loadTimezoneMappings()
+    {
+        // Manually initialize the value of com.mysql.jdbc.TimeUtil's a timeZoneMappings static field.
+        // It's often created and initialized when Driver#connect method is called. But, The field
+        // initialization fails. Because TimeZoneMapping.properties file cannot be found by the classloader
+        // who loaded java.util.TimeZone.class. JDBC Driver should custom classloader to read the properties
+        // file but, this method is introduced for the workaround in the meantime.
+        Field f = null;
+        try {
+            f = TimeUtil.class.getDeclaredField("timeZoneMappings");
+            f.setAccessible(true);
+
+            Properties timeZoneMappings = (Properties) f.get(null);
+            if (timeZoneMappings == null) {
+                timeZoneMappings = new Properties();
+                synchronized (TimeUtil.class) {
+                    timeZoneMappings.load(this.getClass().getResourceAsStream("/com/mysql/jdbc/TimeZoneMapping.properties"));
+                }
+                f.set(null, timeZoneMappings);
+            }
+        }
+        catch (IllegalAccessException | NoSuchFieldException | IOException e) {
+            throw Throwables.propagate(e);
+        }
+        finally {
+            if (f == null) {
+                f.setAccessible(false);
+            }
+        }
     }
 }
