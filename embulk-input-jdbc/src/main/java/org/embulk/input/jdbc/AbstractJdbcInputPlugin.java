@@ -261,7 +261,7 @@ public abstract class AbstractJdbcInputPlugin
         task.setBuiltQuery(preparedQuery);
 
         // validate column_options
-        newColumnGetters(task, querySchema, null);
+        newColumnGetters(con, task, querySchema, null);
 
         ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone());
         ImmutableList.Builder<Column> columns = ImmutableList.builder();
@@ -270,7 +270,7 @@ public abstract class AbstractJdbcInputPlugin
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), task.getDefaultColumnOptions(), column, factory.getJdbcType(column.getSqlType()));
             columns.add(new Column(i,
                     column.getName(),
-                    factory.newColumnGetter(column, columnOption).getToType()));
+                    factory.newColumnGetter(con, task, column, columnOption).getToType()));
         }
         return new Schema(columns.build());
     }
@@ -426,7 +426,7 @@ public abstract class AbstractJdbcInputPlugin
         LastRecordStore lastRecordStore = null;
 
         try (JdbcInputConnection con = newConnection(task)) {
-            List<ColumnGetter> getters = newColumnGetters(task, querySchema, pageBuilder);
+            List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
             try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {
                     long rows = fetch(cursor, getters, pageBuilder);
@@ -474,14 +474,14 @@ public abstract class AbstractJdbcInputPlugin
         return new ColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
-    private List<ColumnGetter> newColumnGetters(PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
+    private List<ColumnGetter> newColumnGetters(JdbcInputConnection con, PluginTask task, JdbcSchema querySchema, PageBuilder pageBuilder)
             throws SQLException
     {
         ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone());
         ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
         for (JdbcColumn c : querySchema.getColumns()) {
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), task.getDefaultColumnOptions(), c, factory.getJdbcType(c.getSqlType()));
-            getters.add(factory.newColumnGetter(c, columnOption));
+            getters.add(factory.newColumnGetter(con, task, c, columnOption));
         }
         return getters.build();
     }

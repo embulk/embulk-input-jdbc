@@ -1,13 +1,22 @@
 package org.embulk.input;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+
+import com.google.common.base.Throwables;
+import com.mysql.jdbc.TimeUtil;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
+import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.mysql.MySQLInputConnection;
+import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
+import org.embulk.spi.PageBuilder;
+import org.joda.time.DateTimeZone;
 
 public class MySQLInputPlugin
         extends AbstractJdbcInputPlugin
@@ -91,6 +100,9 @@ public class MySQLInputPlugin
 
         props.putAll(t.getOptions());
 
+        // load timezone mappings
+        loadTimeZoneMappings();
+
         Driver driver;
         try {
             driver = new com.mysql.jdbc.Driver();  // new com.mysql.jdbc.Driver throws SQLException
@@ -106,6 +118,48 @@ public class MySQLInputPlugin
         } finally {
             if (con != null) {
                 con.close();
+            }
+        }
+    }
+
+    @Override
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    {
+        return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
+    }
+
+    private void loadTimeZoneMappings()
+    {
+        // Here initializes com.mysql.jdbc.TimeUtil.timeZoneMappings static field by calling
+        // static timeZoneMappings method using reflection.
+        // The field is usually initialized when Driver#connect method is called. But the field
+        // initialization fails when a) useLegacyDatetimeCode=false is set AND b) mysql server's
+        // default_time_zone is not SYSTEM (default). According to the stacktrace, that's because
+        // the com.mysql.jdbc.TimeUtil.loadTimeZoneMappings can't find TimeZoneMapping.properties
+        // from the classloader. It seems like a bug of JDBC Driver where it should use the class loader
+        // that loaded com.mysql.jdbc.TimeUtil class rather than system class loader to read the
+        // property file because the file should be in the same classpath with the class.
+        // Here implements a workaround as as workaround.
+        Field f = null;
+        try {
+            f = TimeUtil.class.getDeclaredField("timeZoneMappings");
+            f.setAccessible(true);
+
+            Properties timeZoneMappings = (Properties) f.get(null);
+            if (timeZoneMappings == null) {
+                timeZoneMappings = new Properties();
+                synchronized (TimeUtil.class) {
+                    timeZoneMappings.load(this.getClass().getResourceAsStream("/com/mysql/jdbc/TimeZoneMapping.properties"));
+                }
+                f.set(null, timeZoneMappings);
+            }
+        }
+        catch (IllegalAccessException | NoSuchFieldException | IOException e) {
+            throw Throwables.propagate(e);
+        }
+        finally {
+            if (f != null) {
+                f.setAccessible(false);
             }
         }
     }
