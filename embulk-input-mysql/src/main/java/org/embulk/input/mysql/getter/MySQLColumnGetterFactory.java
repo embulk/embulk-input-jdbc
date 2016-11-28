@@ -47,10 +47,10 @@ public class MySQLColumnGetterFactory
             // Joda-Time's timezone mapping is probably not compatible with java.util.TimeZone if null is returned.
             DateTimeZone sessionTimeZone = checkNotNull(DateTimeZone.forTimeZone(timeZone));
             if (column.getTypeName().equals("DATETIME")) {
-                return new MySQLDateTimeIncrementalHandler(sessionTimeZone, getter);
+                return new MySQLDateTimeTimestampIncrementalHandler(sessionTimeZone, getter);
             }
             else { // TIMESTAMP
-                return new MySQLTimestampIncrementalHandler(sessionTimeZone, getter);
+                return new MySQLTimestampTimestampIncrementalHandler(sessionTimeZone, getter);
             }
         default:
             return getter;

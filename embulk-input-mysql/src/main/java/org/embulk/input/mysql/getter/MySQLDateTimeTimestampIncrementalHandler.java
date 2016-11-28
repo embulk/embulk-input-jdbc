@@ -5,10 +5,10 @@ import org.joda.time.DateTimeZone;
 
 import java.sql.Timestamp;
 
-public class MySQLDateTimeIncrementalHandler
-        extends AbstractMySQLIncrementalHandler
+public class MySQLDateTimeTimestampIncrementalHandler
+        extends AbstractMySQLTimestampIncrementalHandler
 {
-    public MySQLDateTimeIncrementalHandler(DateTimeZone sessionTimeZone, ColumnGetter next)
+    public MySQLDateTimeTimestampIncrementalHandler(DateTimeZone sessionTimeZone, ColumnGetter next)
     {
         super(sessionTimeZone, next);
     }
@@ -20,7 +20,7 @@ public class MySQLDateTimeIncrementalHandler
     }
 
     @Override
-    public org.embulk.spi.time.Timestamp convertTimestamp(long epochSecond, int nano)
+    public org.embulk.spi.time.Timestamp utcTimestampFromSessionTime(long epochSecond, int nano)
     {
         // this Timestamp value is already converted by session time_zone.
         long reconverted = sessionTimeZone.convertUTCToLocal(epochSecond * 1000) / 1000; // reconvert from session time_zone to UTC
@@ -34,7 +34,7 @@ public class MySQLDateTimeIncrementalHandler
     }
 
     @Override
-    public Timestamp convertTimestamp(org.embulk.spi.time.Timestamp from)
+    public Timestamp utcTimestampToSessionTime(org.embulk.spi.time.Timestamp from)
     {
         // reconvert from UTC to session time_zone
         long reconverted = sessionTimeZone.convertLocalToUTC(from.getEpochSecond() * 1000, false);

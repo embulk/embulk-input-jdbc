@@ -16,14 +16,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-public abstract class AbstractMySQLIncrementalHandler
+public abstract class AbstractMySQLTimestampIncrementalHandler
         extends AbstractIncrementalHandler
 {
     protected final DateTimeZone sessionTimeZone;
     protected long epochSecond;
     protected int nano;
 
-    public AbstractMySQLIncrementalHandler(DateTimeZone sessionTimeZone, ColumnGetter next)
+    public AbstractMySQLTimestampIncrementalHandler(DateTimeZone sessionTimeZone, ColumnGetter next)
     {
         super(next);
         this.sessionTimeZone = sessionTimeZone;
@@ -49,13 +49,13 @@ public abstract class AbstractMySQLIncrementalHandler
             .set("timezone", "UTC")
             .loadConfig(FormatterTask.class);
         TimestampFormatter formatter = new TimestampFormatter(getTimestampFormat(), task);
-        String text = formatter.format(convertTimestamp(epochSecond, nano));
+        String text = formatter.format(utcTimestampFromSessionTime(epochSecond, nano));
         return jsonNodeFactory.textNode(text);
     }
 
     protected abstract String getTimestampFormat();
 
-    protected abstract org.embulk.spi.time.Timestamp convertTimestamp(long epochSecond, int nano);
+    protected abstract org.embulk.spi.time.Timestamp utcTimestampFromSessionTime(long epochSecond, int nano);
 
     @Override
     public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
@@ -66,10 +66,10 @@ public abstract class AbstractMySQLIncrementalHandler
             .loadConfig(ParserTask.class);
         TimestampParser parser = new TimestampParser(getTimestampPattern(), task);
         org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
-        toStatement.setTimestamp(toIndex, convertTimestamp(epoch));
+        toStatement.setTimestamp(toIndex, utcTimestampToSessionTime(epoch));
     }
 
     protected abstract String getTimestampPattern();
 
-    protected abstract Timestamp convertTimestamp(org.embulk.spi.time.Timestamp ts);
+    protected abstract Timestamp utcTimestampToSessionTime(org.embulk.spi.time.Timestamp ts);
 }

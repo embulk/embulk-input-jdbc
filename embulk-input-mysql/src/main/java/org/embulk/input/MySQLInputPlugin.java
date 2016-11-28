@@ -101,7 +101,7 @@ public class MySQLInputPlugin
         props.putAll(t.getOptions());
 
         // load timezone mappings
-        loadTimezoneMappings();
+        loadTimeZoneMappings();
 
         Driver driver;
         try {
@@ -128,13 +128,18 @@ public class MySQLInputPlugin
         return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
-    private void loadTimezoneMappings()
+    private void loadTimeZoneMappings()
     {
-        // Manually initialize the value of com.mysql.jdbc.TimeUtil's a timeZoneMappings static field.
-        // It's often created and initialized when Driver#connect method is called. But, The field
-        // initialization fails. Because TimeZoneMapping.properties file cannot be found by the classloader
-        // who loaded java.util.TimeZone.class. JDBC Driver should custom classloader to read the properties
-        // file but, this method is introduced for the workaround in the meantime.
+        // Here initializes com.mysql.jdbc.TimeUtil.timeZoneMappings static field by calling
+        // static timeZoneMappings method using reflection.
+        // The field is usually initialized when Driver#connect method is called. But the field
+        // initialization fails when a) useLegacyDatetimeCode=false is set AND b) mysql server's
+        // default_time_zone is not SYSTEM (default). According to the stacktrace, that's because
+        // the com.mysql.jdbc.TimeUtil.loadTimeZoneMappings can't find TimeZoneMapping.properties
+        // from the classloader. It seems like a bug of JDBC Driver where it should use the class loader
+        // that loaded com.mysql.jdbc.TimeUtil class rather than system class loader to read the
+        // property file because the file should be in the same classpath with the class.
+        // Here implements a workaround as as workaround.
         Field f = null;
         try {
             f = TimeUtil.class.getDeclaredField("timeZoneMappings");
@@ -153,7 +158,7 @@ public class MySQLInputPlugin
             throw Throwables.propagate(e);
         }
         finally {
-            if (f == null) {
+            if (f != null) {
                 f.setAccessible(false);
             }
         }
