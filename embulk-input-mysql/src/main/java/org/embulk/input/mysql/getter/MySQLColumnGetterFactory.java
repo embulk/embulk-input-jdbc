@@ -1,5 +1,6 @@
 package org.embulk.input.mysql.getter;
 
+import com.google.common.base.Optional;
 import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin.PluginTask;
 import org.embulk.input.jdbc.JdbcColumn;
@@ -31,7 +32,8 @@ public class MySQLColumnGetterFactory
         switch (column.getTypeName()) {
         case "DATETIME":
         case "TIMESTAMP":
-            if (!task.getIncremental()) {
+            int index = task.getQuerySchema().findColumn(column.getName()).get();
+            if (!task.getIncremental() || !task.getIncrementalColumnIndexes().contains(index)) {
                 return getter;
             }
 
