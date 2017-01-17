@@ -13,6 +13,9 @@ import org.embulk.spi.type.Types;
 import org.msgpack.value.Value;
 import org.xerial.snappy.Snappy;
 import java.sql.Blob;
+import com.google.gson.Gson;
+import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONArray;
 
 public class SnappyColumnGetter
         extends AbstractColumnGetter
@@ -26,12 +29,35 @@ public class SnappyColumnGetter
         super(to, toType);
     }
 
+    private String json2String(String input) {
+    	String result = "";
+    	Gson gson = new Gson();
+    	JSONArray e = (JSONArray)JsonPath.read(input, "$.*");
+    	java.util.Iterator it = e.iterator();
+    	while (it.hasNext()) {
+    		String sss = gson.toJson(it.next());
+    		if (sss.trim().startsWith("{")) {
+    			result = result + sss + "||";
+    		}
+    		
+    	}
+    	if (result.equals("")) {
+    		return "{}";
+    	} else if (result.endsWith("||")) {
+    		return result.substring(0, result.length() - 2);
+    	} else {
+    		return result;
+    	}
+    	
+    }
+
     @Override
     protected void fetch(ResultSet from, int fromIndex) throws SQLException
     {
         Blob blob = from.getBlob(fromIndex);
         try {
-            value = Snappy.uncompressString(blob.getBytes(1, (int) blob.length()));
+            String tmpValue = Snappy.uncompressString(blob.getBytes(1, (int) blob.length()));
+            value = json2String(tmpValue);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
