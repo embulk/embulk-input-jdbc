@@ -77,6 +77,8 @@ subprojects {
     dependencies {
         compile  'org.embulk:embulk-core:0.8.8'
         compile  'org.xerial.snappy:snappy-java:1.1.2.6'
+        compile  'com.google.code.gson:gson:1.7.1'
+        compile  'com.jayway.jsonpath:json-path:2.2.0'
         provided 'org.embulk:embulk-core:0.8.8'
         testCompile 'junit:junit:4.+'
     }
