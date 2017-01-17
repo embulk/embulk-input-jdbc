@@ -50,13 +50,13 @@ public class OracleInputPlugin
         @ConfigDefault("\"\"")
         public String getPassword();
 
-        @Config("tnsname_path")
+        @Config("tns_admin_path")
         @ConfigDefault("null")
-        public Optional<String> getTnsnamePath();
+        public Optional<String> getTnsAdminPath();
 
-        @Config("tnsname")
+        @Config("net_service_name")
         @ConfigDefault("null")
-        public Optional<String> getTnsname();
+        public Optional<String> getNetServiceName();
     }
 
     @Override
@@ -75,20 +75,17 @@ public class OracleInputPlugin
             if (oracleTask.getHost().isPresent() || oracleTask.getDatabase().isPresent()) {
                 throw new IllegalArgumentException("'host', 'port' and 'database' parameters are invalid if 'url' parameter is set.");
             }
-            if (oracleTask.getTnsname().isPresent() || oracleTask.getTnsnamePath().isPresent()) {
+            if (oracleTask.getNetServiceName().isPresent() || oracleTask.getTnsAdminPath().isPresent()) {
                 throw new IllegalArgumentException("'tnsname', 'tnsname_path' parameters are invalid if 'url' parameter is set.");
             }
             url = oracleTask.getUrl().get();
-        } else if (oracleTask.getTnsname().isPresent() && oracleTask.getTnsnamePath().isPresent()) {
+        } else if (oracleTask.getNetServiceName().isPresent() && oracleTask.getTnsAdminPath().isPresent()) {
             if (oracleTask.getHost().isPresent() || oracleTask.getDatabase().isPresent()) {
                 throw new IllegalArgumentException("'host' and 'database' parameters are invalid if 'tnsname' and 'tnsname_path' parameters are set.");
             }
-            if (oracleTask.getUrl().isPresent()) {
-                throw new IllegalArgumentException("'url' parameter is invalid if 'tnsname' and 'tnsname_path' parameters are set.");
-            }
-            System.setProperty("oracle.net.tns_admin", oracleTask.getTnsnamePath().get());
-            logger.debug(String.format("Setting up env variable oracle.net.tns_admin to be %s", oracleTask.getTnsnamePath().get()));
-            url = String.format("jdbc:oracle:thin:@%s", oracleTask.getTnsname().get());
+            System.setProperty("oracle.net.tns_admin", oracleTask.getTnsAdminPath().get());
+            logger.debug(String.format("Setting up env variable oracle.net.tns_admin to be %s", oracleTask.getTnsAdminPath().get()));
+            url = String.format("jdbc:oracle:thin:@%s", oracleTask.getNetServiceName().get());
         } else {
             if (!oracleTask.getHost().isPresent()) {
                 throw new IllegalArgumentException("Field 'host' is not set.");

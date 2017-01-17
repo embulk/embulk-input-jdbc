@@ -17,6 +17,8 @@ Oracle input plugin for Embulk loads records from Oracle.
 - **database**: destination database name (string, required if url is not set)
 - **schema**: destination schema name (string, default: use the default schema). old Oracle JDBC driver (ojdbc6.jar) doesn't support.
 - **url**: URL of the JDBC connection (string, optional)
+- **tns_admin_path**: Directory which contains tnsname.ora (string, optional, must be present if **net_service_name** is defined)
+- **net_service_name**: Oracle Net Service Name (string, optional)
 - If you write SQL directly,
   - **query**: SQL to run (string)
 - If **query** is not set,
