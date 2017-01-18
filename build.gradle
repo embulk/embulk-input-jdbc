@@ -9,12 +9,12 @@ import com.github.jrubygradle.JRubyExec
 
 def bintrayReleaseProjects = [
     project(":embulk-input-jdbc"),
-    project(":embulk-input-mysql"),
-    project(":embulk-input-postgresql"),
-    project(":embulk-input-redshift"),
-    project(":embulk-input-oracle"),
-    project(":embulk-input-sqlserver"),
-    project(":embulk-input-db2"),
+//    project(":embulk-input-mysql"),
+//    project(":embulk-input-postgresql"),
+ //   project(":embulk-input-redshift"),
+  //  project(":embulk-input-oracle"),
+  //  project(":embulk-input-sqlserver"),
+  //  project(":embulk-input-db2"),
 ]
 
 allprojects {
@@ -58,7 +58,7 @@ allprojects {
 subprojects {
     apply plugin: 'maven'  // install jar files to the local repo: $ gradle install
     apply plugin: 'java'
-    apply plugin: 'findbugs'
+ //   apply plugin: 'findbugs'
     //apply plugin: 'jacoco'
     apply plugin: 'com.github.jruby-gradle.base'
 
@@ -94,9 +94,9 @@ subprojects {
         }
     }
 
-    findbugs {
-        ignoreFailures = true
-    }
+   // findbugs {
+   //     ignoreFailures = true
+   // }
 
     javadoc {
         options {
@@ -190,7 +190,7 @@ end
 /$)
     }
 }
-
+/*
 task gemPush << {
     "gem push pkg/embulk-input-jdbc-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-mysql-${project.version}.gem".execute().waitFor()
@@ -199,4 +199,4 @@ task gemPush << {
     "gem push pkg/embulk-input-oracle-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-sqlserver-${project.version}.gem".execute().waitFor()
     "gem push pkg/embulk-input-db2-${project.version}.gem".execute().waitFor()
-}
+}*/
