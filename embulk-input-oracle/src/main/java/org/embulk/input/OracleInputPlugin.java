@@ -49,6 +49,14 @@ public class OracleInputPlugin
         @Config("password")
         @ConfigDefault("\"\"")
         public String getPassword();
+
+        @Config("tns_admin_path")
+        @ConfigDefault("null")
+        public Optional<String> getTnsAdminPath();
+
+        @Config("net_service_name")
+        @ConfigDefault("null")
+        public Optional<String> getNetServiceName();
     }
 
     @Override
@@ -67,7 +75,21 @@ public class OracleInputPlugin
             if (oracleTask.getHost().isPresent() || oracleTask.getDatabase().isPresent()) {
                 throw new IllegalArgumentException("'host', 'port' and 'database' parameters are invalid if 'url' parameter is set.");
             }
+            if (oracleTask.getNetServiceName().isPresent() || oracleTask.getTnsAdminPath().isPresent()) {
+                throw new IllegalArgumentException("'net_service_name', 'tns_admin_path' parameters are invalid if 'url' parameter is set.");
+            }
             url = oracleTask.getUrl().get();
+        } else if (oracleTask.getNetServiceName().isPresent()) {
+            if (!oracleTask.getTnsAdminPath().isPresent()) {
+                throw new IllegalArgumentException("'tns_admin_path' parameter is required if 'net_service_name' parameter is set.");
+            }
+            if (oracleTask.getHost().isPresent() || oracleTask.getDatabase().isPresent()) {
+                throw new IllegalArgumentException("'host' and 'database' parameters are invalid if 'net_service_name' and 'tns_admin_path' parameters are set.");
+            }
+            System.setProperty("oracle.net.tns_admin", oracleTask.getTnsAdminPath().get());
+            url = String.format("jdbc:oracle:thin:@%s", oracleTask.getNetServiceName().get());
+        } else if (oracleTask.getTnsAdminPath().isPresent() && !oracleTask.getNetServiceName().isPresent()) {
+            throw new IllegalArgumentException("'net_service_name' parameter is required if 'tns_admin_path' parameter is set.");
         } else {
             if (!oracleTask.getHost().isPresent()) {
                 throw new IllegalArgumentException("Field 'host' is not set.");
