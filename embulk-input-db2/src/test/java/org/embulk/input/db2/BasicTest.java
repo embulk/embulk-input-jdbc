@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.nio.file.Path;
+import java.util.TimeZone;
 
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
@@ -41,6 +42,7 @@ public class BasicTest
     @Before
     public void setup() throws Exception
     {
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Helsinki")); // +200
         baseConfig = DB2Tests.baseConfig();
         execute(embulk, readResource("setup.sql")); // setup rows
     }
@@ -64,4 +66,12 @@ public class BasicTest
         assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_number_expected.diff")));
     }
 
+    @Test
+    public void testDatetime() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_datetime_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_datetime_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_datetime_expected.diff")));
+    }
 }

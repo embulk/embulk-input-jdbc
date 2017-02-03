@@ -7,6 +7,7 @@ import org.embulk.config.ConfigSource;
 import org.embulk.test.EmbulkTests;
 import org.embulk.test.TestingEmbulk;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -33,8 +34,10 @@ public class DB2Tests
         String user = config.get(String.class, "user");
         String password = config.get(String.class, "password");
         String database = config.get(String.class, "database");
+
+        boolean isWindows = File.separatorChar == '\\';
         ProcessBuilder pb = new ProcessBuilder(
-                "clpplus.bat",
+                "clpplus." + (isWindows ? "bat" : "sh"),
                 user + "/" + password + "@" + host + ":" + port + "/" + database,
                 "@" + sqlFile.toFile().getAbsolutePath());
         pb.redirectErrorStream(true);
