@@ -1,13 +1,5 @@
 package org.embulk.input.mysql;
 
-import static org.embulk.input.mysql.MySQLTests.execute;
-import static org.embulk.test.EmbulkTests.readSortedFile;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.nio.file.Path;
-import java.util.TimeZone;
-
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
 import org.embulk.input.MySQLInputPlugin;
@@ -17,6 +9,14 @@ import org.embulk.test.TestingEmbulk;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.nio.file.Path;
+import java.util.TimeZone;
+
+import static org.embulk.input.mysql.MySQLTests.execute;
+import static org.embulk.test.EmbulkTests.readSortedFile;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class BasicTest
 {
