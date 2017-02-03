@@ -28,10 +28,15 @@ public class OracleTests
         Files.write(sqlFile, Arrays.asList(sql), Charset.forName("UTF8"));
 
         ConfigSource config = baseConfig();
+        String host = config.get(String.class, "host");
+        String port = config.get(String.class, "port", "1521");
         String user = config.get(String.class, "user");
         String password = config.get(String.class, "password");
         String database = config.get(String.class, "database");
-        ProcessBuilder pb = new ProcessBuilder("SQLPLUS", user + "/" + password + "@" + database, "@" + sqlFile.toFile().getAbsolutePath());
+        ProcessBuilder pb = new ProcessBuilder(
+                "SQLPLUS",
+                user + "/" + password + "@" + host + ":" + port + "/" + database,
+                "@" + sqlFile.toFile().getAbsolutePath());
         pb.environment().put("NLS_LANG", "American_America.UTF8");
         pb.redirectErrorStream(true);
         int code;
