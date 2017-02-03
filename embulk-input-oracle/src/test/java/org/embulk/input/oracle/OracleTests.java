@@ -1,0 +1,50 @@
+package org.embulk.input.oracle;
+
+import static java.util.Locale.ENGLISH;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+
+import org.embulk.config.ConfigSource;
+import org.embulk.test.EmbulkTests;
+import org.embulk.test.TestingEmbulk;
+
+import com.google.common.base.Throwables;
+import com.google.common.io.ByteStreams;
+
+public class OracleTests
+{
+    public static ConfigSource baseConfig()
+    {
+        return EmbulkTests.config("EMBULK_INPUT_ORACLE_TEST_CONFIG");
+    }
+
+    public static void execute(TestingEmbulk embulk, String sql) throws IOException
+    {
+        Path path = embulk.createTempFile("sql");
+        Files.write(path, Arrays.asList(sql), Charset.forName("UTF8"));
+
+        ConfigSource config = baseConfig();
+        String user = config.get(String.class, "user");
+        String password = config.get(String.class, "password");
+        String database = config.get(String.class, "database");
+        ProcessBuilder pb = new ProcessBuilder("SQLPLUS", user + "/" + password + "@" + database, "@" + path.toFile().getAbsolutePath());
+        pb.environment().put("NLS_LANG", "American_America.UTF8");
+        pb.redirectErrorStream(true);
+        int code;
+        try {
+            Process process = pb.start();
+            ByteStreams.copy(process.getInputStream(), System.out);
+            code = process.waitFor();
+        } catch (IOException | InterruptedException ex) {
+            throw Throwables.propagate(ex);
+        }
+        if (code != 0) {
+            throw new RuntimeException(String.format(ENGLISH,
+                        "Command finished with non-zero exit code. Exit code is %d.", code));
+        }
+    }
+}
