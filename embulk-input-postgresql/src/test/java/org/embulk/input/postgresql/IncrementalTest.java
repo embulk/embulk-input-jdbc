@@ -1,6 +1,8 @@
 package org.embulk.input.postgresql;
 
 import java.nio.file.Path;
+import java.util.TimeZone;
+
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
 import org.embulk.input.PostgreSQLInputPlugin;
@@ -10,6 +12,7 @@ import org.embulk.test.TestingEmbulk;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
 import static org.embulk.input.postgresql.PostgreSQLTests.execute;
 import static org.embulk.test.EmbulkTests.readResource;
 import static org.embulk.test.EmbulkTests.readSortedFile;
@@ -28,6 +31,7 @@ public class IncrementalTest
     @Before
     public void setup()
     {
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Helsinki")); // +200
         baseConfig = PostgreSQLTests.baseConfig();
     }
 
