@@ -56,4 +56,49 @@ public class BasicTest
         assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_expected.diff")));
     }
 
+    @Test
+    public void testLower() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_lower_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_expected.diff")));
+    }
+
+    @Test
+    public void testQuery() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_query_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_expected.diff")));
+    }
+
+    @Test
+    public void testQueryLower() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_query_lower_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_expected.diff")));
+    }
+
+    @Test
+    public void testColumnOptions() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_column_options_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_column_options_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_column_options_expected.diff")));
+    }
+
+    @Test
+    public void testColumnOptionsLower() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_column_options_lower_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_column_options_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_column_options_expected.diff")));
+    }
+
 }

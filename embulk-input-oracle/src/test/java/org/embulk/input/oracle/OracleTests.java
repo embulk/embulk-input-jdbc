@@ -24,14 +24,14 @@ public class OracleTests
 
     public static void execute(TestingEmbulk embulk, String sql) throws IOException
     {
-        Path path = embulk.createTempFile("sql");
-        Files.write(path, Arrays.asList(sql), Charset.forName("UTF8"));
+        Path sqlFile = embulk.createTempFile("sql");
+        Files.write(sqlFile, Arrays.asList(sql), Charset.forName("UTF8"));
 
         ConfigSource config = baseConfig();
         String user = config.get(String.class, "user");
         String password = config.get(String.class, "password");
         String database = config.get(String.class, "database");
-        ProcessBuilder pb = new ProcessBuilder("SQLPLUS", user + "/" + password + "@" + database, "@" + path.toFile().getAbsolutePath());
+        ProcessBuilder pb = new ProcessBuilder("SQLPLUS", user + "/" + password + "@" + database, "@" + sqlFile.toFile().getAbsolutePath());
         pb.environment().put("NLS_LANG", "American_America.UTF8");
         pb.redirectErrorStream(true);
         int code;
