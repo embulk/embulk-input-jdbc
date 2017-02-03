@@ -54,4 +54,14 @@ public class BasicTest
         assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_string_expected.diff")));
     }
 
+    @Test
+    public void testNumber() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_number_config.yml")), out1);
+        // (double)1.23456f becomes "1.2345600128173828", not "1.23456", because of difference of precision.
+        assertThat(readSortedFile(out1), is(readResource("test_number_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_number_expected.diff")));
+    }
+
 }
