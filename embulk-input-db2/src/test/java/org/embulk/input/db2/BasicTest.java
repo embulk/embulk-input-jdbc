@@ -44,7 +44,7 @@ public class BasicTest
     {
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Helsinki")); // +200
         baseConfig = DB2Tests.baseConfig();
-        execute(embulk, readResource("setup.sql")); // setup rows
+        execute(BASIC_RESOURCE_PATH + "setup.sql"); // setup rows
     }
 
     @Test
