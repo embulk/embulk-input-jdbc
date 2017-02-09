@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.file.Path;
-import java.util.TimeZone;
 
 import static org.embulk.input.mysql.MySQLTests.execute;
 import static org.embulk.test.EmbulkTests.readSortedFile;
@@ -42,7 +41,6 @@ public class BasicTest
     @Before
     public void setup()
     {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Helsinki")); // +200
         baseConfig = MySQLTests.baseConfig();
         execute(readResource("setup.sql")); // setup rows
     }
