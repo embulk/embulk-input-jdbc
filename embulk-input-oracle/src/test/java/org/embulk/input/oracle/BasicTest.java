@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.nio.file.Path;
-import java.util.TimeZone;
 
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
@@ -42,7 +41,6 @@ public class BasicTest
     @Before
     public void setup() throws Exception
     {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Helsinki")); // +200
         baseConfig = OracleTests.baseConfig();
         execute(embulk, readResource("setup.sql")); // setup rows
     }
