@@ -1,3 +1,11 @@
+Release 0.8.1 - 2017-02-10
+
+Upgraded embulk to 0.8.15 .
+MySQL incremental loading supported datetime and timestamp types.
+PostgreSQL incremental loading supported timestamp and timestamptz types.
+Enabled to connect to Oracle with tnsnames.ora file (@pengfeiz++).
+Refactored tests to use embulk-test and Travis-CI.
+
 Release 0.8.0 - 2016-10-13
 
 * Added embulk-input-db2 to support IBM DB2.
