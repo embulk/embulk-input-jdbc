@@ -107,7 +107,7 @@ subprojects {
     if (it.name.endsWith('-postgresql') || it.name.endsWith('-mysql')) {
         test {
             // JDBC input plugins depend on local time zone to parse timestamp without time stamp and datetime types.
-            jvmArgs "-Duser.country=FI -Duser.timezone=Europe/Helsinki"
+            jvmArgs "-Duser.country=FI", "-Duser.timezone=Europe/Helsinki"
             environment "TZ", "Europe/Helsinki"
         }
     }
