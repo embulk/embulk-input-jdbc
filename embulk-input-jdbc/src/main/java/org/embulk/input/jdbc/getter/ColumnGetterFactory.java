@@ -81,11 +81,7 @@ public class ColumnGetterFactory
 
     public String getJdbcType(int sqlType)
     {
-        String sqlTypeName = jdbcTypes.get(sqlType);
-        if(sqlTypeName == null){
-            throw new UnsupportedOperationException(String.format("Unknown SQL type value '%d'", sqlType));
-        }
-        return sqlTypeName;
+        return jdbcTypes.get(sqlType);
     }
 
 

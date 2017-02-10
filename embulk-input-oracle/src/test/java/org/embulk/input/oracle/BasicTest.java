@@ -99,4 +99,30 @@ public class BasicTest
         assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_column_options_expected.diff")));
     }
 
+    @Test
+    public void testUnknwonType1() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_unknown_type_config1.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_unknown_type_expected1.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_unknown_type_expected1.diff")));
+    }
+
+    @Test
+    public void testUnknwonType2() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_unknown_type_config2.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_unknown_type_expected2.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_unknown_type_expected2.diff")));
+    }
+
+    @Test
+    public void testUnknwonType3() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_unknown_type_config3.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_unknown_type_expected3.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_unknown_type_expected3.diff")));
+    }
 }
