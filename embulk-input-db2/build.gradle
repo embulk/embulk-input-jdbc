@@ -1,7 +1,6 @@
 dependencies {
     compile project(':embulk-input-jdbc')
 
-    testCompile project(':embulk-input-jdbc').sourceSets.test.output
-    testCompile 'org.embulk:embulk-standards:0.8.8'
+    testCompile 'org.embulk:embulk-standards:0.8.15'
     testCompile files('driver/db2jcc4.jar')
 }
