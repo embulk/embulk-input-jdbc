@@ -1,0 +1,5 @@
+table: TEST2
+column_options:
+  ID: {type: string}
+  C1: {type: string, value_type: double}
+  C2: {type: string, value_type: double}
