@@ -1,12 +1,5 @@
 package org.embulk.input.oracle;
 
-import static org.embulk.input.oracle.OracleTests.execute;
-import static org.embulk.test.EmbulkTests.readSortedFile;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.nio.file.Path;
-
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
 import org.embulk.input.OracleInputPlugin;
@@ -16,6 +9,13 @@ import org.embulk.test.TestingEmbulk;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.nio.file.Path;
+
+import static org.embulk.input.oracle.OracleTests.execute;
+import static org.embulk.test.EmbulkTests.readSortedFile;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class BasicTest
 {

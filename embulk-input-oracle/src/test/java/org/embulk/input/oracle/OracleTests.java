@@ -1,6 +1,10 @@
 package org.embulk.input.oracle;
 
-import static java.util.Locale.ENGLISH;
+import com.google.common.base.Throwables;
+import com.google.common.io.ByteStreams;
+import org.embulk.config.ConfigSource;
+import org.embulk.test.EmbulkTests;
+import org.embulk.test.TestingEmbulk;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -8,12 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import org.embulk.config.ConfigSource;
-import org.embulk.test.EmbulkTests;
-import org.embulk.test.TestingEmbulk;
-
-import com.google.common.base.Throwables;
-import com.google.common.io.ByteStreams;
+import static java.util.Locale.ENGLISH;
 
 public class OracleTests
 {
@@ -23,7 +22,7 @@ public class OracleTests
     }
 
     public static void execute(TestingEmbulk embulk, String sql) throws IOException
-    {
+{
         Path sqlFile = embulk.createTempFile("sql");
         Files.write(sqlFile, Arrays.asList(sql), Charset.forName("UTF8"));
 
@@ -33,8 +32,9 @@ public class OracleTests
         String user = config.get(String.class, "user");
         String password = config.get(String.class, "password");
         String database = config.get(String.class, "database");
+
         ProcessBuilder pb = new ProcessBuilder(
-                "SQLPLUS",
+                "sql",
                 user + "/" + password + "@" + host + ":" + port + "/" + database,
                 "@" + sqlFile.toFile().getAbsolutePath());
         pb.environment().put("NLS_LANG", "American_America.UTF8");

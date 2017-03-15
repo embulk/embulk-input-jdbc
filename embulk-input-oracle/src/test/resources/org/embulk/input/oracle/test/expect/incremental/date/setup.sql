@@ -1,0 +1,13 @@
+DROP TABLE load;
+
+CREATE TABLE load (
+    dt DATE NOT NULL,
+    note VARCHAR2(10)
+);
+
+INSERT INTO load (dt, note) VALUES (TO_DATE('2016-11-02 01:00:01', 'YYYY-MM-DD HH24:MI:SS'), 'first');
+INSERT INTO load (dt, note) VALUES (TO_DATE('2016-11-02 02:00:02', 'YYYY-MM-DD HH24:MI:SS'), 'first');
+INSERT INTO load (dt, note) VALUES (TO_DATE('2016-11-02 03:00:03', 'YYYY-MM-DD HH24:MI:SS'), 'first');
+INSERT INTO load (dt, note) VALUES (TO_DATE('2016-11-02 04:00:04', 'YYYY-MM-DD HH24:MI:SS'), 'first');
+
+EXIT;

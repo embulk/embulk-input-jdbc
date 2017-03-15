@@ -1,0 +1,4 @@
+table: load
+default_time_zone: +0300
+incremental: true
+incremental_columns: [ts]

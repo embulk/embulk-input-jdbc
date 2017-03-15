@@ -1,0 +1,5 @@
+table: int_load
+column_options:
+  num: {value_type: long}
+incremental: true
+incremental_columns: [num]

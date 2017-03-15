@@ -1,17 +1,20 @@
 package org.embulk.input;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Properties;
-
+import com.google.common.base.Optional;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.oracle.OracleInputConnection;
+import org.embulk.input.oracle.getter.OracleColumnGetterFactory;
+import org.embulk.spi.PageBuilder;
+import org.joda.time.DateTimeZone;
 
-import com.google.common.base.Optional;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
 
 public class OracleInputPlugin
     extends AbstractJdbcInputPlugin
@@ -128,6 +131,11 @@ public class OracleInputPlugin
                 con.close();
             }
         }
+    }
+
+    @Override
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone) {
+        return new OracleColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
 }
