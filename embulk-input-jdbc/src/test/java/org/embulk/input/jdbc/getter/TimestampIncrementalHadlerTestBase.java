@@ -10,14 +10,35 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
+import org.embulk.spi.Buffer;
+import org.embulk.spi.BufferAllocator;
 import org.embulk.spi.Column;
+import org.embulk.spi.PageBuilder;
+import org.embulk.spi.Schema;
+import org.embulk.spi.type.Types;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class TimestampIncrementalHadlerTestBase
 {
+    protected PageBuilder createPageBuilder()
+    {
+        BufferAllocator allocator = new BufferAllocator() {
+            @Override
+            public Buffer allocate(int minimumCapacity) {
+                return Buffer.allocate(minimumCapacity);
+            }
+
+            @Override
+            public Buffer allocate() {
+                return allocate(16);
+            }
+        };
+        return new PageBuilder(allocator, new Schema(Arrays.asList(new Column(0, null, Types.TIMESTAMP))), null);
+    }
 
     protected Timestamp createTimestamp(String datetime, int nanos) throws ParseException
     {
@@ -43,7 +64,7 @@ public class TimestampIncrementalHadlerTestBase
                 throw new UnsupportedOperationException(method.getName());
             }
         });
-        getter.getAndSet(resultSetProxy, 0, new Column(0, null, null));
+        getter.getAndSet(resultSetProxy, 0, new Column(0, null, Types.TIMESTAMP));
     }
 
     protected Timestamp decodeTimestamp(ColumnGetter getter, JsonNode value) throws SQLException

@@ -40,11 +40,11 @@ public class TimestampWithTimeZoneIncrementalHandlerTest extends TimestampIncrem
             @Override
             public Object run() throws Exception {
                 Timestamp value = createTimestamp("2016/01/23 12:34:56", 123456000);
-                TimestampWithTimeZoneIncrementalHandler getter = new TimestampWithTimeZoneIncrementalHandler(new TimestampColumnGetter(null, null, null));
+                TimestampWithTimeZoneIncrementalHandler getter = new TimestampWithTimeZoneIncrementalHandler(new TimestampColumnGetter(createPageBuilder(), null, null));
                 setTimestamp(getter, value);
 
                 JsonNode json = getter.encodeToJson();
-                assertThat(json.toString(), is("\"2016-01-23T03:34:56.123456Z\""));
+                assertThat(json.toString(), is("\"2016-01-23T10:34:56.123456Z\""));
 
                 Timestamp result = decodeTimestamp(getter, json);
                 assertThat(result, is(value));

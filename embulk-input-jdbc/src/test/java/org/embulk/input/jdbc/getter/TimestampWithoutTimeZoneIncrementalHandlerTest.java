@@ -16,7 +16,7 @@ public class TimestampWithoutTimeZoneIncrementalHandlerTest extends TimestampInc
     public void test() throws Exception
     {
         Timestamp value = createTimestamp("2016/01/23 12:34:56", 123456000);
-        TimestampWithoutTimeZoneIncrementalHandler getter = new TimestampWithoutTimeZoneIncrementalHandler(new TimestampColumnGetter(null, null, null));
+        TimestampWithoutTimeZoneIncrementalHandler getter = new TimestampWithoutTimeZoneIncrementalHandler(new TimestampColumnGetter(createPageBuilder(), null, null));
         setTimestamp(getter, value);
 
         JsonNode json = getter.encodeToJson();
