@@ -151,7 +151,8 @@ $ ./gradlew gem
 ```
 
 Running tests:
-You need to add ojdbcj.jar to embulk-input-oracle/driver
+
+You need to add ojdbc7.jar to embulk-input-oracle/driver
 
 Also oracle.yml is needed
 ```
