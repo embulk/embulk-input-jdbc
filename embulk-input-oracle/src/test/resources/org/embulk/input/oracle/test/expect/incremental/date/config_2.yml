@@ -1,4 +1,4 @@
 table: load
-last_record: ['2016-11-02T02:00:04.000000Z']
+last_record: ['2016-11-02T04:00:04.000000']
 incremental: true
 incremental_columns: [dt]

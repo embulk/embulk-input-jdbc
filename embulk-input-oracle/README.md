@@ -149,3 +149,21 @@ in:
 ```
 $ ./gradlew gem
 ```
+
+Running tests:
+You need to add ojdbcj.jar to embulk-input-oracle/driver
+
+Also oracle.yml is needed
+```
+type: oracle
+host: localhost
+port: 1521
+database: xe
+user: system
+password: pass
+```
+
+To run tests for oracle project only
+```
+$ EMBULK_INPUT_ORACLE_TEST_CONFIG=oracle.yml ./gradlew :embulk-input-oracle:check --info
+```
