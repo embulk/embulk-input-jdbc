@@ -37,7 +37,7 @@ public class OracleTests
                 "sql",
                 user + "/" + password + "@" + host + ":" + port + "/" + database,
                 "@" + sqlFile.toFile().getAbsolutePath());
-        pb.environment().put("NLS_LANG", "American_America.UTF8");
+        pb.environment().put("JAVA_TOOL_OPTIONS", "-Dfile.encoding=UTF8");
         pb.redirectErrorStream(true);
         int code;
         try {
