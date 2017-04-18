@@ -144,3 +144,10 @@ in:
 ```
 $ ./gradlew gem
 ```
+
+Running tests:
+
+```
+$ cp ci/travis_redshift.yml ci/redshift.yml  # edit this file if necessary
+$ EMBULK_INPUT_REDSHIFT_TEST_CONFIG=`pwd`/ci/redshift.yml ./gradlew :embulk-input-redshift:check --info
+```
