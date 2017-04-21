@@ -6,8 +6,10 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 
+import com.google.common.base.Optional;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
+import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
@@ -49,9 +51,34 @@ public class PostgreSQLInputPlugin
         @ConfigDefault("false")
         public boolean getSsl();
 
+        @Config("ssl_version")
+        @ConfigDefault("null")
+        public Optional<SslVersion> getSslVersion();
+
         @Config("application_name")
         @ConfigDefault("\"embulk-input-postgresql\"")
         public String getApplicationName();
+    }
+
+    public enum SslVersion
+    {
+        TLS, TLSv1_1, TLSv1_2, TLSv1_3;
+
+        public String getVersion()
+        {
+            switch (name()) {
+                case "TLS":
+                    return "TLS";
+                case "TLSv1_1":
+                    return "TLSv1.1";
+                case "TLSv1_2":
+                    return "TLSv1.2";
+                case "TLSv1_3":
+                    return "TLSv1.3";
+                default:
+                    throw new ConfigException(String.format("Unknown ssl_version '%s'. Supported auth_method are TLS, TLSv1_1, TLSv1_2, TLSv1_3", name()));
+            }
+        }
     }
 
     @Override
@@ -83,6 +110,12 @@ public class PostgreSQLInputPlugin
             //      see embulk-input-ftp for SSL implementation.
             props.setProperty("ssl", "true");
             props.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");  // disable server-side validation
+
+            if (t.getSslVersion().isPresent()) {
+                SslVersion version = t.getSslVersion().get();
+                props.setProperty("sslfactory", "org.embulk.input.postgresql.MultiVersionSslFactory");  // disable server-side validation
+                props.setProperty("sslfactoryarg", version.getVersion());
+            }
         }
         // setting ssl=false enables SSL. See org.postgresql.core.v3.openConnectionImpl.
 
