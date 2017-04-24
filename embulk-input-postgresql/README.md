@@ -19,6 +19,7 @@ PostgreSQL input plugin for Embulk loads records from PostgreSQL.
 - **connect_timeout**: timeout for establishment of a database connection. (integer (seconds), default: 300)
 - **socket_timeout**: timeout for socket read operations. 0 means no timeout. (integer (seconds), default: 1800)
 - **ssl**: enables SSL. data will be encrypted but CA or certification will not be verified (boolean, default: false)
+- **ssl_version**: specify SSL version (string, default: TLSv1.1(Java7), TLSv1.2(java8), Available values options are: `TLS`, `TLSv1.1`, `TLSv1.2`, `TLSv1.3`)
 - **application_name**: application name shown on pg_stat_activity. (string, default: "embulk-input-postgresql")
 - **options**: extra JDBC properties (hash, default: {})
 - If you write SQL directly,
