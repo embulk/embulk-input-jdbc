@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Optional;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
@@ -62,22 +64,39 @@ public class PostgreSQLInputPlugin
 
     public enum SslVersion
     {
-        TLS, TLSv1_1, TLSv1_2, TLSv1_3;
+        TLS("TLS"),
+        TLSv1_1("TLSv1.1"),
+        TLSv1_2("TLSv1.2"),
+        TLSv1_3("TLSv1.3");
+
+        private final String name;
+
+        SslVersion(final String name)
+        {
+            this.name = name;
+        }
+
+        @JsonCreator
+        public static SslVersion fromString(String from)
+        {
+            for (SslVersion version : SslVersion.values()) {
+                if (version.name.equals(from)) {
+                    return version;
+                }
+            }
+            throw new ConfigException(String.format("Unknown target '%s'. Supported ssl_version are [TLS, TLSv1.1, TLSv1.2, TLSv1.3]", from));
+        }
+
+        @JsonValue
+        @Override
+        public String toString()
+        {
+            return this.name;
+        }
 
         public String getVersion()
         {
-            switch (name()) {
-                case "TLS":
-                    return "TLS";
-                case "TLSv1_1":
-                    return "TLSv1.1";
-                case "TLSv1_2":
-                    return "TLSv1.2";
-                case "TLSv1_3":
-                    return "TLSv1.3";
-                default:
-                    throw new ConfigException(String.format("Unknown ssl_version '%s'. Supported auth_method are TLS, TLSv1_1, TLSv1_2, TLSv1_3", name()));
-            }
+            return toString();
         }
     }
 
