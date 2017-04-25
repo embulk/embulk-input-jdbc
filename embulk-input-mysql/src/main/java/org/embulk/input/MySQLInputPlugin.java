@@ -40,6 +40,20 @@ public class MySQLInputPlugin
 
         @Config("database")
         public String getDatabase();
+
+        //
+        // TODO
+        //
+        // The useLegacyDatetimeCode option is obsolete in the MySQL Connector/J 6.
+        // It will remove before we upgrade connector-j 6.x for embulk-input-mysql
+        //
+        // The `useLegacyDatetimeCode=false` option return properly time if server and client timezone is difference.
+        // https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-usagenotes-known-issues-limitations.html
+        //
+        @Config("use_legacy_datetime_code")
+        @ConfigDefault("false")
+        public boolean getUseLegacyDatetimeCode();
+
     }
 
     @Override
@@ -72,6 +86,11 @@ public class MySQLInputPlugin
         // Enable keepalive based on tcp_keepalive_time, tcp_keepalive_intvl and tcp_keepalive_probes kernel parameters.
         // Socket options TCP_KEEPCNT, TCP_KEEPIDLE, and TCP_KEEPINTVL are not configurable.
         props.setProperty("tcpKeepAlive", "true");
+
+        // TODO
+        // The useLegacyDatetimeCode option is obsolete in the MySQL Connector/J 6.
+        // It will remove before we upgrade connector-j 6.x for embulk-input-mysql
+        props.setProperty("useLegacyDatetimeCode", String.valueOf(t.getUseLegacyDatetimeCode()));
 
         // TODO
         //switch task.getSssl() {
