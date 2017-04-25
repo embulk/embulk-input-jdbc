@@ -51,7 +51,7 @@ public class MySQLInputPlugin
         // https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-usagenotes-known-issues-limitations.html
         //
         @Config("use_legacy_datetime_code")
-        @ConfigDefault("true")
+        @ConfigDefault("false")
         public boolean getUseLegacyDatetimeCode();
 
     }
