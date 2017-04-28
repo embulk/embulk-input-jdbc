@@ -9,7 +9,11 @@ import java.sql.SQLException;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
+import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.postgresql.PostgreSQLInputConnection;
+import org.embulk.input.redshift.getter.RedshiftColumnGetterFactory;
+import org.embulk.spi.PageBuilder;
+import org.joda.time.DateTimeZone;
 
 public class RedshiftInputPlugin
         extends AbstractJdbcInputPlugin
@@ -89,5 +93,11 @@ public class RedshiftInputPlugin
                 con.close();
             }
         }
+    }
+
+    @Override
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    {
+        return new RedshiftColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 }

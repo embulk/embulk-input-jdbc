@@ -3,4 +3,6 @@ dependencies {
     compile project(':embulk-input-postgresql')
 
     testCompile project(':embulk-input-jdbc').sourceSets.test.output
+
+    testCompile 'org.embulk:embulk-standards:0.8.15'
 }
