@@ -426,6 +426,8 @@ public abstract class AbstractJdbcInputPlugin
         LastRecordStore lastRecordStore = null;
 
         try (JdbcInputConnection con = newConnection(task)) {
+            con.before_load();
+
             List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
             try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {

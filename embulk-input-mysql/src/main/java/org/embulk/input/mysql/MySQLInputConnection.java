@@ -1,10 +1,12 @@
 package org.embulk.input.mysql;
 
+import java.sql.Statement;
 import java.util.List;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import com.mysql.jdbc.ConnectionImpl;
@@ -58,5 +60,34 @@ public class MySQLInputConnection
     public TimeZone getServerTimezoneTZ()
     {
         return ((ConnectionImpl) connection).getServerTimezoneTZ();
+    }
+
+    @Override
+    public void before_load()
+        throws SQLException
+    {
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery("select @@system_time_zone");
+
+        if( rs.next() ) {
+            String sys_tz_name = rs.getString(1);
+            TimeZone sys_tz = TimeZone.getTimeZone(sys_tz_name);
+
+            String usr_tz_name = System.getProperty("user.timezone");
+            TimeZone usr_tz = TimeZone.getTimeZone(usr_tz_name);
+
+            if( !sys_tz.hasSameRules(usr_tz) ) {
+                logger.warn(String.format(Locale.ENGLISH,
+                        "The server timezone and client timezone are different, the plugin will fetch wrong datetime values."));
+                logger.warn(String.format(Locale.ENGLISH,
+                        "Use `options: { useLegacyDatetimeCode: false }`"));
+            }
+            logger.warn(String.format(Locale.ENGLISH,"The plugin will set `useLegacyDatetimeCode=false` by default in future."));
+
+        }
+        else {
+            // TODO Error check
+        }
+
     }
 }
