@@ -66,28 +66,49 @@ public class MySQLInputConnection
     public void before_load()
         throws SQLException
     {
-        Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("select @@system_time_zone");
+        String svr_tz_name = getServerTimeZoneOffset();
+        TimeZone svr_tz = TimeZone.getTimeZone(svr_tz_name);
 
-        if( rs.next() ) {
-            String sys_tz_name = rs.getString(1);
-            TimeZone sys_tz = TimeZone.getTimeZone(sys_tz_name);
+        String usr_tz_name = System.getProperty("user.timezone");
+        TimeZone usr_tz = TimeZone.getTimeZone(usr_tz_name);
 
-            String usr_tz_name = System.getProperty("user.timezone");
-            TimeZone usr_tz = TimeZone.getTimeZone(usr_tz_name);
+        if( svr_tz.getRawOffset() != usr_tz.getRawOffset() ) {
+            logger.warn(String.format(Locale.ENGLISH,
+                    "The server timezone offset(%s) and client timezone has different timezone offset. The plugin will fetch wrong datetime values.",svr_tz_name,usr_tz_name));
+            logger.warn(String.format(Locale.ENGLISH,
+                    "Use `options: { useLegacyDatetimeCode: false }`"));
+        }
+        logger.warn(String.format(Locale.ENGLISH,"The plugin will set `useLegacyDatetimeCode=false` by default in future."));
+    }
 
-            if( !sys_tz.hasSameRules(usr_tz) ) {
-                logger.warn(String.format(Locale.ENGLISH,
-                        "The server timezone and client timezone are different, the plugin will fetch wrong datetime values."));
-                logger.warn(String.format(Locale.ENGLISH,
-                        "Use `options: { useLegacyDatetimeCode: false }`"));
+    private String getServerTimeZoneOffset(){
+
+        //
+        // First, I used `@@system_time_zone`. but It return non Time Zone Abbreviations name on a specific platform.
+        // So, This method get GMT offset with query.
+        //
+        String query = "select IF(timediff(now(),utc_timestamp())=0,'UTC',\n" +
+                "  IF(timediff(now(),utc_timestamp())>0,\n" +
+                "    CONCAT('GMT+',TIME_FORMAT(timediff(now(),utc_timestamp()),'%h:%m')),\n" +
+                "    CONCAT('GMT',TIME_FORMAT(timediff( now(), utc_timestamp()),'%h:%m')))) as offset;\n";
+
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            if (rs.next()) {
+                String tz_name = rs.getString(1);
+                logger.info(String.format(Locale.ENGLISH,"Server timezone offset: %s",tz_name));
+                return tz_name;
             }
-            logger.warn(String.format(Locale.ENGLISH,"The plugin will set `useLegacyDatetimeCode=false` by default in future."));
-
+            else {
+                // TODO Error Test.
+                return null;
+            }
         }
-        else {
-            // TODO Error check
+        catch (SQLException ex) {
+            // TODO
+            return null;
         }
-
     }
 }
