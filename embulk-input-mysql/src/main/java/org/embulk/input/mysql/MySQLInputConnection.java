@@ -74,7 +74,7 @@ public class MySQLInputConnection
 
         if( svr_tz.getRawOffset() != usr_tz.getRawOffset() ) {
             logger.warn(String.format(Locale.ENGLISH,
-                    "The server timezone offset(%s) and client timezone has different timezone offset. The plugin will fetch wrong datetime values.",svr_tz_name,usr_tz_name));
+                    "The server timezone offset(%s) and client timezone(%s) has different timezone offset. The plugin will fetch wrong datetime values.",svr_tz_name,usr_tz_name));
             logger.warn(String.format(Locale.ENGLISH,
                     "Use `options: { useLegacyDatetimeCode: false }`"));
         }
