@@ -35,12 +35,15 @@ public class MySQLTimeZoneBuilder
 
     public static TimeZone fromGMTOffsetSeconds(int offset_seconds)
     {
-        String sign = offset_seconds > 0 ? "+" : "-";
-        int abs_offset_sec =  Math.abs(offset_seconds);
-        int tz_hour =  abs_offset_sec / ONE_HOUR_SEC;
-        int tz_min =  abs_offset_sec % ONE_HOUR_SEC / ONE_MIN_SEC;
-        String tz_name = String.format(Locale.ENGLISH,"GMT%s%02d:%02d",sign,tz_hour,tz_min);
+        if( offset_seconds == 0 ) {
+            return TimeZone.getTimeZone("UTC");
+        }
 
+        String sign = offset_seconds > 0 ? "+" : "-";
+        int abs_offset_sec = Math.abs(offset_seconds);
+        int tz_hour = abs_offset_sec / ONE_HOUR_SEC;
+        int tz_min = abs_offset_sec % ONE_HOUR_SEC / ONE_MIN_SEC;
+        String tz_name = String.format(Locale.ENGLISH, "GMT%s%02d:%02d", sign, tz_hour, tz_min);
         return TimeZone.getTimeZone(tz_name);
     }
 }
