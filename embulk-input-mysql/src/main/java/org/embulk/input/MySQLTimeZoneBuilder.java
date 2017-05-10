@@ -9,8 +9,8 @@ import java.util.TimeZone;
 
 public class MySQLTimeZoneBuilder
 {
-    public static final int ONE_HOUR_SEC = 3600;
-    public static final int ONE_MIN_SEC = 60;
+    private static final int ONE_HOUR_SEC = 3600;
+    private static final int ONE_MIN_SEC = 60;
 
     public static TimeZone fromSystemTimeZone(Connection connection)
         throws SQLException
