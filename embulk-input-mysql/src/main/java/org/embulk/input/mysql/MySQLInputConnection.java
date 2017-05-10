@@ -66,7 +66,41 @@ public class MySQLInputConnection
     public void before_load()
         throws SQLException
     {
-        String svr_tz_name = getServerTimeZoneOffset();
+        compareTimeZoneOffset();
+    }
+
+    private int getServerTimeZoneOffsetInSeconds(){
+
+        //
+        // First, I used `@@system_time_zone`. but It return non Time Zone Abbreviations name on a specific platform.
+        // So, This method get GMT offset with query.
+        //
+        String query = "select TIME_TO_SEC(timediff(now(),utc_timestamp()));";
+
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            if (rs.next()) {
+                int offset = rs.getInt(1);
+                logger.info(String.format(Locale.ENGLISH,"Server timezone offset in seconds: %d",offset));
+                return offset;
+            }
+            else {
+                // TODO Error Test.
+                return -1;
+            }
+        }
+        catch (SQLException ex) {
+            // TODO
+            return -1;
+        }
+    }
+
+    private void compareTimeZoneOffset(){
+
+        int tz_offset_sec = getServerTimeZoneOffsetInSeconds();
+        String svr_tz_name = makeTimeZoneOffsetFromSeconds(tz_offset_sec);
         TimeZone svr_tz = TimeZone.getTimeZone(svr_tz_name);
 
         String usr_tz_name = System.getProperty("user.timezone");
@@ -79,36 +113,23 @@ public class MySQLInputConnection
                     "Use `options: { useLegacyDatetimeCode: false }`"));
         }
         logger.warn(String.format(Locale.ENGLISH,"The plugin will set `useLegacyDatetimeCode=false` by default in future."));
+
     }
 
-    private String getServerTimeZoneOffset(){
-
-        //
-        // First, I used `@@system_time_zone`. but It return non Time Zone Abbreviations name on a specific platform.
-        // So, This method get GMT offset with query.
-        //
-        String query = "select IF(timediff(now(),utc_timestamp())=0,'UTC',\n" +
-                "  IF(timediff(now(),utc_timestamp())>0,\n" +
-                "    CONCAT('GMT+',TIME_FORMAT(timediff(now(),utc_timestamp()),'%h:%m')),\n" +
-                "    CONCAT('GMT',TIME_FORMAT(timediff( now(), utc_timestamp()),'%h:%m')))) as offset;\n";
-
-        try {
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-
-            if (rs.next()) {
-                String tz_name = rs.getString(1);
-                logger.info(String.format(Locale.ENGLISH,"Server timezone offset: %s",tz_name));
-                return tz_name;
-            }
-            else {
-                // TODO Error Test.
-                return null;
-            }
+    private String makeTimeZoneOffsetFromSeconds(int tz_offset_sec)
+    {
+        if( tz_offset_sec == 0 ){
+            return "UTC";
         }
-        catch (SQLException ex) {
-            // TODO
-            return null;
+        else {
+            int hour_sec = 3600;
+            int min_sec = 60;
+
+            String sign = tz_offset_sec > 0 ? "+" : "-";
+            int abs_offset_sec =  Math.abs(tz_offset_sec);
+            int tz_hour =  abs_offset_sec / hour_sec;
+            int tz_min =  abs_offset_sec % hour_sec / min_sec;
+            return String.format(Locale.ENGLISH,"GMT%s%02d:%02d",sign,tz_hour,tz_min);
         }
     }
 }
