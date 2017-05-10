@@ -11,6 +11,7 @@ import java.util.TimeZone;
 
 import com.mysql.jdbc.ConnectionImpl;
 import com.mysql.jdbc.ConnectionProperties;
+import org.embulk.input.MySQLTimeZoneBuilder;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
 import org.embulk.input.jdbc.getter.ColumnGetter;
@@ -66,70 +67,26 @@ public class MySQLInputConnection
     public void before_load()
         throws SQLException
     {
-        compareTimeZoneOffset();
-    }
-
-    private int getServerTimeZoneOffsetInSeconds(){
-
-        //
-        // First, I used `@@system_time_zone`. but It return non Time Zone Abbreviations name on a specific platform.
-        // So, This method get GMT offset with query.
-        //
-        String query = "select TIME_TO_SEC(timediff(now(),utc_timestamp()));";
-
-        try {
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-
-            if (rs.next()) {
-                int offset = rs.getInt(1);
-                logger.info(String.format(Locale.ENGLISH,"Server timezone offset in seconds: %d",offset));
-                return offset;
-            }
-            else {
-                // TODO Error Test.
-                return -1;
-            }
-        }
-        catch (SQLException ex) {
-            // TODO
-            return -1;
-        }
-    }
-
-    private void compareTimeZoneOffset(){
-
-        int tz_offset_sec = getServerTimeZoneOffsetInSeconds();
-        String svr_tz_name = makeTimeZoneOffsetFromSeconds(tz_offset_sec);
-        TimeZone svr_tz = TimeZone.getTimeZone(svr_tz_name);
+        // TODO error check.
+        TimeZone svr_tz = MySQLTimeZoneBuilder.fromSystemTimeZone(connection);
 
         String usr_tz_name = System.getProperty("user.timezone");
         TimeZone usr_tz = TimeZone.getTimeZone(usr_tz_name);
 
+        //
+        // Compare offset only. Although I expect to return true, the following code return false,
+        //
+        // TimeZone tz_jst   = TimeZone.getTimeZone("JST");
+        // TimeZone tz_gmt9  = TimeZone.getTimeZone("GMT+9");
+        // tz_jst.hasSameRules(tz_gmt9) // return false.
+        //
         if( svr_tz.getRawOffset() != usr_tz.getRawOffset() ) {
             logger.warn(String.format(Locale.ENGLISH,
-                    "The server timezone offset(%s) and client timezone(%s) has different timezone offset. The plugin will fetch wrong datetime values.",svr_tz_name,usr_tz_name));
+                    "The server timezone offset(%s) and client timezone(%s) has different timezone offset. The plugin will fetch wrong datetime values.",svr_tz.getDisplayName(),usr_tz_name));
             logger.warn(String.format(Locale.ENGLISH,
                     "Use `options: { useLegacyDatetimeCode: false }`"));
         }
         logger.warn(String.format(Locale.ENGLISH,"The plugin will set `useLegacyDatetimeCode=false` by default in future."));
-
     }
 
-    private String makeTimeZoneOffsetFromSeconds(int tz_offset_sec)
-    {
-        if( tz_offset_sec == 0 ){
-            return "UTC";
-        }
-        else {
-            int hour_sec = 3600;
-            int min_sec = 60;
-
-            String sign = tz_offset_sec > 0 ? "+" : "-";
-            int abs_offset_sec =  Math.abs(tz_offset_sec);
-            int tz_hour =  abs_offset_sec / hour_sec;
-            int tz_min =  abs_offset_sec % hour_sec / min_sec;
-            return String.format(Locale.ENGLISH,"GMT%s%02d:%02d",sign,tz_hour,tz_min);
-        }
-    }
 }
