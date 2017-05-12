@@ -12,8 +12,7 @@ public class MySQLTimeZoneBuilder
     private static final int ONE_HOUR_SEC = 3600;
     private static final int ONE_MIN_SEC = 60;
 
-    public static TimeZone fromSystemTimeZone(Connection connection)
-        throws SQLException
+    public static TimeZone fromSystemTimeZone(Connection connection) throws SQLException
     {
         //
         // First, I used `@@system_time_zone`. but It return non Time Zone Abbreviations name on a specific platform.
@@ -21,29 +20,34 @@ public class MySQLTimeZoneBuilder
         //
         String query = "select TIME_TO_SEC(timediff(now(),utc_timestamp()));";
         Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery(query);
 
-        if (rs.next()) {
-            int offset_seconds = rs.getInt(1);
-            return fromGMTOffsetSeconds(offset_seconds);
-        }
-        else {
-            // TODO Error check.
-            return null;
+        try {
+            ResultSet rs = stmt.executeQuery(query);
+            if (rs.next()) {
+                int offsetSeconds = rs.getInt(1);
+                return fromGMTOffsetSeconds(offsetSeconds);
+            }
+            else {
+                // TODO Error check.
+                return null;
+            }
+
+        } finally {
+            stmt.close();
         }
     }
 
-    public static TimeZone fromGMTOffsetSeconds(int offset_seconds)
+    private static TimeZone fromGMTOffsetSeconds(int offsetSeconds)
     {
-        if( offset_seconds == 0 ) {
+        if( offsetSeconds == 0 ) {
             return TimeZone.getTimeZone("UTC");
         }
 
-        String sign = offset_seconds > 0 ? "+" : "-";
-        int abs_offset_sec = Math.abs(offset_seconds);
-        int tz_hour = abs_offset_sec / ONE_HOUR_SEC;
-        int tz_min = abs_offset_sec % ONE_HOUR_SEC / ONE_MIN_SEC;
-        String tz_name = String.format(Locale.ENGLISH, "GMT%s%02d:%02d", sign, tz_hour, tz_min);
-        return TimeZone.getTimeZone(tz_name);
+        String sign = offsetSeconds > 0 ? "+" : "-";
+        int absOffsetSec = Math.abs(offsetSeconds);
+        int tzHour = absOffsetSec / ONE_HOUR_SEC;
+        int tzMin = absOffsetSec % ONE_HOUR_SEC / ONE_MIN_SEC;
+        String tzName = String.format(Locale.ENGLISH, "GMT%s%02d:%02d", sign, tzHour, tzMin);
+        return TimeZone.getTimeZone(tzName);
     }
 }

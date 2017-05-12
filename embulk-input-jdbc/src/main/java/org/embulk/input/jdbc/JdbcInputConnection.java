@@ -386,11 +386,4 @@ public class JdbcInputConnection
             return columnNamesBuilder.build();
         }
     }
-
-    public void before_load()
-            throws SQLException
-    {
-
-    }
-
 }

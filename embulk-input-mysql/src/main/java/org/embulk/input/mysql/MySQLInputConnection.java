@@ -1,6 +1,7 @@
 package org.embulk.input.mysql;
 
 import java.sql.Statement;
+import java.util.Date;
 import java.util.List;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -63,15 +64,17 @@ public class MySQLInputConnection
         return ((ConnectionImpl) connection).getServerTimezoneTZ();
     }
 
-    @Override
-    public void before_load()
-        throws SQLException
+    public void compareTimeZone() throws SQLException
     {
         // TODO error check.
-        TimeZone svr_tz = MySQLTimeZoneBuilder.fromSystemTimeZone(connection);
+        TimeZone serverTimeZone = MySQLTimeZoneBuilder.fromSystemTimeZone(connection);
+        TimeZone clientTimeZone = TimeZone.getDefault();
+        Date today = new Date();
+        int clientOffset = clientTimeZone.getRawOffset();
 
-        String usr_tz_name = System.getProperty("user.timezone");
-        TimeZone usr_tz = TimeZone.getTimeZone(usr_tz_name);
+        if( clientTimeZone.inDaylightTime(today) ){
+            clientOffset +=  clientTimeZone.getDSTSavings();
+        }
 
         //
         // Compare offset only. Although I expect to return true, the following code return false,
@@ -80,9 +83,10 @@ public class MySQLInputConnection
         // TimeZone tz_gmt9  = TimeZone.getTimeZone("GMT+9");
         // tz_jst.hasSameRules(tz_gmt9) // return false.
         //
-        if( svr_tz.getRawOffset() != usr_tz.getRawOffset() ) {
+        if( clientOffset != serverTimeZone.getRawOffset() ) {
             logger.warn(String.format(Locale.ENGLISH,
-                    "The server timezone offset(%s) and client timezone(%s) has different timezone offset. The plugin will fetch wrong datetime values.",svr_tz.getID(),usr_tz_name));
+                    "The client timezone(%s) is different from the server timezone(%s). The plugin will fetch wrong datetime values.",
+                    clientTimeZone.getID(),serverTimeZone.getID()));
             logger.warn(String.format(Locale.ENGLISH,
                     "Use `options: { useLegacyDatetimeCode: false }`"));
         }

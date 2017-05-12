@@ -12,10 +12,12 @@ import com.mysql.jdbc.TimeUtil;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
+import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.mysql.MySQLInputConnection;
 import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
+import org.embulk.spi.Schema;
 import org.joda.time.DateTimeZone;
 
 public class MySQLInputPlugin
@@ -163,4 +165,13 @@ public class MySQLInputPlugin
             }
         }
     }
+
+    @Override
+    protected Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
+    {
+        MySQLInputConnection mySQLCon = (MySQLInputConnection)con;
+        mySQLCon.compareTimeZone();
+        return super.setupTask(con,task);
+    }
+
 }

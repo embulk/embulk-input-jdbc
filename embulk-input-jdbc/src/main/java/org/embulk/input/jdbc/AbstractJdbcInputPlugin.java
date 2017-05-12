@@ -193,7 +193,7 @@ public abstract class AbstractJdbcInputPlugin
         return buildNextConfigDiff(task, control.run(task.dump(), schema, 1));
     }
 
-    private Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
+    protected Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
     {
         if (task.getTable().isPresent()) {
             String actualTableName = normalizeTableNameCase(con, task.getTable().get());
@@ -426,8 +426,6 @@ public abstract class AbstractJdbcInputPlugin
         LastRecordStore lastRecordStore = null;
 
         try (JdbcInputConnection con = newConnection(task)) {
-            con.before_load();
-
             List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
             try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {
