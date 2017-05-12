@@ -1,18 +1,15 @@
 package org.embulk.input.mysql;
 
-import java.sql.Statement;
-import java.util.Date;
 import java.util.List;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import com.mysql.jdbc.ConnectionImpl;
 import com.mysql.jdbc.ConnectionProperties;
-import org.embulk.input.MySQLTimeZoneBuilder;
+import org.embulk.input.MySQLTimeZoneComparison;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
 import org.embulk.input.jdbc.getter.ColumnGetter;
@@ -66,31 +63,8 @@ public class MySQLInputConnection
 
     public void compareTimeZone() throws SQLException
     {
-        // TODO error check.
-        TimeZone serverTimeZone = MySQLTimeZoneBuilder.fromSystemTimeZone(connection);
-        TimeZone clientTimeZone = TimeZone.getDefault();
-        Date today = new Date();
-        int clientOffset = clientTimeZone.getRawOffset();
-
-        if( clientTimeZone.inDaylightTime(today) ){
-            clientOffset +=  clientTimeZone.getDSTSavings();
-        }
-
-        //
-        // Compare offset only. Although I expect to return true, the following code return false,
-        //
-        // TimeZone tz_jst   = TimeZone.getTimeZone("JST");
-        // TimeZone tz_gmt9  = TimeZone.getTimeZone("GMT+9");
-        // tz_jst.hasSameRules(tz_gmt9) // return false.
-        //
-        if( clientOffset != serverTimeZone.getRawOffset() ) {
-            logger.warn(String.format(Locale.ENGLISH,
-                    "The client timezone(%s) is different from the server timezone(%s). The plugin will fetch wrong datetime values.",
-                    clientTimeZone.getID(),serverTimeZone.getID()));
-            logger.warn(String.format(Locale.ENGLISH,
-                    "Use `options: { useLegacyDatetimeCode: false }`"));
-        }
-        logger.warn(String.format(Locale.ENGLISH,"The plugin will set `useLegacyDatetimeCode=false` by default in future."));
+        MySQLTimeZoneComparison timeZoneComparison = new MySQLTimeZoneComparison(connection);
+        timeZoneComparison.compareTimeZone();
     }
 
 }
