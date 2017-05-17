@@ -27,8 +27,18 @@ public class MySQLTimeZoneComparison
 
     public void compareTimeZone() throws SQLException
     {
-        // TODO error check.
-        TimeZone serverTimeZone = getServerTimeZone();
+        TimeZone serverTimeZone = null;
+        try {
+            serverTimeZone = getServerTimeZone();
+        } catch (SQLException ex) {
+            logger.error(String.format(Locale.ENGLISH,"SQLException raised %s",ex.toString()));
+        }
+
+        if( serverTimeZone == null ){
+            logger.warn("Can't get server TimeZone");
+            return;
+        }
+
         TimeZone clientTimeZone = TimeZone.getDefault();
         Date today = new Date();
         int clientOffset = clientTimeZone.getRawOffset();
@@ -49,7 +59,9 @@ public class MySQLTimeZoneComparison
                     "The client timezone(%s) is different from the server timezone(%s). The plugin will fetch wrong datetime values.",
                     clientTimeZone.getID(),serverTimeZone.getID()));
             logger.warn(String.format(Locale.ENGLISH,
-                    "Use `options: { useLegacyDatetimeCode: false }`"));
+                    "Use `You may need to set options useLegacyDatetimeCode and serverTimeZone`"));
+            logger.warn(String.format(Locale.ENGLISH,
+                    "Ex. `options: { useLegacyDatetimeCode: false, serverTimeZone: UTC }`"));
         }
         logger.warn(String.format(Locale.ENGLISH,"The plugin will set `useLegacyDatetimeCode=false` by default in future."));
 
@@ -72,7 +84,6 @@ public class MySQLTimeZoneComparison
                 return fromGMTOffsetSeconds(offsetSeconds);
             }
             else {
-                // TODO Error check.
                 return null;
             }
 
