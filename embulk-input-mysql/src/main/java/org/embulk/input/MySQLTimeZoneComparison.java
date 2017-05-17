@@ -59,7 +59,7 @@ public class MySQLTimeZoneComparison
                     "The client timezone(%s) is different from the server timezone(%s). The plugin will fetch wrong datetime values.",
                     clientTimeZone.getID(),serverTimeZone.getID()));
             logger.warn(String.format(Locale.ENGLISH,
-                    "Use `You may need to set options useLegacyDatetimeCode and serverTimeZone`"));
+                    "Use You may need to set options `useLegacyDatetimeCode` and `serverTimeZone`"));
             logger.warn(String.format(Locale.ENGLISH,
                     "Ex. `options: { useLegacyDatetimeCode: false, serverTimeZone: UTC }`"));
         }
