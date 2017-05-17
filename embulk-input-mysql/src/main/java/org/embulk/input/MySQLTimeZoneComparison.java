@@ -25,16 +25,18 @@ public class MySQLTimeZoneComparison
         this.connection = connection;
     }
 
-    public void compareTimeZone() throws SQLException
+    public void compareTimeZone()
+            throws SQLException
     {
         TimeZone serverTimeZone = null;
         try {
             serverTimeZone = getServerTimeZone();
-        } catch (SQLException ex) {
-            logger.error(String.format(Locale.ENGLISH,"SQLException raised %s",ex.toString()));
+        }
+        catch (SQLException ex) {
+            logger.error(String.format(Locale.ENGLISH, "SQLException raised %s", ex.toString()));
         }
 
-        if( serverTimeZone == null ){
+        if (serverTimeZone == null) {
             logger.warn("Can't get server TimeZone.");
             return;
         }
@@ -43,8 +45,8 @@ public class MySQLTimeZoneComparison
         Date today = new Date();
         int clientOffset = clientTimeZone.getRawOffset();
 
-        if( clientTimeZone.inDaylightTime(today) ){
-            clientOffset +=  clientTimeZone.getDSTSavings();
+        if (clientTimeZone.inDaylightTime(today)) {
+            clientOffset += clientTimeZone.getDSTSavings();
         }
 
         //
@@ -54,21 +56,20 @@ public class MySQLTimeZoneComparison
         // TimeZone tz_gmt9  = TimeZone.getTimeZone("GMT+9");
         // tz_jst.hasSameRules(tz_gmt9) // return false.
         //
-        if( clientOffset != serverTimeZone.getRawOffset() ) {
+        if (clientOffset != serverTimeZone.getRawOffset()) {
             logger.warn(String.format(Locale.ENGLISH,
                     "The client timezone(%s) is different from the server timezone(%s). The plugin will fetch wrong datetime values.",
-                    clientTimeZone.getID(),serverTimeZone.getID()));
+                    clientTimeZone.getID(), serverTimeZone.getID()));
             logger.warn(String.format(Locale.ENGLISH,
                     "Use You may need to set options `useLegacyDatetimeCode` and `serverTimeZone`"));
             logger.warn(String.format(Locale.ENGLISH,
                     "Ex. `options: { useLegacyDatetimeCode: false, serverTimeZone: UTC }`"));
         }
-        logger.warn(String.format(Locale.ENGLISH,"The plugin will set `useLegacyDatetimeCode=false` by default in future."));
-
-
+        logger.warn(String.format(Locale.ENGLISH, "The plugin will set `useLegacyDatetimeCode=false` by default in future."));
     }
 
-    private TimeZone getServerTimeZone() throws SQLException
+    private TimeZone getServerTimeZone()
+            throws SQLException
     {
         //
         // First, I used `@@system_time_zone`. but It return non Time Zone Abbreviations name on a specific platform.
@@ -86,15 +87,15 @@ public class MySQLTimeZoneComparison
             else {
                 return null;
             }
-
-        } finally {
+        }
+        finally {
             stmt.close();
         }
     }
 
     private TimeZone fromGMTOffsetSeconds(int offsetSeconds)
     {
-        if( offsetSeconds == 0 ) {
+        if (offsetSeconds == 0) {
             return TimeZone.getTimeZone("UTC");
         }
 
