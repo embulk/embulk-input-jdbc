@@ -35,7 +35,7 @@ public class MySQLTimeZoneComparison
         }
 
         if( serverTimeZone == null ){
-            logger.warn("Can't get server TimeZone");
+            logger.warn("Can't get server TimeZone.");
             return;
         }
 
