@@ -31,39 +31,37 @@ public class MySQLTimeZoneComparison
         TimeZone serverTimeZone = null;
         try {
             serverTimeZone = getServerTimeZone();
-            if (serverTimeZone == null) {
-                logger.warn("Can't get server TimeZone.");
-                return;
-            }
-
-            TimeZone clientTimeZone = TimeZone.getDefault();
-            Date today = new Date();
-            int clientOffset = clientTimeZone.getRawOffset();
-
-            if (clientTimeZone.inDaylightTime(today)) {
-                clientOffset += clientTimeZone.getDSTSavings();
-            }
-
-            //
-            // Compare offset only. Although I expect to return true, the following code return false,
-            //
-            // TimeZone tz_jst   = TimeZone.getTimeZone("JST");
-            // TimeZone tz_gmt9  = TimeZone.getTimeZone("GMT+9");
-            // tz_jst.hasSameRules(tz_gmt9) // return false.
-            //
-            if (clientOffset != serverTimeZone.getRawOffset()) {
-                logger.warn(String.format(Locale.ENGLISH,
-                        "The client timezone(%s) is different from the server timezone(%s). The plugin will fetch wrong datetime values.",
-                        clientTimeZone.getID(), serverTimeZone.getID()));
-                logger.warn(String.format(Locale.ENGLISH,
-                        "You may need to set options `useLegacyDatetimeCode` and `serverTimeZone`"));
-                logger.warn(String.format(Locale.ENGLISH,
-                        "Example: `options: { useLegacyDatetimeCode: false, serverTimeZone: UTC }`"));
-            }
-            logger.warn(String.format(Locale.ENGLISH, "The plugin will set `useLegacyDatetimeCode=false` by default in future."));        }
+        }
         catch (SQLException ex) {
+            logger.warn("Can't get server TimeZone.");
             logger.warn(String.format(Locale.ENGLISH, "SQLException raised %s", ex.toString()));
         }
+
+        TimeZone clientTimeZone = TimeZone.getDefault();
+        Date today = new Date();
+        int clientOffset = clientTimeZone.getRawOffset();
+
+        if (clientTimeZone.inDaylightTime(today)) {
+            clientOffset += clientTimeZone.getDSTSavings();
+        }
+
+        //
+        // Compare offset only. Although I expect to return true, the following code return false,
+        //
+        // TimeZone tz_jst   = TimeZone.getTimeZone("JST");
+        // TimeZone tz_gmt9  = TimeZone.getTimeZone("GMT+9");
+        // tz_jst.hasSameRules(tz_gmt9) // return false.
+        //
+        if (clientOffset != serverTimeZone.getRawOffset()) {
+            logger.warn(String.format(Locale.ENGLISH,
+                    "The client timezone(%s) is different from the server timezone(%s). The plugin will fetch wrong datetime values.",
+                    clientTimeZone.getID(), serverTimeZone.getID()));
+            logger.warn(String.format(Locale.ENGLISH,
+                    "You may need to set options `useLegacyDatetimeCode` and `serverTimeZone`"));
+            logger.warn(String.format(Locale.ENGLISH,
+                    "Example. `options: { useLegacyDatetimeCode: false, serverTimeZone: UTC }`"));
+        }
+        logger.warn(String.format(Locale.ENGLISH, "The plugin will set `useLegacyDatetimeCode=false` by default in future."));
     }
 
     private TimeZone getServerTimeZone()
@@ -82,9 +80,8 @@ public class MySQLTimeZoneComparison
                 int offsetSeconds = rs.getInt(1);
                 return fromGMTOffsetSeconds(offsetSeconds);
             }
-            else {
-                return null;
-            }
+            throw new SQLException(String.format(Locale.ENGLISH,
+                    "The timezone comparison query(%s) doesn't return the result.",query));
         }
         finally {
             stmt.close();
