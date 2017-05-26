@@ -9,6 +9,7 @@ import java.util.TimeZone;
 
 import com.mysql.jdbc.ConnectionImpl;
 import com.mysql.jdbc.ConnectionProperties;
+import org.embulk.input.MySQLTimeZoneComparison;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
 import org.embulk.input.jdbc.getter.ColumnGetter;
@@ -59,4 +60,11 @@ public class MySQLInputConnection
     {
         return ((ConnectionImpl) connection).getServerTimezoneTZ();
     }
+
+    public void compareTimeZone() throws SQLException
+    {
+        MySQLTimeZoneComparison timeZoneComparison = new MySQLTimeZoneComparison(connection);
+        timeZoneComparison.compareTimeZone();
+    }
+
 }
