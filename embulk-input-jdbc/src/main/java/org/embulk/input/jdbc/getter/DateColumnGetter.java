@@ -1,8 +1,11 @@
 package org.embulk.input.jdbc.getter;
 
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.Timestamp;
 import org.embulk.spi.time.TimestampFormatter;
@@ -13,10 +16,12 @@ public class DateColumnGetter
         extends AbstractTimestampColumnGetter
 {
     static final String DEFAULT_FORMAT = "%Y-%m-%d";
+    private final TimestampFormatter formatter;
 
     public DateColumnGetter(PageBuilder to, Type toType, TimestampFormatter timestampFormatter)
     {
         super(to, toType, timestampFormatter);
+        this.formatter = timestampFormatter;
     }
 
     @Override
@@ -34,4 +39,16 @@ public class DateColumnGetter
         return Types.TIMESTAMP.withFormat(DEFAULT_FORMAT);
     }
 
+    @Override
+    public JsonNode encodeToJson()
+    {
+        return jsonNodeFactory.textNode(formatter.format(value));
+    }
+
+    @Override
+    public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
+            throws SQLException
+    {
+        toStatement.setDate(toIndex, Date.valueOf(fromValue.asText()));
+    }
 }
