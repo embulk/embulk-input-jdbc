@@ -193,7 +193,7 @@ public abstract class AbstractJdbcInputPlugin
         return buildNextConfigDiff(task, control.run(task.dump(), schema, 1));
     }
 
-    private Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
+    protected Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
     {
         if (task.getTable().isPresent()) {
             String actualTableName = normalizeTableNameCase(con, task.getTable().get());
