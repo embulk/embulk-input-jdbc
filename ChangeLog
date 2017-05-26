@@ -1,14 +1,22 @@
+Release 0.8.3 - 2017-05-26
+
+* embulk-input-oracle incremental loading supported date and timestamp types (@kakoni++).
+* embulk-input-redshift incremental loading supported timestamp and timestamptz types.
+* embulk-input-mysql will warn if the client timezone is different from the server timezone
+  because wrong datetime values will be fetched.
+  `useLegacyDatetimeCode=false` will be set by default in future (@hiroyuki-sato++).
+
 Release 0.8.2 - 2017-02-10
 
-Fixed the bug that prevents using non-standard SQL type even if value_type is set.
+* Fixed the bug that prevents using non-standard SQL type even if value_type is set.
 
 Release 0.8.1 - 2017-02-10
 
-Upgraded embulk to 0.8.15 .
-MySQL incremental loading supported datetime and timestamp types.
-PostgreSQL incremental loading supported timestamp and timestamptz types.
-Enabled to connect to Oracle with tnsnames.ora file (@pengfeiz++).
-Refactored tests to use embulk-test and Travis-CI.
+* Upgraded embulk to 0.8.15 .
+* embulk-input-mysql incremental loading supported datetime and timestamp types.
+* embulk-input-postgresql incremental loading supported timestamp and timestamptz types.
+* Enabled to connect to Oracle with tnsnames.ora file (@pengfeiz++).
+* Refactored tests to use embulk-test and Travis-CI.
 
 Release 0.8.0 - 2016-10-13
 
