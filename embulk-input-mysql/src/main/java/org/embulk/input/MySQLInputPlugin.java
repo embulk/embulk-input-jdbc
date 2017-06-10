@@ -2,6 +2,7 @@ package org.embulk.input;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Locale;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -170,8 +171,28 @@ public class MySQLInputPlugin
     protected Schema setupTask(JdbcInputConnection con, PluginTask task) throws SQLException
     {
         MySQLInputConnection mySQLCon = (MySQLInputConnection)con;
+
+        showDriverVersion();
         mySQLCon.compareTimeZone();
         return super.setupTask(con,task);
+    }
+
+    private void showDriverVersion(){
+
+        Package aPackage = com.mysql.jdbc.Driver.class.getPackage();
+        String version = null;
+
+        if (aPackage != null) {
+            version = aPackage.getImplementationVersion();
+            if (version == null) {
+                version = aPackage.getSpecificationVersion();
+            }
+        }
+        if( version == null ){
+            logger.warn(String.format(Locale.ENGLISH,"Can't get driver version"));
+        } else {
+            logger.info(String.format(Locale.ENGLISH, "MySQL Connector/J version %s", version));
+        }
     }
 
 }
