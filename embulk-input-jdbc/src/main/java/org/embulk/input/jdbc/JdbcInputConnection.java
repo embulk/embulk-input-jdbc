@@ -388,7 +388,7 @@ public class JdbcInputConnection
         }
     }
 
-    void showDriverVersion(){
+    public void showDriverVersion(){
         try {
             DatabaseMetaData meta = connection.getMetaData();
             logger.info(String.format(Locale.ENGLISH,"Using JDBC Driver %s",meta.getDriverVersion()));
