@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Locale;
 import java.util.Set;
 
 import org.embulk.config.ConfigException;
@@ -384,6 +385,15 @@ public class JdbcInputConnection
                 columnNamesBuilder.add(rs.getString("COLUMN_NAME"));
             }
             return columnNamesBuilder.build();
+        }
+    }
+
+    void showDriverVersion(){
+        try {
+            DatabaseMetaData meta = connection.getMetaData();
+            logger.info(String.format(Locale.ENGLISH,"Using JDBC Driver %s",meta.getDriverVersion()));
+        } catch( SQLException e ) {
+            logger.warn(String.format(Locale.ENGLISH,"Can't get JDBC Driver version. Reason: %s",e.toString()));
         }
     }
 }
