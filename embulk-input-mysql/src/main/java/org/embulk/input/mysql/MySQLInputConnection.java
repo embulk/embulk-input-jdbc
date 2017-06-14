@@ -75,8 +75,10 @@ public class MySQLInputConnection
     // This method announces users about this change before the update driver version.
     //
     @Override
-    public void showDriverVersion() {
+    public void showDriverVersion() throws SQLException {
         super.showDriverVersion();
-        logger.warn("This plugin will update MySQL Connector/J version on next release...");
+        logger.warn("This plugin will update MySQL Connector/J version on a future release.");
+        logger.warn("It has some incompatibility change.");
+        logger.warn("Please read a document and make sure configuration carefully before update the plugin.");
     }
 }
