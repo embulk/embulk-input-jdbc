@@ -388,12 +388,8 @@ public class JdbcInputConnection
         }
     }
 
-    public void showDriverVersion(){
-        try {
-            DatabaseMetaData meta = connection.getMetaData();
-            logger.info(String.format(Locale.ENGLISH,"Using JDBC Driver %s",meta.getDriverVersion()));
-        } catch( SQLException e ) {
-            logger.warn(String.format(Locale.ENGLISH,"Can't get JDBC Driver version. Reason: %s",e.toString()));
-        }
+    public void showDriverVersion() throws SQLException {
+        DatabaseMetaData meta = connection.getMetaData();
+        logger.info(String.format(Locale.ENGLISH,"Using JDBC Driver %s",meta.getDriverVersion()));
     }
 }
