@@ -184,6 +184,8 @@ public abstract class AbstractJdbcInputPlugin
 
         Schema schema;
         try (JdbcInputConnection con = newConnection(task)) {
+            con.showDriverVersion();
+
             // TODO incremental_columns is not set => get primary key
             schema = setupTask(con, task);
         } catch (SQLException ex) {
