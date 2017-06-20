@@ -77,8 +77,9 @@ public class MySQLInputConnection
     @Override
     public void showDriverVersion() throws SQLException {
         super.showDriverVersion();
-        logger.warn("This plugin will update MySQL Connector/J version on a future release.");
-        logger.warn("It has some incompatibility change.");
-        logger.warn("Please read a document and make sure configuration carefully before update the plugin.");
+        logger.warn("This plugin will update MySQL Connector/J version in the near future release.");
+        logger.warn("It has some incompatibility changes.");
+        logger.warn("For example, the 5.1.35 introduced `noTimezoneConversionForDateType` and `cacheDefaultTimezone` options.");
+        logger.warn("Please read a document and make sure configuration carefully before updating the plugin.");
     }
 }
