@@ -12,6 +12,7 @@ import com.mysql.jdbc.TimeUtil;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
+import org.embulk.input.jdbc.Ssl;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.mysql.MySQLInputConnection;
@@ -42,6 +43,10 @@ public class MySQLInputPlugin
 
         @Config("database")
         public String getDatabase();
+
+        @Config("ssl")
+        @ConfigDefault("\"disable\"") // backward compatibility
+        public Ssl getSsl();
     }
 
     @Override
@@ -75,21 +80,21 @@ public class MySQLInputPlugin
         // Socket options TCP_KEEPCNT, TCP_KEEPIDLE, and TCP_KEEPINTVL are not configurable.
         props.setProperty("tcpKeepAlive", "true");
 
-        // TODO
-        //switch task.getSssl() {
-        //when "disable":
-        //    break;
-        //when "enable":
-        //    props.setProperty("useSSL", "true");
-        //    props.setProperty("requireSSL", "false");
-        //    props.setProperty("verifyServerCertificate", "false");
-        //    break;
-        //when "verify":
-        //    props.setProperty("useSSL", "true");
-        //    props.setProperty("requireSSL", "true");
-        //    props.setProperty("verifyServerCertificate", "true");
-        //    break;
-        //}
+        switch (t.getSsl()) {
+            case DISABLE:
+                props.setProperty("useSSL", "false");
+                break;
+            case ENABLE:
+                props.setProperty("useSSL", "true");
+                props.setProperty("requireSSL", "true");
+                props.setProperty("verifyServerCertificate", "false");
+                break;
+            case VERIFY:
+                props.setProperty("useSSL", "true");
+                props.setProperty("requireSSL", "true");
+                props.setProperty("verifyServerCertificate", "true");
+                break;
+        }
 
         if (t.getFetchRows() == 1) {
             logger.info("Fetch size is 1. Fetching rows one by one.");
