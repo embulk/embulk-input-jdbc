@@ -1,3 +1,9 @@
+Release 0.8.4 - 2017-06-23
+
+* Added ssl option for embulk-input-mysql (@hiroyuki-sato++).
+* Logging JDBC driver version (@hiroyuki-sato++).
+* MySQL Connector/J version will be upgrade from 5.1.35 to 5.1.42 or higher in the near future.
+
 Release 0.8.3 - 2017-05-26
 
 * embulk-input-oracle incremental loading supported date and timestamp types (@kakoni++).
