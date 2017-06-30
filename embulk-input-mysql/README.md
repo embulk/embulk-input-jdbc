@@ -9,6 +9,7 @@ MySQL input plugin for Embulk loads records from MySQL.
 
 ## Configuration
 
+- **driver_path**: path to the jar file of the MySQL JDBC driver. If not set, the bundled JDBC driver (MySQL Connector/J 5.1.34) will be used. (string)
 - **host**: database host name (string, required)
 - **port**: database port number (integer, 3306)
 - **user**: database login user name (string, required)
