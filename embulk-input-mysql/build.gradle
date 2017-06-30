@@ -2,6 +2,7 @@ dependencies {
     compile project(':embulk-input-jdbc')
 
     compile 'mysql:mysql-connector-java:5.1.34'
+    driver 'mysql:mysql-connector-java:5.1.34'
 
     testCompile 'org.embulk:embulk-standards:0.8.15'
 }

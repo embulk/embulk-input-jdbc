@@ -1,14 +1,17 @@
 package org.embulk.input;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Properties;
 import java.sql.Connection;
-import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.mysql.jdbc.TimeUtil;
+
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
@@ -27,6 +30,10 @@ public class MySQLInputPlugin
     public interface MySQLPluginTask
             extends PluginTask
     {
+        @Config("driver_path")
+        @ConfigDefault("null")
+        public Optional<String> getDriverPath();
+
         @Config("host")
         public String getHost();
 
@@ -60,6 +67,33 @@ public class MySQLInputPlugin
     {
         MySQLPluginTask t = (MySQLPluginTask) task;
 
+        if (t.getDriverPath().isPresent()) {
+            addDriverJarToClasspath(t.getDriverPath().get());
+        } else {
+            try {
+                // Gradle test task will add JDBC driver to classpath
+                Class.forName("com.mysql.jdbc.Driver");
+
+            } catch (ClassNotFoundException ex) {
+                File root = findPluginRoot();
+                File driverLib = new File(new File(new File(root, "lib"), "embulk"), "driver");
+                File[] files = driverLib.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        return file.isFile() && file.getName().endsWith(".jar");
+                    }
+                });
+                if (files == null || files.length == 0) {
+                    throw new RuntimeException("Cannot find JDBC driver in '" + root.getAbsolutePath() + "'.");
+                } else {
+                    for (File file : files) {
+                        logger.info("JDBC Driver = " + file.getAbsolutePath());
+                        addDriverJarToClasspath(file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+
         String url = String.format("jdbc:mysql://%s:%d/%s",
                 t.getHost(), t.getPort(), t.getDatabase());
 
@@ -67,7 +101,7 @@ public class MySQLInputPlugin
         props.setProperty("user", t.getUser());
         props.setProperty("password", t.getPassword());
 
-        // convert 0000-00-00 to NULL to avoid this exceptoin:
+        // convert 0000-00-00 to NULL to avoid this exception:
         //   java.sql.SQLException: Value '0000-00-00' can not be represented as java.sql.Date
         props.setProperty("zeroDateTimeBehavior", "convertToNull");
 
@@ -110,14 +144,13 @@ public class MySQLInputPlugin
         // load timezone mappings
         loadTimeZoneMappings();
 
-        Driver driver;
         try {
-            driver = new com.mysql.jdbc.Driver();  // new com.mysql.jdbc.Driver throws SQLException
-        } catch (SQLException ex) {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException ex) {
             throw new RuntimeException(ex);
         }
 
-        Connection con = driver.connect(url, props);
+        Connection con = DriverManager.getConnection(url, props);
         try {
             MySQLInputConnection c = new MySQLInputConnection(con);
             con = null;
@@ -149,19 +182,20 @@ public class MySQLInputPlugin
         // Here implements a workaround as as workaround.
         Field f = null;
         try {
-            f = TimeUtil.class.getDeclaredField("timeZoneMappings");
+            Class<?> timeUtilClass = Class.forName("com.mysql.jdbc.TimeUtil");
+            f = timeUtilClass.getDeclaredField("timeZoneMappings");
             f.setAccessible(true);
 
             Properties timeZoneMappings = (Properties) f.get(null);
             if (timeZoneMappings == null) {
                 timeZoneMappings = new Properties();
-                synchronized (TimeUtil.class) {
+                synchronized (timeUtilClass) {
                     timeZoneMappings.load(this.getClass().getResourceAsStream("/com/mysql/jdbc/TimeZoneMapping.properties"));
                 }
                 f.set(null, timeZoneMappings);
             }
         }
-        catch (IllegalAccessException | NoSuchFieldException | IOException e) {
+        catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | IOException e) {
             throw Throwables.propagate(e);
         }
         finally {

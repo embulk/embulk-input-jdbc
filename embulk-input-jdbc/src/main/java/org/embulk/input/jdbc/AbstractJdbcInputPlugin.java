@@ -1,5 +1,9 @@
 package org.embulk.input.jdbc;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +18,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import org.embulk.config.Config;
 import org.embulk.config.ConfigException;
@@ -593,4 +596,28 @@ public abstract class AbstractJdbcInputPlugin
         }
         loader.addPath(Paths.get(glob));
     }
+
+    protected File findPluginRoot()
+    {
+        try {
+            URL url = getClass().getResource("/" + getClass().getName().replace('.', '/') + ".class");
+            if (url.toString().startsWith("jar:")) {
+                url = new URL(url.toString().replaceAll("^jar:", "").replaceAll("![^!]*$", ""));
+            }
+
+            File folder = new File(url.toURI()).getParentFile();
+            for (;; folder = folder.getParentFile()) {
+                if (folder == null) {
+                    throw new RuntimeException("Cannot find 'embulk-input-xxx' folder.");
+                }
+
+                if (folder.getName().startsWith("embulk-input-")) {
+                    return folder;
+                }
+            }
+        } catch (MalformedURLException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

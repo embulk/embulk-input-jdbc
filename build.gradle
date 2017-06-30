@@ -69,6 +69,7 @@ subprojects {
 
     configurations {
         provided
+        driver
     }
 
     sourceCompatibility = 1.7
@@ -110,10 +111,18 @@ subprojects {
 
     task classpath(type: Copy, dependsOn: ["jar"]) {
         doFirst { file('classpath').deleteDir() }
-        from (configurations.runtime - configurations.provided + files(jar.archivePath))
+        from (configurations.runtime - configurations.provided - configurations.driver + files(jar.archivePath))
         into 'classpath'
     }
-    clean { delete 'classpath' }
+    task driver(type: Copy, dependsOn: ["jar"]) {
+        doFirst { file('lib/embulk/driver').deleteDir() }
+        from (configurations.driver)
+        into 'lib/embulk/driver'
+    }
+    clean {
+        delete 'classpath'
+        delete 'lib/embulk/driver'
+    }
 
     checkstyle {
         configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
@@ -132,7 +141,7 @@ subprojects {
         source = sourceSets.main.allJava + sourceSets.test.allJava
     }
 
-    task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath']) {
+    task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath', 'driver']) {
         jrubyArgs '-rrubygems/gem_runner', "-eGem::GemRunner.new.run(ARGV)", 'build'
         scriptArgs "${project.projectDir.absolutePath}/build/gemspec"
         doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "${parent.projectDir}/pkg") }
@@ -186,7 +195,7 @@ Gem::Specification.new do |spec|
   spec.licenses      = ["Apache 2.0"]
   spec.homepage      = "https://github.com/embulk/embulk-input-jdbc"
 
-  spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]
+  spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"] + Dir["lib/embulk/driver/*.jar"]
   spec.test_files    = spec.files.grep(%r"^(test|spec)/")
   spec.require_paths = ["lib"]
 end
