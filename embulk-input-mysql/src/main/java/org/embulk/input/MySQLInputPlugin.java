@@ -76,7 +76,7 @@ public class MySQLInputPlugin
 
             } catch (ClassNotFoundException ex) {
                 File root = findPluginRoot();
-                File driverLib = new File(new File(new File(root, "lib"), "embulk"), "driver");
+                File driverLib = new File(root, "default_jdbc_driver");
                 File[] files = driverLib.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File file) {

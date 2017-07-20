@@ -69,7 +69,7 @@ subprojects {
 
     configurations {
         provided
-        driver
+        default_jdbc_driver
     }
 
     sourceCompatibility = 1.7
@@ -111,17 +111,17 @@ subprojects {
 
     task classpath(type: Copy, dependsOn: ["jar"]) {
         doFirst { file('classpath').deleteDir() }
-        from (configurations.runtime - configurations.provided - configurations.driver + files(jar.archivePath))
+        from (configurations.runtime - configurations.provided - configurations.default_jdbc_driver + files(jar.archivePath))
         into 'classpath'
     }
-    task driver(type: Copy, dependsOn: ["jar"]) {
-        doFirst { file('lib/embulk/driver').deleteDir() }
-        from (configurations.driver)
-        into 'lib/embulk/driver'
+    task default_jdbc_driver(type: Copy, dependsOn: ["jar"]) {
+        doFirst { file('default_jdbc_driver').deleteDir() }
+        from (configurations.default_jdbc_driver)
+        into 'default_jdbc_driver'
     }
     clean {
         delete 'classpath'
-        delete 'lib/embulk/driver'
+        delete 'default_jdbc_driver'
     }
 
     checkstyle {
@@ -141,7 +141,7 @@ subprojects {
         source = sourceSets.main.allJava + sourceSets.test.allJava
     }
 
-    task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath', 'driver']) {
+    task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath', 'default_jdbc_driver']) {
         jrubyArgs '-rrubygems/gem_runner', "-eGem::GemRunner.new.run(ARGV)", 'build'
         scriptArgs "${project.projectDir.absolutePath}/build/gemspec"
         doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "${parent.projectDir}/pkg") }
@@ -195,7 +195,7 @@ Gem::Specification.new do |spec|
   spec.licenses      = ["Apache 2.0"]
   spec.homepage      = "https://github.com/embulk/embulk-input-jdbc"
 
-  spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"] + Dir["lib/embulk/driver/*.jar"]
+  spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"] + Dir["default_jdbc_driver/*.jar"]
   spec.test_files    = spec.files.grep(%r"^(test|spec)/")
   spec.require_paths = ["lib"]
 end
