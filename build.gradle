@@ -69,7 +69,7 @@ subprojects {
 
     configurations {
         provided
-        default_jdbc_driver
+        defaultJdbcDriver
     }
 
     sourceCompatibility = 1.7
@@ -111,12 +111,12 @@ subprojects {
 
     task classpath(type: Copy, dependsOn: ["jar"]) {
         doFirst { file('classpath').deleteDir() }
-        from (configurations.runtime - configurations.provided - configurations.default_jdbc_driver + files(jar.archivePath))
+        from (configurations.runtime - configurations.provided - configurations.defaultJdbcDriver + files(jar.archivePath))
         into 'classpath'
     }
-    task default_jdbc_driver(type: Copy, dependsOn: ["jar"]) {
+    task defaultJdbcDriver(type: Copy, dependsOn: ["jar"]) {
         doFirst { file('default_jdbc_driver').deleteDir() }
-        from (configurations.default_jdbc_driver)
+        from (configurations.defaultJdbcDriver)
         into 'default_jdbc_driver'
     }
     clean {
@@ -141,7 +141,7 @@ subprojects {
         source = sourceSets.main.allJava + sourceSets.test.allJava
     }
 
-    task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath', 'default_jdbc_driver']) {
+    task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath', 'defaultJdbcDriver']) {
         jrubyArgs '-rrubygems/gem_runner', "-eGem::GemRunner.new.run(ARGV)", 'build'
         scriptArgs "${project.projectDir.absolutePath}/build/gemspec"
         doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "${parent.projectDir}/pkg") }
