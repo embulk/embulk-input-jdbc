@@ -2,6 +2,7 @@ package org.embulk.input.oracle;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
+
 import org.embulk.config.ConfigSource;
 import org.embulk.test.EmbulkTests;
 import org.embulk.test.TestingEmbulk;
@@ -22,7 +23,13 @@ public class OracleTests
     }
 
     public static void execute(TestingEmbulk embulk, String sql) throws IOException
-{
+    {
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("You should put 'ojdbc7.jar' in 'embulk-input-oracle/test_jdbc_driver' directory in order to test.");
+        }
+
         Path sqlFile = embulk.createTempFile("sql");
         Files.write(sqlFile, Arrays.asList(sql), Charset.forName("UTF8"));
 
