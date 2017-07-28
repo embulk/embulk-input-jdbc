@@ -587,7 +587,7 @@ public abstract class AbstractJdbcInputPlugin
     //    }
     //}
 
-    protected void addDriverJarToClasspath(String className, Optional<String> driverPath)
+    protected void loadDriver(String className, Optional<String> driverPath)
     {
         if (driverPath.isPresent()) {
             addDriverJarToClasspath(driverPath.get());
@@ -614,6 +614,13 @@ public abstract class AbstractJdbcInputPlugin
                     }
                 }
             }
+        }
+
+        // Load JDBC Driver
+        try {
+            Class.forName(className);
+        } catch (ClassNotFoundException ex) {
+            throw new RuntimeException(ex);
         }
     }
 

@@ -65,7 +65,7 @@ public class MySQLInputPlugin
     {
         MySQLPluginTask t = (MySQLPluginTask) task;
 
-        addDriverJarToClasspath("com.mysql.jdbc.Driver", t.getDriverPath());
+        loadDriver("com.mysql.jdbc.Driver", t.getDriverPath());
 
         String url = String.format("jdbc:mysql://%s:%d/%s",
                 t.getHost(), t.getPort(), t.getDatabase());
@@ -116,12 +116,6 @@ public class MySQLInputPlugin
 
         // load timezone mappings
         loadTimeZoneMappings();
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException ex) {
-            throw new RuntimeException(ex);
-        }
 
         Connection con = DriverManager.getConnection(url, props);
         try {
