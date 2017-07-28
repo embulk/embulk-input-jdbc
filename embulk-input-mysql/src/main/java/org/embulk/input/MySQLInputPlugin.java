@@ -1,7 +1,5 @@
 package org.embulk.input;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Properties;
@@ -67,32 +65,7 @@ public class MySQLInputPlugin
     {
         MySQLPluginTask t = (MySQLPluginTask) task;
 
-        if (t.getDriverPath().isPresent()) {
-            addDriverJarToClasspath(t.getDriverPath().get());
-        } else {
-            try {
-                // Gradle test task will add JDBC driver to classpath
-                Class.forName("com.mysql.jdbc.Driver");
-
-            } catch (ClassNotFoundException ex) {
-                File root = findPluginRoot();
-                File driverLib = new File(root, "default_jdbc_driver");
-                File[] files = driverLib.listFiles(new FileFilter() {
-                    @Override
-                    public boolean accept(File file) {
-                        return file.isFile() && file.getName().endsWith(".jar");
-                    }
-                });
-                if (files == null || files.length == 0) {
-                    throw new RuntimeException("Cannot find JDBC driver in '" + root.getAbsolutePath() + "'.");
-                } else {
-                    for (File file : files) {
-                        logger.info("JDBC Driver = " + file.getAbsolutePath());
-                        addDriverJarToClasspath(file.getAbsolutePath());
-                    }
-                }
-            }
-        }
+        addDriverJarToClasspath("com.mysql.jdbc.Driver", t.getDriverPath());
 
         String url = String.format("jdbc:mysql://%s:%d/%s",
                 t.getHost(), t.getPort(), t.getDatabase());

@@ -1,6 +1,7 @@
 package org.embulk.input.jdbc;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -585,6 +586,36 @@ public abstract class AbstractJdbcInputPlugin
     //        pages = ImmutableList.builder();
     //    }
     //}
+
+    protected void addDriverJarToClasspath(String className, Optional<String> driverPath)
+    {
+        if (driverPath.isPresent()) {
+            addDriverJarToClasspath(driverPath.get());
+        } else {
+            try {
+                // Gradle test task will add JDBC driver to classpath
+                Class.forName(className);
+
+            } catch (ClassNotFoundException ex) {
+                File root = findPluginRoot();
+                File driverLib = new File(root, "default_jdbc_driver");
+                File[] files = driverLib.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        return file.isFile() && file.getName().endsWith(".jar");
+                    }
+                });
+                if (files == null || files.length == 0) {
+                    throw new RuntimeException("Cannot find JDBC driver in '" + root.getAbsolutePath() + "'.");
+                } else {
+                    for (File file : files) {
+                        logger.info("JDBC Driver = " + file.getAbsolutePath());
+                        addDriverJarToClasspath(file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
 
     protected void addDriverJarToClasspath(String glob)
     {
