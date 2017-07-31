@@ -9,6 +9,7 @@ PostgreSQL input plugin for Embulk loads records from PostgreSQL.
 
 ## Configuration
 
+- **driver_path**: path to the jar file of the PostgreSQL JDBC driver. If not set, the bundled JDBC driver (PostgreSQL JDBC Driver 9.4-1205) will be used. (string)
 - **host**: database host name (string, required)
 - **port**: database port number (integer, 5432)
 - **user**: database login user name (string, required)

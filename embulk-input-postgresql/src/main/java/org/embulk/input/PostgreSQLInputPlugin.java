@@ -1,29 +1,31 @@
 package org.embulk.input;
 
-import java.util.Map;
 import java.util.Properties;
 import java.sql.Connection;
-import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
-import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.postgresql.PostgreSQLInputConnection;
 import org.embulk.input.postgresql.getter.PostgreSQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.joda.time.DateTimeZone;
 
+import com.google.common.base.Optional;
+
 public class PostgreSQLInputPlugin
         extends AbstractJdbcInputPlugin
 {
-    private static final Driver driver = new org.postgresql.Driver();
-
     public interface PostgreSQLPluginTask
             extends PluginTask
     {
+        @Config("driver_path")
+        @ConfigDefault("null")
+        public Optional<String> getDriverPath();
+
         @Config("host")
         public String getHost();
 
@@ -65,6 +67,8 @@ public class PostgreSQLInputPlugin
     {
         PostgreSQLPluginTask t = (PostgreSQLPluginTask) task;
 
+        loadDriver("org.postgresql.Driver", t.getDriverPath());
+
         String url = String.format("jdbc:postgresql://%s:%d/%s",
                 t.getHost(), t.getPort(), t.getDatabase());
 
@@ -90,7 +94,7 @@ public class PostgreSQLInputPlugin
 
         props.putAll(t.getOptions());
 
-        Connection con = driver.connect(url, props);
+        Connection con = DriverManager.getConnection(url, props);
         try {
             PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema());
             con = null;
