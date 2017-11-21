@@ -27,6 +27,10 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
             return new HstoreToJsonColumnGetter(to, Types.JSON);
         }
 
+        if (column.getSqlType() == java.sql.Types.ARRAY) {
+            return new ArrayColumnGetter(to, getToType(option));
+        }
+
         ColumnGetter getter = super.newColumnGetter(con, task, column, option);
 
         // incremental loading wrapper
@@ -48,7 +52,8 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
         case "jsonb":
             return "json";
         case "hstore":
-            // hstore is converted to string by default
+        case "array":
+            // array & hstore is converted to string by default
             return "string";
         default:
             return super.sqlTypeToValueType(column, sqlType);
