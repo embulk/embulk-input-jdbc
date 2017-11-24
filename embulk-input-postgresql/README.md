@@ -35,7 +35,7 @@ PostgreSQL input plugin for Embulk loads records from PostgreSQL.
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
   - **value_type**: embulk get values from database as this value_type. Typically, the value_type determines `getXXX` method of `java.sql.PreparedStatement`.
-  (string, default: depends on the sql type of the column. Available values options are: `long`, `double`, `float`, `decimal`, `boolean`, `string`, `json`, `date`, `time`, `timestamp`)
+  (string, default: depends on the sql type of the column. Available values options are: `long`, `double`, `float`, `decimal`, `boolean`, `string`, `json`, `date`, `time`, `timestamp`, `array`)
   See below for `hstore` column.
   - **type**: Column values are converted to this embulk type.
   Available values options are: `boolean`, `long`, `double`, `string`, `json`, `timestamp`).
@@ -60,6 +60,24 @@ In addition, `json` type is supported for `hstore` column, and output will be as
 
 `value_type` is ignored.
 
+### Arrays column support
+
+PostgreSQL allows columns of a table to be defined as variable-length multidimensional arrays and this plugin supports converting its value into `string` or `json`.
+
+By default, `type` of `column_options` for `array` column is `string`, and output will be similar to what `psql` produces:
+```
+    {1000,2000,3000,4000}, {{red,green},{blue,cyan}}
+    {5000,6000,7000,8000}, {{yellow,magenta},{purple,"light,dark"}}
+```
+
+Output of `json` type will be as follow:
+```
+[1000,2000,3000,4000],[["red","green"],["blue","cyan"]]
+[5000,6000,7000,8000],[["yellow","magenta"],["purple"","light,dark"]]
+```
+However, the support for `json` type has the following limitations:
+- Postgres server version must be 8.3.0 and above
+- The value type of array element must be number, bool, or text, e.g. bool[], integer[], text[][], bigint[][][]...
 
 ### Incremental loading
 

@@ -1,0 +1,2 @@
+"{1000,2000,3000,4000}","{{red,green},{blue,cyan}}",{{{t}}}
+"{5000,6000,7000,8000}","{{yellow,magenta},{purple,""light,dark""}}","{{{t,t},{f,f}},{{t,f},{f,t}}}"

@@ -1,0 +1,5 @@
+table: input_array
+column_options:
+  c1: {type: json}
+  c2: {type: json}
+  c3: {type: json}
