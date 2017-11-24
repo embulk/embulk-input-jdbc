@@ -1,15 +1,16 @@
 package org.embulk.input.jdbc.getter;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Optional;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import org.embulk.config.ConfigSource;
+import org.embulk.config.Task;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
-import org.embulk.spi.time.TimestampFormatter.FormatterTask;
 import org.embulk.spi.time.TimestampFormatter;
-import org.embulk.spi.time.TimestampParser.ParserTask;
 import org.embulk.spi.time.TimestampParser;
 
 public class TimestampWithTimeZoneIncrementalHandler
@@ -40,25 +41,39 @@ public class TimestampWithTimeZoneIncrementalHandler
         super.getAndSet(from, fromIndex, toColumn);
     }
 
+    private static interface FormatterIntlTask extends Task, TimestampFormatter.Task {}
+    private static interface FormatterIntlColumnOption extends Task, TimestampFormatter.TimestampColumnOption {}
+
     @Override
     public JsonNode encodeToJson()
     {
-        FormatterTask task = Exec.newConfigSource()
-            .set("timezone", "UTC")
-            .loadConfig(FormatterTask.class);
-        TimestampFormatter formatter = new TimestampFormatter(ISO_USEC_FORMAT, task);
+        // TODO: Switch to a newer TimestampFormatter constructor after a reasonable interval.
+        // Traditional constructor is used here for compatibility.
+        final ConfigSource configSource = Exec.newConfigSource();
+        configSource.set("format", ISO_USEC_FORMAT);
+        configSource.set("timezone", "UTC");
+        TimestampFormatter formatter = new TimestampFormatter(
+            Exec.newConfigSource().loadConfig(FormatterIntlTask.class),
+            Optional.fromNullable(configSource.loadConfig(FormatterIntlColumnOption.class)));
         String text = formatter.format(org.embulk.spi.time.Timestamp.ofEpochSecond(epochSecond, nano));
         return jsonNodeFactory.textNode(text);
     }
+
+    private static interface ParserIntlTask extends Task, TimestampParser.Task {}
+    private static interface ParserIntlColumnOption extends Task, TimestampParser.TimestampColumnOption {}
 
     @Override
     public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
         throws SQLException
     {
-        ParserTask task = Exec.newConfigSource()
-            .set("default_timezone", "UTC")
-            .loadConfig(ParserTask.class);
-        TimestampParser parser = new TimestampParser(ISO_USEC_PATTERN, task);
+        // TODO: Switch to a newer TimestampParser constructor after a reasonable interval.
+        // Traditional constructor is used here for compatibility.
+        final ConfigSource configSource = Exec.newConfigSource();
+        configSource.set("format", ISO_USEC_PATTERN);
+        configSource.set("timezone", "UTC");
+        TimestampParser parser = new TimestampParser(
+            Exec.newConfigSource().loadConfig(ParserIntlTask.class),
+            configSource.loadConfig(ParserIntlColumnOption.class));
         org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
 
         Timestamp sqlTimestamp = new Timestamp(epoch.getEpochSecond() * 1000);
