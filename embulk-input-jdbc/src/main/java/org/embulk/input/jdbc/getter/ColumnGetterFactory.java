@@ -5,11 +5,15 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.base.Optional;
 import org.embulk.config.ConfigException;
+import org.embulk.config.ConfigSource;
+import org.embulk.config.Task;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin.PluginTask;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.spi.Exec;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.type.TimestampType;
@@ -176,12 +180,21 @@ public class ColumnGetterFactory
         return toType;
     }
 
+    private static interface FormatterIntlTask extends Task, TimestampFormatter.Task {}
+    private static interface FormatterIntlColumnOption extends Task, TimestampFormatter.TimestampColumnOption {}
+
     private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat)
     {
+        // TODO: Switch to a newer TimestampFormatter constructor after a reasonable interval.
+        // Traditional constructor is used here for compatibility.
+        final ConfigSource configSource = Exec.newConfigSource();
+        configSource.set("format", option.getTimestampFormat().isPresent()
+                                   ? option.getTimestampFormat().get().getFormat()
+                                   : defaultTimestampFormat);
+        configSource.set("timezone", option.getTimeZone().or(this.defaultTimeZone));
         return new TimestampFormatter(
-                option.getJRuby(),
-                option.getTimestampFormat().isPresent() ? option.getTimestampFormat().get().getFormat() : defaultTimestampFormat,
-                option.getTimeZone().or(defaultTimeZone));
+            Exec.newConfigSource().loadConfig(FormatterIntlTask.class),
+            Optional.fromNullable(configSource.loadConfig(FormatterIntlColumnOption.class)));
     }
 
     private static UnsupportedOperationException unsupportedOperationException(JdbcColumn column)

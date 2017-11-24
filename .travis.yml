@@ -14,8 +14,8 @@ jdk:
   - oraclejdk8
 env:
   global:
-    - EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=`pwd`/ci/travis_postgresql.yml
-    - EMBULK_INPUT_MYSQL_TEST_CONFIG=`pwd`/ci/travis_mysql.yml
+    - EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=$TRAVIS_BUILD_DIR/ci/travis_postgresql.yml
+    - EMBULK_INPUT_MYSQL_TEST_CONFIG=$TRAVIS_BUILD_DIR/ci/travis_mysql.yml
 cache:
   directories:  # run "travis cache --delete" to delete caches
     - $HOME/.gradle
