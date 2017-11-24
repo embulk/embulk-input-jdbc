@@ -64,7 +64,7 @@ At the next execution, when `last_record: ` is also set, this plugin generates a
 SELECT * FROM (
   ...original query is here...
 )
-WHERE created_at > '2017-01-01 00:32:12' OR (created_at = '2017-01-01 00:32:12' AND id > 5291)
+WHERE updated_at > '2017-01-01 00:32:12' OR (updated_at = '2017-01-01 00:32:12' AND id > 5291)
 ORDER BY updated_at, id
 ```
 
