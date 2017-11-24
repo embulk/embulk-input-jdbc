@@ -4,6 +4,8 @@ import org.embulk.test.EmbulkTests;
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 import java.io.IOException;
+import jnr.ffi.Platform;
+import jnr.ffi.Platform.OS;
 import org.embulk.config.ConfigSource;
 import static java.util.Locale.ENGLISH;
 
@@ -17,7 +19,7 @@ public class PostgreSQLTests
     public static void execute(String sql)
     {
         ConfigSource config = baseConfig();
-        ProcessBuilder pb = new ProcessBuilder("psql", "-w", "--set", "ON_ERROR_STOP=1", "-c", sql);
+        ProcessBuilder pb = new ProcessBuilder("psql", "-w", "--set", "ON_ERROR_STOP=1", "-c", convert(sql));
         pb.environment().put("PGUSER", config.get(String.class, "user"));
         pb.environment().put("PGPASSWORD", config.get(String.class, "password"));
         pb.environment().put("PGDATABASE", config.get(String.class, "database"));
@@ -35,5 +37,14 @@ public class PostgreSQLTests
             throw new RuntimeException(String.format(ENGLISH,
                         "Command finished with non-zero exit code. Exit code is %d.", code));
         }
+    }
+
+    private static String convert(String sql)
+    {
+        if (Platform.getNativePlatform().getOS().equals(OS.WINDOWS)) {
+            // '"' should be '\"' is Windows
+            return sql.replace("\"", "\\\"");
+        }
+        return sql;
     }
 }
