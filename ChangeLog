@@ -1,3 +1,9 @@
+Release 0.8.6 - 2017-11-24
+
+* Supported PostgreSQL array type (@instcode++).
+* Avoided using deprecated TimestampFormatter constructors.
+* embulk-input-oracle detects schema if not specified so that it works correctly when another schema has the target table name.
+
 Release 0.8.5 - 2017-07-31
 
 * Enabled to change MySQL JDBC driver by 'driver_path' option.
