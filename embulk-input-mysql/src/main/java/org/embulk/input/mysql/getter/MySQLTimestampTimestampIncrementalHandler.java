@@ -22,8 +22,7 @@ public class MySQLTimestampTimestampIncrementalHandler
     @Override
     public org.embulk.spi.time.Timestamp utcTimestampFromSessionTime(long epochSecond, int nano)
     {
-        long sec = sessionTimeZone.convertLocalToUTC(epochSecond * 1000, false) / 1000;
-        return org.embulk.spi.time.Timestamp.ofEpochSecond(sec, nano);
+        return org.embulk.spi.time.Timestamp.ofEpochSecond(epochSecond, nano);
     }
 
     @Override
