@@ -113,6 +113,7 @@ public class MySQLInputPlugin
         }
 
         props.putAll(t.getOptions());
+        logConnectionProperties(url, props);
 
         // load timezone mappings
         loadTimeZoneMappings();

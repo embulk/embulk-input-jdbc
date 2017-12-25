@@ -68,6 +68,7 @@ public class DB2InputPlugin
         props.setProperty("connectionTimeout", String.valueOf(db2Task.getConnectTimeout() * 1000)); // milliseconds
         props.setProperty("commandTimeout", String.valueOf(db2Task.getSocketTimeout() * 1000)); // milliseconds
         props.putAll(db2Task.getOptions());
+        logConnectionProperties(url, props);
 
         if (db2Task.getDriverPath().isPresent()) {
             addDriverJarToClasspath(db2Task.getDriverPath().get());

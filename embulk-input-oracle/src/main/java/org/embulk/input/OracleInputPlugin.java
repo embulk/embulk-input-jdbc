@@ -110,6 +110,7 @@ public class OracleInputPlugin
         props.setProperty("oracle.net.CONNECT_TIMEOUT", String.valueOf(oracleTask.getConnectTimeout() * 1000)); // milliseconds
         props.setProperty("oracle.jdbc.ReadTimeout", String.valueOf(oracleTask.getSocketTimeout() * 1000)); // milliseconds
         props.putAll(oracleTask.getOptions());
+        logConnectionProperties(url, props);
 
         if (oracleTask.getDriverPath().isPresent()) {
             addDriverJarToClasspath(oracleTask.getDriverPath().get());
