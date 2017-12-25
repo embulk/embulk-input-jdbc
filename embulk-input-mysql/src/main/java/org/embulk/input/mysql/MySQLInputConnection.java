@@ -67,19 +67,9 @@ public class MySQLInputConnection
         timeZoneComparison.compareTimeZone();
     }
 
-    //
-    //
-    // The MySQL Connector/J 5.1.35 introduce new option `Current MySQL Connect`.
-    // It has incompatibility behavior current version and 5.1.35.
-    //
-    // This method announces users about this change before the update driver version.
-    //
     @Override
     public void showDriverVersion() throws SQLException {
         super.showDriverVersion();
-        logger.warn("This plugin will update MySQL Connector/J version in the near future release.");
-        logger.warn("It has some incompatibility changes.");
-        logger.warn("For example, the 5.1.35 introduced `noTimezoneConversionForDateType` and `cacheDefaultTimezone` options.");
-        logger.warn("Please read a document and make sure configuration carefully before updating the plugin.");
+        logger.warn("The embulk-input-mysql 0.8.7 updated MySQL Connector/J driver.");
     }
 }
