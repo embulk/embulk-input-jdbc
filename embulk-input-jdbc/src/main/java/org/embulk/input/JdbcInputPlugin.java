@@ -74,6 +74,7 @@ public class JdbcInputPlugin
         }
 
         props.putAll(t.getOptions());
+        logConnectionProperties(t.getUrl(), props);
 
         Driver driver;
         try {

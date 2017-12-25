@@ -93,6 +93,7 @@ public class PostgreSQLInputPlugin
         props.setProperty("ApplicationName", t.getApplicationName());
 
         props.putAll(t.getOptions());
+        logConnectionProperties(url, props);
 
         Connection con = DriverManager.getConnection(url, props);
         try {

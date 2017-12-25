@@ -82,6 +82,7 @@ public class RedshiftInputPlugin
         // setting ssl=false enables SSL. See org.postgresql.core.v3.openConnectionImpl.
 
         props.putAll(t.getOptions());
+        logConnectionProperties(url, props);
 
         Connection con = driver.connect(url, props);
         try {

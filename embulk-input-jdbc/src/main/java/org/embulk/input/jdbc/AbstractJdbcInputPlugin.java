@@ -8,6 +8,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -658,4 +659,16 @@ public abstract class AbstractJdbcInputPlugin
         }
     }
 
+    protected void logConnectionProperties(String url, Properties props)
+    {
+        Properties maskedProps = new Properties();
+        for(String key : props.stringPropertyNames()) {
+            if (key.equals("password")) {
+                maskedProps.setProperty(key, "***");
+            } else {
+                maskedProps.setProperty(key, props.getProperty(key));
+            }
+        }
+        logger.info("Connecting to {} options {}", url, maskedProps);
+    }
 }

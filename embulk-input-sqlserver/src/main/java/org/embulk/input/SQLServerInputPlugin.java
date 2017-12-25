@@ -130,6 +130,7 @@ public class SQLServerInputPlugin
 
         Properties props = urlAndProps.getProperties();
         props.putAll(sqlServerTask.getOptions());
+        logConnectionProperties(urlAndProps.getUrl(), props);
 
         Connection con = driver.connect(urlAndProps.getUrl(), props);
         try {
