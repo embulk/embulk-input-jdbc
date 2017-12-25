@@ -76,7 +76,7 @@ public class MySQLInputConnection
     @Override
     public void showDriverVersion() throws SQLException {
         super.showDriverVersion();
-        logger.warn("embulk-input-mysql 8.9.0 upgraded the bundled MySQL Connector/J version from 5.1.34 to 5.1.44 .");
+        logger.warn("embulk-input-mysql 0.9.0 upgraded the bundled MySQL Connector/J version from 5.1.34 to 5.1.44 .");
         logger.warn("And set useLegacyDatetimeCode=false by default in order to get correct datetime value when the server timezone and the client timezone are different.");
         logger.warn("Set useLegacyDatetimeCode=true if you need to get datetime value same as older embulk-input-mysql.");
     }
