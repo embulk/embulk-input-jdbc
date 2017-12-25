@@ -9,7 +9,7 @@ MySQL input plugin for Embulk loads records from MySQL.
 
 ## Configuration
 
-- **driver_path**: path to the jar file of the MySQL JDBC driver. If not set, the bundled JDBC driver (MySQL Connector/J 5.1.34) will be used. (string)
+- **driver_path**: path to the jar file of the MySQL JDBC driver. If not set, the bundled JDBC driver (MySQL Connector/J 5.1.44) will be used (string). NOTE: embulk-input-mysql 0.9.0 upgraded the bundled MySQL Connector/J version from 5.1.34 to 5.1.44 . And set useLegacyDatetimeCode=false by default in order to get correct datetime value when the server timezone and the client timezone are different. Set useLegacyDatetimeCode=true if you need to get datetime value same as older embulk-input-mysql.
 - **host**: database host name (string, required)
 - **port**: database port number (integer, 3306)
 - **user**: database login user name (string, required)
@@ -39,6 +39,7 @@ MySQL input plugin for Embulk loads records from MySQL.
 - **incremental_columns**: column names for incremental loading (array of strings, default: use primary keys)
 - **last_record**: values of the last record for incremental loading (array of objects, default: load all records)
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
+- **use_legacy_datetime_code**: recommended not to set the property (boolean, default: false). If true, embulk-output-mysql will get wrong datetime values when the server timezone and the client server timezone are different as older embulk-output-mysql did.
 - **column_options**: advanced: a key-value pairs where key is a column name and value is options for the column.
   - **value_type**: embulk get values from database as this value_type. Typically, the value_type determines `getXXX` method of `java.sql.PreparedStatement`.
   (string, default: depends on the sql type of the column. Available values options are: `long`, `double`, `float`, `decimal`, `boolean`, `string`, `json`, `date`, `time`, `timestamp`)

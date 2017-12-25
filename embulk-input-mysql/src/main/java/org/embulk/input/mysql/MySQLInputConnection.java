@@ -1,15 +1,13 @@
 package org.embulk.input.mysql;
 
 import java.util.List;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.TimeZone;
 
-import com.mysql.jdbc.ConnectionImpl;
-import com.mysql.jdbc.ConnectionProperties;
-import org.embulk.input.MySQLTimeZoneComparison;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
 import org.embulk.input.jdbc.getter.ColumnGetter;
@@ -53,33 +51,33 @@ public class MySQLInputConnection
 
     public boolean getUseLegacyDatetimeCode()
     {
-        return ((ConnectionProperties) connection).getUseLegacyDatetimeCode();
+        try {
+            Class<?> connectionPropertiesClass = Class.forName("com.mysql.jdbc.ConnectionProperties");
+            Method getUseLegacyDatetimeCodeMethod = connectionPropertiesClass.getMethod("getUseLegacyDatetimeCode");
+            return (Boolean)getUseLegacyDatetimeCodeMethod.invoke(connection);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public TimeZone getServerTimezoneTZ()
     {
-        return ((ConnectionImpl) connection).getServerTimezoneTZ();
+        try {
+            Class<?> connectionImplClass = Class.forName("com.mysql.jdbc.ConnectionImpl");
+            Method getServerTimezoneTZMethod = connectionImplClass.getMethod("getServerTimezoneTZ");
+            return (TimeZone)getServerTimezoneTZMethod.invoke(connection);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void compareTimeZone() throws SQLException
-    {
-        MySQLTimeZoneComparison timeZoneComparison = new MySQLTimeZoneComparison(connection);
-        timeZoneComparison.compareTimeZone();
-    }
-
-    //
-    //
-    // The MySQL Connector/J 5.1.35 introduce new option `Current MySQL Connect`.
-    // It has incompatibility behavior current version and 5.1.35.
-    //
-    // This method announces users about this change before the update driver version.
-    //
     @Override
     public void showDriverVersion() throws SQLException {
         super.showDriverVersion();
-        logger.warn("This plugin will update MySQL Connector/J version in the near future release.");
-        logger.warn("It has some incompatibility changes.");
-        logger.warn("For example, the 5.1.35 introduced `noTimezoneConversionForDateType` and `cacheDefaultTimezone` options.");
-        logger.warn("Please read a document and make sure configuration carefully before updating the plugin.");
+        logger.warn("embulk-input-mysql 8.9.0 upgraded the bundled MySQL Connector/J version from 5.1.34 to 5.1.44 .");
+        logger.warn("And set useLegacyDatetimeCode=false by default in order to get correct datetime value when the server timezone and the client timezone are different.");
+        logger.warn("Set useLegacyDatetimeCode=true if you need to get datetime value same as older embulk-input-mysql.");
     }
 }
