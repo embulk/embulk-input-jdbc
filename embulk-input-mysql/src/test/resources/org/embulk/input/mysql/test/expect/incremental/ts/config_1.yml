@@ -1,5 +1,4 @@
 table: ts_load
 default_time_zone: +0300 # should be ignored
-options: {useLegacyDatetimeCode: false}
 incremental: true
 incremental_columns: [time]
