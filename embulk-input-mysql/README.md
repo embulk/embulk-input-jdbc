@@ -88,6 +88,10 @@ CREATE INDEX embulk_incremental_loading_index ON table (updated_at, id);
 Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds an AUTO_INCREMENT primary key. Currently, only strings and integers are supported as incremental_columns.
 
 
+## Trouble shooting
+
+- If you get an exception 'The server time zone value XXX is unrecognized ...', please set proper time zone to the MySQL server or set `true` to the `use_legacy_datetime_code` property.
+
 ## Example
 
 ```yaml
