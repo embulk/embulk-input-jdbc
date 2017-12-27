@@ -1,3 +1,15 @@
+Release 0.9.0 - 2017-12-27
+
+* Detect oracle schema if not specified.
+* Logging connection properties.
+* Upgraded the bundled MySQL JDBC driver version from 5.1.34 to 5.1.44 (@hiroyuki-sato++, @y-ken++).
+  Please check release notes for MySQL Connector/J (https://dev.mysql.com/doc/relnotes/connector-j/5.1/en/news-5-1.html) .
+* embulk-input-mysql added `use_legacy_datetime_code` property.
+  Its default value is `false` so that embulk-input-mysql will get correct datetime values when the server timezone and the client timezone are different.
+  You can get the datetime values same as older embulk-output-mysql did by setting `true` to `use_legacy_datetime_code` (@hiroyuki-sato++).
+* Fixed the bug that embulk-input-mysql incremental loading stored wrong timestamp values in configuration diff file
+  when the server timezone isn't UTC, so couldn't load proper records at next execution (@ganchiku++).
+
 Release 0.8.6 - 2017-11-24
 
 * Supported PostgreSQL array type (@instcode++).
