@@ -5,7 +5,6 @@ import org.embulk.input.PostgreSQLInputPlugin;
 import org.embulk.spi.InputPlugin;
 import org.embulk.test.EmbulkTests;
 import org.embulk.test.TestingEmbulk;
-import org.embulk.test.TestingEmbulk.RunResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
