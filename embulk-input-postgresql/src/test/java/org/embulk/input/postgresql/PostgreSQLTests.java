@@ -42,8 +42,8 @@ public class PostgreSQLTests
     private static String convert(String sql)
     {
         if (Platform.getNativePlatform().getOS().equals(OS.WINDOWS)) {
-            // '"' should be '\"' is Windows
-            return sql.replace("\"", "\\\"");
+            // '"' should be '\"' and '\' should be '\\' in Windows
+            return sql.replace("\\\\", "\\").replace("\\", "\\\\").replace("\"", "\\\"");
         }
         return sql;
     }
