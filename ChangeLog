@@ -1,3 +1,7 @@
+Release 0.9.1 - 2018-03-09
+
+* Fixed the bug that embulk-input-postgresql might return null for array type (@puppycloud++).
+
 Release 0.9.0 - 2017-12-27
 
 * Detect oracle schema if not specified.
