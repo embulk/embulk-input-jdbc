@@ -6,6 +6,7 @@ import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
+import org.embulk.input.jdbc.getter.StringColumnGetter;
 import org.embulk.input.jdbc.getter.TimestampWithTimeZoneIncrementalHandler;
 import org.embulk.input.jdbc.getter.TimestampWithoutTimeZoneIncrementalHandler;
 import org.embulk.spi.PageBuilder;
@@ -29,6 +30,10 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
 
         if (column.getSqlType() == java.sql.Types.ARRAY) {
             return new ArrayColumnGetter(to, getToType(option));
+        }
+
+        if ("uuid".equals(column.getTypeName())) {
+            return new StringColumnGetter(to, getToType(option));
         }
 
         ColumnGetter getter = super.newColumnGetter(con, task, column, option);
