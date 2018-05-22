@@ -64,6 +64,10 @@ public class SQLServerInputPlugin
         @ConfigDefault("null")
         public Optional<String> getSchema();
 
+        @Config("table_hint")
+        @ConfigDefault("null")
+        public Optional<String> getTableHint();
+
         @Config("application_name")
         @ConfigDefault("\"embulk-input-sqlserver\"")
         @Size(max=128)
@@ -134,7 +138,8 @@ public class SQLServerInputPlugin
 
         Connection con = driver.connect(urlAndProps.getUrl(), props);
         try {
-            SQLServerInputConnection c = new SQLServerInputConnection(con, sqlServerTask.getSchema().orNull());
+            SQLServerInputConnection c = new SQLServerInputConnection(con, sqlServerTask.getSchema().orNull(),
+                                                                      sqlServerTask.getTableHint().orNull());
             con = null;
             return c;
         }

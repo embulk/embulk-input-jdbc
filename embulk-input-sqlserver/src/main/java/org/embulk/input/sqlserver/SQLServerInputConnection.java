@@ -6,9 +6,17 @@ import org.embulk.input.jdbc.JdbcInputConnection;
 
 public class SQLServerInputConnection extends JdbcInputConnection {
 
+    private String tableHint;
+
     public SQLServerInputConnection(Connection connection, String schemaName) throws SQLException
     {
         super(connection, schemaName);
+    }
+
+    public SQLServerInputConnection(Connection connection, String schemaName, String tableHint) throws SQLException
+    {
+        super(connection, schemaName);
+        this.tableHint = tableHint;
     }
 
     @Override
@@ -25,6 +33,9 @@ public class SQLServerInputConnection extends JdbcInputConnection {
             sb.append(quoteIdentifierString(schemaName)).append(".");
         }
         sb.append(quoteIdentifierString(tableName));
+        if (tableHint != null) {
+            sb.append(" with (" + tableHint + ")");
+        }
         return sb.toString();
     }
 
