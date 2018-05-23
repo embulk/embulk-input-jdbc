@@ -11,9 +11,14 @@ import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.sqlserver.SQLServerInputConnection;
 
 import com.google.common.base.Optional;
+import org.embulk.input.sqlserver.getter.SQLServerColumnGetterFactory;
+import org.embulk.spi.PageBuilder;
+import org.joda.time.DateTimeZone;
+
 import static java.util.Locale.ENGLISH;
 
 public class SQLServerInputPlugin
@@ -143,6 +148,12 @@ public class SQLServerInputPlugin
                 con.close();
             }
         }
+    }
+
+    @Override
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    {
+        return new SQLServerColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
     private UrlAndProperties buildUrlAndProperties(SQLServerPluginTask sqlServerTask, boolean useJtdsDriver)
