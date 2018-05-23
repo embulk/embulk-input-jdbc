@@ -9,12 +9,16 @@ import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.getter.StringColumnGetter;
 import org.embulk.input.jdbc.getter.TimestampWithTimeZoneIncrementalHandler;
 import org.embulk.input.jdbc.getter.TimestampWithoutTimeZoneIncrementalHandler;
+import org.embulk.spi.Exec;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Types;
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
 
 public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
 {
+    private final Logger logger = Exec.getLogger(getClass());
+
     public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
     {
         super(to, defaultTimeZone);
@@ -60,8 +64,13 @@ public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
         case "array":
             // array & hstore is converted to string by default
             return "string";
-        default:
+        }
+
+        try {
             return super.sqlTypeToValueType(column, sqlType);
+        } catch (UnsupportedOperationException e) {
+            logger.warn("{} type is not supported, fallback to be considered as string", column.getTypeName());
+            return "string";
         }
     }
 }
