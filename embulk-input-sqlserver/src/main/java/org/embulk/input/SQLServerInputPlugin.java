@@ -64,9 +64,9 @@ public class SQLServerInputPlugin
         @ConfigDefault("null")
         public Optional<String> getSchema();
 
-        @Config("table_hint")
+        @Config("transaction_isolation_level")
         @ConfigDefault("null")
-        public Optional<String> getTableHint();
+        public Optional<String> getTransactionIsolationLevel();
 
         @Config("application_name")
         @ConfigDefault("\"embulk-input-sqlserver\"")
@@ -139,7 +139,7 @@ public class SQLServerInputPlugin
         Connection con = driver.connect(urlAndProps.getUrl(), props);
         try {
             SQLServerInputConnection c = new SQLServerInputConnection(con, sqlServerTask.getSchema().orNull(),
-                                                                      sqlServerTask.getTableHint().orNull());
+                                                                      sqlServerTask.getTransactionIsolationLevel().orNull());
             con = null;
             return c;
         }
