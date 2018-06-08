@@ -6,9 +6,18 @@ import org.embulk.input.jdbc.JdbcInputConnection;
 
 public class SQLServerInputConnection extends JdbcInputConnection {
 
+    private String transactionIsolationLevel;
+
     public SQLServerInputConnection(Connection connection, String schemaName) throws SQLException
     {
         super(connection, schemaName);
+    }
+
+    public SQLServerInputConnection(Connection connection, String schemaName, String transactionIsolationLevel)
+            throws SQLException
+    {
+        super(connection, schemaName);
+        this.transactionIsolationLevel = transactionIsolationLevel;
     }
 
     @Override
@@ -25,6 +34,9 @@ public class SQLServerInputConnection extends JdbcInputConnection {
             sb.append(quoteIdentifierString(schemaName)).append(".");
         }
         sb.append(quoteIdentifierString(tableName));
+        if (transactionIsolationLevel != null) {
+            sb.append(" with (" + transactionIsolationLevel + ")");
+        }
         return sb.toString();
     }
 

@@ -27,6 +27,7 @@ embulk "-J-Djava.library.path=C:\drivers" run input-sqlserver.yml
   - **query**: SQL to run (string)
 - If **query** is not set,
   - **table**: destination table name (string, required)
+  - **transaction_isolation_level**: transaction isolation level. (e.g. `NOLOCK`) (string, optional)
   - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
   - **order_by**: expression of ORDER BY to sort rows (e.g. `created_at DESC, id ASC`) (string, default: not sorted)
