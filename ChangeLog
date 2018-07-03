@@ -1,3 +1,8 @@
+Release 0.9.2 - 2018-07-03
+* embulk-input-postgresql supported UUID type (@trung-huynh++).
+* embulk-input-sqlserver supported datetime type column for incremental_columns option (@kmrshntr++).
+* embulk-input-sqlserver added 'transaction_isolation_level' option (@kmrshntr++).
+
 Release 0.9.1 - 2018-03-09
 
 * Fixed the bug that embulk-input-postgresql might return null for array type (@puppycloud++).
