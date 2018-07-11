@@ -67,9 +67,9 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("null")
         public Optional<String> getQuery();
 
-        @Config("use_raw_query")
+        @Config("use_raw_query_with_incremental")
         @ConfigDefault("false")
-        public boolean getUseRawQuery();
+        public boolean getUseRawQueryWithIncremental();
 
         @Config("select")
         @ConfigDefault("null")
@@ -215,7 +215,7 @@ public abstract class AbstractJdbcInputPlugin
         String rawQuery = getRawQuery(task, con);
 
         JdbcSchema querySchema = null;
-        if (task.getUseRawQuery()) {
+        if (task.getUseRawQueryWithIncremental()) {
             String temporaryQuery = rawQuery;
             for (String columnName : task.getIncrementalColumns()) {
                 // Temporary replace place holder like ":id" to "?" to avoid SyntaxException while getting schema.
@@ -265,7 +265,7 @@ public abstract class AbstractJdbcInputPlugin
             }
 
             if (task.getQuery().isPresent()) {
-                preparedQuery = con.wrapIncrementalQuery(rawQuery, querySchema, incrementalColumnIndexes, lastRecord, task.getUseRawQuery());
+                preparedQuery = con.wrapIncrementalQuery(rawQuery, querySchema, incrementalColumnIndexes, lastRecord, task.getUseRawQueryWithIncremental());
             }
             else {
                 preparedQuery = con.rebuildIncrementalQuery(
@@ -344,7 +344,7 @@ public abstract class AbstractJdbcInputPlugin
             if (task.getTable().isPresent() || task.getSelect().isPresent() ||
                     task.getWhere().isPresent() || task.getOrderBy().isPresent()) {
                 throw new ConfigException("'table', 'select', 'where' and 'order_by' parameters are unnecessary if 'query' parameter is set.");
-            } else if (task.getUseRawQuery()) {
+            } else if (task.getUseRawQueryWithIncremental()) {
                 String rawQuery = task.getQuery().get();
                 for (String columnName : task.getIncrementalColumns()) {
                     if (!rawQuery.contains(":" + columnName)) {
@@ -352,13 +352,13 @@ public abstract class AbstractJdbcInputPlugin
                     }
                 }
                 if (!task.getLastRecord().isPresent()) {
-                    throw new ConfigException("'last_record' is required when 'use_raw_query' is set to true");
+                    throw new ConfigException("'last_record' is required when 'use_raw_query_with_incremental' is set to true");
                 }
                 if (task.getLastRecord().get().size() != task.getIncrementalColumns().size()) {
                     throw new ConfigException("size of 'last_record' is different from of 'incremental_columns'");
                 }
-            } else if (!task.getUseRawQuery() && (!task.getIncrementalColumns().isEmpty() || task.getLastRecord().isPresent())) {
-                throw new ConfigException("'incremental_columns' and 'last_record' parameters are not supported if 'query' parameter is set and 'use_raw_query' is set to false.");
+            } else if (!task.getUseRawQueryWithIncremental() && (!task.getIncrementalColumns().isEmpty() || task.getLastRecord().isPresent())) {
+                throw new ConfigException("'incremental_columns' and 'last_record' parameters are not supported if 'query' parameter is set and 'use_raw_query_with_incremental' is set to false.");
             }
             return task.getQuery().get();
         } else if (task.getTable().isPresent()) {
