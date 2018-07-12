@@ -7,7 +7,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Comparator;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.embulk.config.ConfigException;
@@ -17,6 +19,8 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.TreeMap;
+
 import static java.util.Locale.ENGLISH;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -359,14 +363,31 @@ public class JdbcInputConnection
     private List<JdbcLiteral> replacePlaceholder(StringBuilder sb, String rawQuery, JdbcSchema querySchema,
                                                  List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues)
     {
+        // Insert paire of columnIndex:columnName with column name length DESC order
+        TreeMap<String, Integer> columnNames = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String val1, String val2) {
+                return val2.length() - val1.length();
+            }
+        });
+
         ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
         for (int n = 0; n < incrementalColumnIndexes.size(); n++) {
             int columnIndex = incrementalColumnIndexes.get(n);
             String columnName = querySchema.getColumnName(columnIndex);
-            JsonNode value = incrementalValues.get(n);
-            rawQuery = rawQuery.replaceAll(":" + columnName, "?");
-            parameters.add(new JdbcLiteral(columnIndex, value));
+            columnNames.put(columnName, columnIndex);
         }
+
+        for (Entry<String, Integer> column : columnNames.entrySet()) {
+            Integer columnIndex = column.getValue();
+            String columnName = column.getKey();
+            JsonNode value = incrementalValues.get(columnIndex);
+            while (rawQuery.contains(":" + columnName)) {
+                rawQuery = rawQuery.replace(":" + columnName, "?");
+                parameters.add(new JdbcLiteral(columnIndex, value));
+            }
+        }
+
         sb.append(rawQuery);
 
         return parameters.build();
