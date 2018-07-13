@@ -363,7 +363,7 @@ public class JdbcInputConnection
     private List<JdbcLiteral> replacePlaceholder(StringBuilder sb, String rawQuery, JdbcSchema querySchema,
                                                  List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues)
     {
-        // Insert paire of columnIndex:columnName with column name length DESC order
+        // Insert pair of columnName:columnIndex order by column name length DESC
         TreeMap<String, Integer> columnNames = new TreeMap<>(new Comparator<String>() {
             @Override
             public int compare(String val1, String val2) {

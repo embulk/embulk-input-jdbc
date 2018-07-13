@@ -6,12 +6,14 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 
@@ -217,9 +219,21 @@ public abstract class AbstractJdbcInputPlugin
         JdbcSchema querySchema = null;
         if (task.getUseRawQueryWithIncremental()) {
             String temporaryQuery = rawQuery;
-            for (String columnName : task.getIncrementalColumns()) {
-                // Temporary replace place holder like ":id" to "?" to avoid SyntaxException while getting schema.
-                temporaryQuery = temporaryQuery.replaceAll(":" + columnName, "?");
+
+            // Insert pair of columnName:columnIndex order by column name length DESC
+            TreeMap<String, Integer> columnNames = new TreeMap<>(new Comparator<String>() {
+                @Override
+                public int compare(String val1, String val2) {
+                    return val2.length() - val1.length();
+                }
+            });
+            for (int i = 0; i < task.getIncrementalColumns().size(); i++) {
+                columnNames.put(task.getIncrementalColumns().get(i), i);
+            }
+
+            for (Map.Entry<String, Integer> column : columnNames.entrySet()) {
+                // Temporary replace place holder like ":id" with "?" to avoid SyntaxException while getting schema.
+                temporaryQuery = temporaryQuery.replaceAll(":" + column.getKey(), "?");
             }
             querySchema = con.getSchemaOfQuery(temporaryQuery);
         } else {
