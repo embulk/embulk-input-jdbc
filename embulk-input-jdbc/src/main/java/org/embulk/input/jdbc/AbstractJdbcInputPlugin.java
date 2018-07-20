@@ -233,7 +233,7 @@ public abstract class AbstractJdbcInputPlugin
 
             for (Map.Entry<String, Integer> column : columnNames.entrySet()) {
                 // Temporary replace place holder like ":id" with "?" to avoid SyntaxException while getting schema.
-                temporaryQuery = temporaryQuery.replaceAll(":" + column.getKey(), "?");
+                temporaryQuery = temporaryQuery.replace(":" + column.getKey(), "?");
             }
             querySchema = con.getSchemaOfQuery(temporaryQuery);
         } else {
