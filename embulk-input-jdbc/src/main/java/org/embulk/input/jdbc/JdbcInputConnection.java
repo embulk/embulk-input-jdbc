@@ -383,7 +383,7 @@ public class JdbcInputConnection
             String columnName = column.getKey();
             JsonNode value = incrementalValues.get(columnIndex);
             while (rawQuery.contains(":" + columnName)) {
-                rawQuery = rawQuery.replace(":" + columnName, "?");
+                rawQuery = rawQuery.replaceFirst(":" + columnName, "?");
                 parameters.add(new JdbcLiteral(columnIndex, value));
             }
         }
