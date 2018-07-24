@@ -12,4 +12,5 @@ query: |
     AND num > :num
     OR (num = :num AND num2 > :num2)
   ORDER BY
-    num ASC
+    num ASC,
+    num2 ASC
