@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -378,19 +379,65 @@ public class JdbcInputConnection
             columnNames.put(columnName, columnIndex);
         }
 
-        for (Entry<String, Integer> column : columnNames.entrySet()) {
-            Integer columnIndex = column.getValue();
-            String columnName = column.getKey();
+        // Add value of each columns
+        for (Map.Entry<Integer, Integer> columnPosition: generateColumnPositionList(rawQuery, columnNames).entrySet()) {
+            int columnIndex = columnPosition.getValue();
             JsonNode value = incrementalValues.get(columnIndex);
+            parameters.add(new JdbcLiteral(columnIndex, value));
+        }
+
+        // Replace placeholder ":column1" string with "?"
+        for (Entry<String, Integer> column : columnNames.entrySet()) {
+            String columnName = column.getKey();
             while (rawQuery.contains(":" + columnName)) {
                 rawQuery = rawQuery.replaceFirst(":" + columnName, "?");
-                parameters.add(new JdbcLiteral(columnIndex, value));
             }
         }
 
         sb.append(rawQuery);
 
         return parameters.build();
+    }
+
+    /*
+    * This method parse original query that contains placeholder ":column" and store its index position and columnIndex value in Map
+    *
+    * @param query string that contains placeholder like ":column"
+    * @param pair of columnName:columnIndex sorted by column name length desc ["num2", 1]["num", 0]
+    * @return pair of index position where ":column" appears and columnIndex sorted by index position [65,0][105,0][121,1]
+    *
+    * last_record: [1,101]
+    * SELECT * FROM query_load WHERE
+    *   num IS NOT NULL
+    *   AND num > :num
+    *   AND num2 IS NOT NULL
+    *   OR (num = :num AND num2 > :num2)
+    * ORDER BY num ASC, num2 ASC
+    * in above case, return value will be [65,0][105,0][121,1]
+    */
+    private TreeMap<Integer, Integer> generateColumnPositionList(String rawQuery, TreeMap<String, Integer> columnNames)
+    {
+        TreeMap<Integer, Integer> columnPositionList = new TreeMap<>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer val1, Integer val2) {
+                return val1 - val2;
+            }
+        });
+
+        for (Entry<String, Integer> column : columnNames.entrySet()) {
+            int lastIndex = 0;
+            while (true) {
+                int index = rawQuery.indexOf(":" + column.getKey(), lastIndex);
+                if (index == -1) {
+                    break;
+                }
+                if (!columnPositionList.containsKey(index)) {
+                    columnPositionList.put(index, column.getValue());
+                }
+                lastIndex = index + 2;
+            }
+        }
+        return columnPositionList;
     }
 
     private void buildIncrementalOrderTo(StringBuilder sb,
