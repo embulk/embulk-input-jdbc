@@ -417,12 +417,7 @@ public class JdbcInputConnection
     */
     private TreeMap<Integer, Integer> generateColumnPositionList(String rawQuery, TreeMap<String, Integer> columnNames)
     {
-        TreeMap<Integer, Integer> columnPositionList = new TreeMap<>(new Comparator<Integer>() {
-            @Override
-            public int compare(Integer val1, Integer val2) {
-                return val1 - val2;
-            }
-        });
+        TreeMap<Integer, Integer> columnPositionList = new TreeMap<>();
 
         for (Entry<String, Integer> column : columnNames.entrySet()) {
             int lastIndex = 0;
