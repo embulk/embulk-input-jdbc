@@ -22,7 +22,7 @@ Generic JDBC input plugin for Embulk loads records from a database using a JDBC 
 - **options**: extra JDBC properties (hash, default: {})
 - If you write SQL directly,
   - **query**: SQL to run (string)
-  - **use_raw_query_with_incremental**: If true, you can write optiomized query using prepared statement. See [Use incremental loading with complex query](#use-incremental-loading-with-complex-query) for more detail (boolean, default: false)
+  - **use_raw_query_with_incremental**: If true, you can write optimized query using prepared statement. See [Use incremental loading with complex query](#use-incremental-loading-with-complex-query) for more detail (boolean, default: false)
 - If **query** is not set,
   - **table**: destination table name (string, required)
   - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
