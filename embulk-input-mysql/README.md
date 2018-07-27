@@ -17,7 +17,7 @@ MySQL input plugin for Embulk loads records from MySQL.
 - **database**: destination database name (string, required)
 - If you write SQL directly,
   - **query**: SQL to run (string)
-  - **use_raw_query_with_incremental**: If true, you can write optimized query using prepared statement by yourself. See [Use incremental loading with complex query](#use-incremental-loading-with-complex-query) for more detail (boolean, default: false)
+  - **use_raw_query_with_incremental**: If true, you can write optimized query using prepared statement by yourself. See [Use incremental loading with raw query](#use-incremental-loading-with-raw-query) for more detail (boolean, default: false)
 - If **query** is not set,
   - **table**: destination table name (string, required)
   - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
@@ -93,7 +93,7 @@ Recommended usage is to leave `incremental_columns` unset and let this plugin au
 
 - If you get an exception 'The server time zone value XXX is unrecognized ...', please set proper time zone to the MySQL server or set `true` to the `use_legacy_datetime_code` property.
 
-### Use incremental loading with complex query
+### Use incremental loading with raw query
 
 **IMPORTANT**: This is an advanced feature and assume you have an enough knowledge about incremental loading using Embulk and this plugin
 

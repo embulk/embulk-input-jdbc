@@ -21,6 +21,7 @@ Oracle input plugin for Embulk loads records from Oracle.
 - **net_service_name**: Oracle Net Service Name (string, optional)
 - If you write SQL directly,
   - **query**: SQL to run (string)
+  - **use_raw_query_with_incremental**: If true, you can write optimized query using prepared statement by yourself. See [Use incremental loading with raw query](#use-incremental-loading-with-raw-query) for more detail (boolean, default: false)
 - If **query** is not set,
   - **table**: destination table name (string, required)
   - **select**: expression of select (e.g. `id, created_at`) (string, default: "*")
@@ -81,7 +82,7 @@ CREATE INDEX embulk_incremental_loading_index ON table (updated_at, id);
 
 Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds a primary key. Currently, only strings and integers are supported as incremental_columns.
 
-### Use incremental loading with complex query
+### Use incremental loading with raw query
 
 **IMPORTANT**: This is an advanced feature and assume you have an enough knowledge about incremental loading using Embulk and this plugin
 
