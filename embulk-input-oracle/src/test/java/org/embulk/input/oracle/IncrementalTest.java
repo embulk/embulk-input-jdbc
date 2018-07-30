@@ -141,4 +141,67 @@ public class IncrementalTest
                 is((ConfigDiff) loadYamlResource(embulk, "timestamp/expected_2.diff")));
     }
 
+    @Test
+    public void simpleQueryWithPlaceholder() throws Exception
+    {
+        // setup first rows
+        execute(embulk, readResource("query/setup.sql"));
+
+        Path out1 = embulk.createTempFile("csv");
+        RunResult result1 = embulk.runInput(
+                baseConfig.merge(loadYamlResource(embulk, "query/config_1.yml")),
+                out1);
+        assertThat(
+                readSortedFile(out1),
+                is(readResource("query/expected_1.csv")));
+        assertThat(
+                result1.getConfigDiff(),
+                is((ConfigDiff) loadYamlResource(embulk, "query/expected_1.diff")));
+
+        // insert more rows
+        execute(embulk, readResource("query/insert_more.sql"));
+
+        Path out2 = embulk.createTempFile("csv");
+        RunResult result2 = embulk.runInput(
+                baseConfig.merge(loadYamlResource(embulk, "query/config_2.yml")),
+                out2);
+        assertThat(
+                readSortedFile(out2),
+                is(readResource("query/expected_2.csv")));
+        assertThat(
+                result2.getConfigDiff(),
+                is((ConfigDiff) loadYamlResource(embulk, "query/expected_2.diff")));
+    }
+
+    @Test
+    public void simpleQueryWithPlaceholderAndMultiColumns() throws Exception
+    {
+        // setup first rows
+        execute(embulk, readResource("query/setup.sql"));
+
+        Path out1 = embulk.createTempFile("csv");
+        RunResult result1 = embulk.runInput(
+                baseConfig.merge(loadYamlResource(embulk, "query/multi_columns_config_1.yml")),
+                out1);
+        assertThat(
+                readSortedFile(out1),
+                is(readResource("query/multi_columns_expected_1.csv")));
+        assertThat(
+                result1.getConfigDiff(),
+                is((ConfigDiff) loadYamlResource(embulk, "query/multi_columns_expected_1.diff")));
+
+        // insert more rows
+        execute(embulk, readResource("query/insert_more.sql"));
+
+        Path out2 = embulk.createTempFile("csv");
+        RunResult result2 = embulk.runInput(
+                baseConfig.merge(loadYamlResource(embulk, "query/multi_columns_config_2.yml")),
+                out2);
+        assertThat(
+                readSortedFile(out2),
+                is(readResource("query/multi_columns_expected_2.csv")));
+        assertThat(
+                result2.getConfigDiff(),
+                is((ConfigDiff) loadYamlResource(embulk, "query/multi_columns_expected_2.diff")));
+    }
 }

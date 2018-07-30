@@ -7,7 +7,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Comparator;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.embulk.config.ConfigException;
@@ -17,6 +20,8 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.TreeMap;
+
 import static java.util.Locale.ENGLISH;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -292,23 +297,28 @@ public class JdbcInputConnection
     }
 
     public PreparedQuery wrapIncrementalQuery(String rawQuery, JdbcSchema querySchema,
-            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues) throws SQLException
+            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues,
+                                              boolean useRawQuery) throws SQLException
     {
         StringBuilder sb = new StringBuilder();
         List<JdbcLiteral> parameters = ImmutableList.of();
 
-        sb.append("SELECT * FROM (");
-        sb.append(truncateStatementDelimiter(rawQuery));
-        sb.append(") embulk_incremental_");
+        if (useRawQuery) {
+            parameters = replacePlaceholder(sb, rawQuery, querySchema, incrementalColumnIndexes, incrementalValues);
+        } else {
+            sb.append("SELECT * FROM (");
+            sb.append(truncateStatementDelimiter(rawQuery));
+            sb.append(") embulk_incremental_");
 
-        if (incrementalValues != null) {
-            sb.append(" WHERE ");
-            parameters = buildIncrementalConditionTo(sb,
-                    querySchema, incrementalColumnIndexes, incrementalValues);
+            if (incrementalValues != null) {
+                sb.append(" WHERE ");
+                parameters = buildIncrementalConditionTo(sb,
+                        querySchema, incrementalColumnIndexes, incrementalValues);
+            }
+
+            sb.append(" ORDER BY ");
+            buildIncrementalOrderTo(sb, querySchema, incrementalColumnIndexes);
         }
-
-        sb.append(" ORDER BY ");
-        buildIncrementalOrderTo(sb, querySchema, incrementalColumnIndexes);
 
         return new PreparedQuery(sb.toString(), parameters);
     }
@@ -349,6 +359,80 @@ public class JdbcInputConnection
         }
 
         return parameters.build();
+    }
+
+    private List<JdbcLiteral> replacePlaceholder(StringBuilder sb, String rawQuery, JdbcSchema querySchema,
+                                                 List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues)
+    {
+        // Insert pair of columnName:columnIndex order by column name length DESC
+        TreeMap<String, Integer> columnNames = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String val1, String val2) {
+                return val2.length() - val1.length();
+            }
+        });
+
+        ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
+        for (int n = 0; n < incrementalColumnIndexes.size(); n++) {
+            int columnIndex = incrementalColumnIndexes.get(n);
+            String columnName = querySchema.getColumnName(columnIndex);
+            columnNames.put(columnName, columnIndex);
+        }
+
+        // Add value of each columns
+        for (Map.Entry<Integer, Integer> columnPosition: generateColumnPositionList(rawQuery, columnNames).entrySet()) {
+            int columnIndex = columnPosition.getValue();
+            JsonNode value = incrementalValues.get(columnIndex);
+            parameters.add(new JdbcLiteral(columnIndex, value));
+        }
+
+        // Replace placeholder ":column1" string with "?"
+        for (Entry<String, Integer> column : columnNames.entrySet()) {
+            String columnName = column.getKey();
+            while (rawQuery.contains(":" + columnName)) {
+                rawQuery = rawQuery.replaceFirst(":" + columnName, "?");
+            }
+        }
+
+        sb.append(rawQuery);
+
+        return parameters.build();
+    }
+
+    /*
+    * This method parse original query that contains placeholder ":column" and store its index position and columnIndex value in Map
+    *
+    * @param query string that contains placeholder like ":column"
+    * @param pair of columnName:columnIndex sorted by column name length desc ["num2", 1]["num", 0]
+    * @return pair of index position where ":column" appears and columnIndex sorted by index position [65,0][105,0][121,1]
+    *
+    * last_record: [1,101]
+    * SELECT * FROM query_load WHERE
+    *   num IS NOT NULL
+    *   AND num > :num
+    *   AND num2 IS NOT NULL
+    *   OR (num = :num AND num2 > :num2)
+    * ORDER BY num ASC, num2 ASC
+    * in above case, return value will be [65,0][105,0][121,1]
+    */
+    private TreeMap<Integer, Integer> generateColumnPositionList(String rawQuery, TreeMap<String, Integer> columnNames)
+    {
+        TreeMap<Integer, Integer> columnPositionList = new TreeMap<>();
+
+        for (Entry<String, Integer> column : columnNames.entrySet()) {
+            int lastIndex = 0;
+            while (true) {
+                int index = rawQuery.indexOf(":" + column.getKey(), lastIndex);
+                if (index == -1) {
+                    break;
+                }
+                if (!columnPositionList.containsKey(index)) {
+                    columnPositionList.put(index, column.getValue());
+                }
+                lastIndex = index + 2;
+            }
+        }
+        return columnPositionList;
     }
 
     private void buildIncrementalOrderTo(StringBuilder sb,

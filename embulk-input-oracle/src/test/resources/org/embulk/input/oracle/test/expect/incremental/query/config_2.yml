@@ -1,0 +1,16 @@
+column_options:
+  num: {type: long}
+last_record: [4]
+incremental: true
+incremental_columns: [num]
+use_raw_query_with_incremental: true
+query: |
+  SELECT
+    num,note
+  FROM
+    query_load
+  WHERE
+    num IS NOT NULL
+    AND num > :num
+  ORDER BY
+    num ASC
