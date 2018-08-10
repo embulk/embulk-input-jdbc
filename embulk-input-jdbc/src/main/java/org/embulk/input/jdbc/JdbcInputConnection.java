@@ -14,15 +14,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.embulk.spi.Exec;
-import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.TreeMap;
-
-import static java.util.Locale.ENGLISH;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -365,11 +362,7 @@ public class JdbcInputConnection
             throws SQLException
     {
         Optional<Integer> index = schema.findColumn(incrementalColumn);
-        if (!index.isPresent()) {
-            throw new ConfigException(String.format(ENGLISH,
-                    "Column name '%s' is in incremental_columns option does not exist",
-                    incrementalColumn));
-        }
+        // must be present because already checked in AbstractJdbcInputPlugin.findIncrementalColumnIndexes .
         return index.get().intValue();
     }
 
