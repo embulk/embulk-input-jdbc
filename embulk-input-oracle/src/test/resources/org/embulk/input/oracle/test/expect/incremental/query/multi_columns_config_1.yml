@@ -13,6 +13,7 @@ query: |
   WHERE
     num IS NOT NULL
     AND num > :num
+    OR (num = :num AND num2 > :num2)
   ORDER BY
     num ASC,
     num2 ASC
