@@ -279,13 +279,13 @@ public abstract class AbstractJdbcInputPlugin
             }
 
             if (task.getQuery().isPresent()) {
-                preparedQuery = con.wrapIncrementalQuery(rawQuery, querySchema, incrementalColumnIndexes, lastRecord, task.getUseRawQueryWithIncremental());
+                preparedQuery = con.wrapIncrementalQuery(rawQuery, querySchema, incrementalColumns, lastRecord, task.getUseRawQueryWithIncremental());
             }
             else {
                 preparedQuery = con.rebuildIncrementalQuery(
                         task.getTable().get(), task.getSelect(),
                         task.getWhere(),
-                        querySchema, incrementalColumnIndexes, lastRecord);
+                        querySchema, incrementalColumns, lastRecord);
             }
         }
         else {

@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.embulk.config.ConfigException;
 import org.embulk.spi.Exec;
+import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.slf4j.Logger;
 
@@ -257,7 +257,7 @@ public class JdbcInputConnection
     public PreparedQuery rebuildIncrementalQuery(String tableName,
             Optional<String> selectExpression, Optional<String> whereCondition,
             JdbcSchema querySchema,
-            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues) throws SQLException
+            List<String> incrementalColumns, List<JsonNode> incrementalValues) throws SQLException
     {
         List<JdbcLiteral> parameters = ImmutableList.of();
 
@@ -273,7 +273,7 @@ public class JdbcInputConnection
 
             sb.append("(");
             parameters = buildIncrementalConditionTo(sb,
-                    querySchema, incrementalColumnIndexes, incrementalValues);
+                    querySchema, incrementalColumns, incrementalValues);
             sb.append(")");
 
             newWhereCondition = Optional.of(sb.toString());
@@ -285,7 +285,7 @@ public class JdbcInputConnection
         Optional<String> newOrderByExpression;
         {
             StringBuilder sb = new StringBuilder();
-            buildIncrementalOrderTo(sb, querySchema, incrementalColumnIndexes);
+            buildIncrementalOrderTo(sb, querySchema, incrementalColumns);
             newOrderByExpression = Optional.of(sb.toString());
         }
 
@@ -297,14 +297,14 @@ public class JdbcInputConnection
     }
 
     public PreparedQuery wrapIncrementalQuery(String rawQuery, JdbcSchema querySchema,
-            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues,
+            List<String> incrementalColumns, List<JsonNode> incrementalValues,
                                               boolean useRawQuery) throws SQLException
     {
         StringBuilder sb = new StringBuilder();
         List<JdbcLiteral> parameters = ImmutableList.of();
 
         if (useRawQuery) {
-            parameters = replacePlaceholder(sb, rawQuery, querySchema, incrementalColumnIndexes, incrementalValues);
+            parameters = replacePlaceholder(sb, rawQuery, querySchema, incrementalColumns, incrementalValues);
         } else {
             sb.append("SELECT * FROM (");
             sb.append(truncateStatementDelimiter(rawQuery));
@@ -313,11 +313,11 @@ public class JdbcInputConnection
             if (incrementalValues != null) {
                 sb.append(" WHERE ");
                 parameters = buildIncrementalConditionTo(sb,
-                        querySchema, incrementalColumnIndexes, incrementalValues);
+                        querySchema, incrementalColumns, incrementalValues);
             }
 
             sb.append(" ORDER BY ");
-            buildIncrementalOrderTo(sb, querySchema, incrementalColumnIndexes);
+            buildIncrementalOrderTo(sb, querySchema, incrementalColumns);
         }
 
         return new PreparedQuery(sb.toString(), parameters);
@@ -326,14 +326,14 @@ public class JdbcInputConnection
     private List<JdbcLiteral> buildIncrementalConditionTo(
             StringBuilder sb,
             JdbcSchema querySchema,
-            List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues) throws SQLException
+            List<String> incrementalColumns, List<JsonNode> incrementalValues) throws SQLException
     {
         ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
 
         List<String> leftColumnNames = new ArrayList<>();
         List<JdbcLiteral> rightLiterals = new ArrayList<>();
-        for (int n = 0; n < incrementalColumnIndexes.size(); n++) {
-            int columnIndex = incrementalColumnIndexes.get(n);
+        for (int n = 0; n < incrementalColumns.size(); n++) {
+            int columnIndex = findIncrementalColumnIndex(querySchema, incrementalColumns.get(n));
             JsonNode value = incrementalValues.get(n);
             leftColumnNames.add(querySchema.getColumnName(columnIndex));
             rightLiterals.add(new JdbcLiteral(columnIndex, value));
@@ -361,8 +361,21 @@ public class JdbcInputConnection
         return parameters.build();
     }
 
+    private int findIncrementalColumnIndex(JdbcSchema schema, String incrementalColumn)
+            throws SQLException
+    {
+        Optional<Integer> index = schema.findColumn(incrementalColumn);
+        if (!index.isPresent()) {
+            throw new ConfigException(String.format(ENGLISH,
+                    "Column name '%s' is in incremental_columns option does not exist",
+                    incrementalColumn));
+        }
+        return index.get().intValue();
+    }
+
     private List<JdbcLiteral> replacePlaceholder(StringBuilder sb, String rawQuery, JdbcSchema querySchema,
-                                                 List<Integer> incrementalColumnIndexes, List<JsonNode> incrementalValues)
+                                                 List<String> incrementalColumns, List<JsonNode> incrementalValues)
+            throws SQLException
     {
         // Insert pair of columnName:columnIndex order by column name length DESC
         TreeMap<String, Integer> columnNames = new TreeMap<>(new Comparator<String>() {
@@ -373,9 +386,8 @@ public class JdbcInputConnection
         });
 
         ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
-        for (int n = 0; n < incrementalColumnIndexes.size(); n++) {
-            int columnIndex = incrementalColumnIndexes.get(n);
-            String columnName = querySchema.getColumnName(columnIndex);
+        for (String columnName : incrementalColumns) {
+            int columnIndex = findIncrementalColumnIndex(querySchema, columnName);
             columnNames.put(columnName, columnIndex);
         }
 
@@ -436,16 +448,19 @@ public class JdbcInputConnection
     }
 
     private void buildIncrementalOrderTo(StringBuilder sb,
-            JdbcSchema querySchema, List<Integer> incrementalColumnIndexes)
+            JdbcSchema querySchema, List<String> incrementalColumns) throws SQLException
     {
         boolean first = true;
-        for (int i : incrementalColumnIndexes) {
+        for (String incrementalColumn : incrementalColumns) {
             if (first) {
                 first = false;
             } else {
                 sb.append(", ");
             }
-            sb.append(quoteIdentifierString(querySchema.getColumnName(i)));
+            int columnIndex = findIncrementalColumnIndex(querySchema, incrementalColumn);
+            // the following column name is case sensitive,
+            // so should use actual column name got by DatabaseMetaData.
+            sb.append(quoteIdentifierString(querySchema.getColumnName(columnIndex)));
         }
     }
 
