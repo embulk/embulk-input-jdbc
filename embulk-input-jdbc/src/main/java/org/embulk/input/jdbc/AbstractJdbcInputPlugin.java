@@ -720,6 +720,6 @@ public abstract class AbstractJdbcInputPlugin
                 maskedProps.setProperty(key, props.getProperty(key));
             }
         }
-        logger.info("Connecting2 to {} options {}", url, maskedProps);
+        logger.info("Connecting to {} options {}", url, maskedProps);
     }
 }

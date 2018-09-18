@@ -43,6 +43,7 @@ Redshift input plugin for Embulk loads records from Redshift.
   - **timezone**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted in this timezone.
 (string, value of default_timezone option is used by default)
 - **after_select**: if set, this SQL will be executed after the SELECT query in the same transaction.
+- **before_select**: if set, this SQL will be executed before the SELECT query in the same transaction.
 
 
 ### Incremental loading
