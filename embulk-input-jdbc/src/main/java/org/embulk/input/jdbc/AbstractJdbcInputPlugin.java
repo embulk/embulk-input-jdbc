@@ -151,6 +151,10 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("{}")
         public Map<String, JdbcColumnOption> getDefaultColumnOptions();
 
+        @Config("temp_table_def")
+        @ConfigDefault("null")
+        public Optional<String> getTmpTblDef();
+
         @Config("before_select")
         @ConfigDefault("null")
         public Optional<String> getBeforeSelect();
@@ -201,10 +205,10 @@ public abstract class AbstractJdbcInputPlugin
         try (JdbcInputConnection con = newConnection(task)) {
             con.showDriverVersion();
 
-            if (task.getBeforeSelect().isPresent()) {
-                con.executeUpdate(task.getBeforeSelect().get());
+            if (task.getTmpTblDef().isPresent()) {
+                con.executeUpdate(task.getTmpTblDef().get());
                 con.connection.commit();
-                logger.info("Executed before_select query");
+                logger.info("Executed temp_table_def query");
             }
 
             // TODO incremental_columns is not set => get primary key
@@ -484,6 +488,19 @@ public abstract class AbstractJdbcInputPlugin
         LastRecordStore lastRecordStore = null;
 
         try (JdbcInputConnection con = newConnection(task)) {
+
+            if (task.getTmpTblDef().isPresent()) {
+                con.executeUpdate(task.getTmpTblDef().get());
+                con.connection.commit();
+                logger.info("Executed temp_table_def query");
+            }
+
+            if (task.getBeforeSelect().isPresent()) {
+                con.executeUpdate(task.getBeforeSelect().get());
+                con.connection.commit();
+                logger.info("Executed before_select query");
+            }
+
             List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
             try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {
