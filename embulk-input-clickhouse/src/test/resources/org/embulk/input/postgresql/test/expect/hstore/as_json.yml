@@ -1,3 +1,0 @@
-table: input_hstore
-column_options:
-  c1: {type: json}

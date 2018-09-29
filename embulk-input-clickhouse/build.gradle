@@ -1,8 +1,8 @@
 dependencies {
     compile project(':embulk-input-jdbc')
 
-    compile 'org.postgresql:postgresql:9.4-1205-jdbc41'
-    defaultJdbcDriver 'org.postgresql:postgresql:9.4-1205-jdbc41'
+    compile 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.41'
+    defaultJdbcDriver 'ru.yandex.clickhouse:clickhouse-jdbc:0.1.41'
 
     testCompile 'org.embulk:embulk-standards:0.8.15'
 }

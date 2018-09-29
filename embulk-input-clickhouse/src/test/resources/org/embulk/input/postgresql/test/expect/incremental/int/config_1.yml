@@ -1,3 +1,0 @@
-table: int_load
-incremental: true
-incremental_columns: [num]

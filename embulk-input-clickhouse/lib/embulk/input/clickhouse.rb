@@ -1,3 +1,3 @@
 Embulk::JavaPlugin.register_input(
-  :postgresql, "org.embulk.input.PostgreSQLInputPlugin",
+  :clickhouse, "org.embulk.input.ClickHouseInputPlugin",
   File.expand_path('../../../../classpath', __FILE__))
