@@ -3,9 +3,13 @@ package org.embulk.input;
 import com.google.common.base.Optional;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
+import org.embulk.input.clickhouse.ClickHouseColumnGetterFactory;
 import org.embulk.input.clickhouse.ClickHouseInputConnection;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.getter.ColumnGetterFactory;
+import org.embulk.spi.PageBuilder;
+import org.joda.time.DateTimeZone;
 import ru.yandex.clickhouse.settings.ClickHouseConnectionSettings;
 
 import java.sql.Connection;
@@ -103,6 +107,10 @@ public class ClickHouseInputPlugin
         if ( t.getDataTransferTimeout().isPresent() ){
             props.setProperty(ClickHouseConnectionSettings.DATA_TRANSFER_TIMEOUT.getKey(), String.valueOf(t.getDataTransferTimeout().get())); // seconds
         }
+        if ( t.getKeepAliveTimeout().isPresent() ){
+            props.setProperty(ClickHouseConnectionSettings.KEEP_ALIVE_TIMEOUT.getKey(), String.valueOf(t.getKeepAliveTimeout().get())); // seconds
+        }
+
         props.setProperty(ClickHouseConnectionSettings.SOCKET_TIMEOUT.getKey(), String.valueOf(t.getSocketTimeout())); // seconds
         props.setProperty(ClickHouseConnectionSettings.CONNECTION_TIMEOUT.getKey(), String.valueOf(t.getConnectTimeout())); // seconds
         props.putAll(t.getOptions());
@@ -121,5 +129,11 @@ public class ClickHouseInputPlugin
                 con.close();
             }
         }
+    }
+
+    @Override
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    {
+        return new ClickHouseColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 }
