@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
+import org.embulk.input.clickhouse.ClickHouseInputConnection;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
 
@@ -81,7 +82,7 @@ public class ClickHouseInputPlugin
 
         Connection con = driver.connect(url, props);
         try {
-            JdbcInputConnection c = new JdbcInputConnection(con, null);
+            ClickHouseInputConnection c = new ClickHouseInputConnection(con, null);
             con = null;
             return c;
         } finally {
