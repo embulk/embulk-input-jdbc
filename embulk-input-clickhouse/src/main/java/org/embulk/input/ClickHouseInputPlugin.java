@@ -66,6 +66,8 @@ public class ClickHouseInputPlugin
 
         props.putAll(t.getOptions());
 
+        final String url = String.format("jdbc:clickhouse://%s:%d/%s", t.getHost(), t.getPort(), t.getDatabase());
+
         Driver driver;
         try {
             // TODO check Class.forName(driverClass) is a Driver before newInstance
@@ -75,7 +77,7 @@ public class ClickHouseInputPlugin
             throw Throwables.propagate(ex);
         }
 
-        final String url = String.format("jdbc:clickhouse://%s:%d/%s", t.getHost(), t.getPort(), t.getDatabase());
+        logConnectionProperties(url, props);
 
         Connection con = driver.connect(url, props);
         try {
