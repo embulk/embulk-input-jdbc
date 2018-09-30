@@ -1,15 +1,15 @@
 package org.embulk.input;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.clickhouse.ClickHouseInputConnection;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import ru.yandex.clickhouse.settings.ClickHouseConnectionSettings;
 
 import java.sql.Connection;
-import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -40,6 +40,34 @@ public class ClickHouseInputPlugin
 
         @Config("database")
         public String getDatabase();
+
+        @Config("buffer_size")
+        @ConfigDefault("65536")
+        public Optional<Integer> getBufferSize();
+
+        @Config("apache_buffer_size")
+        @ConfigDefault("65536")
+        public Optional<Integer> getApacheBufferSize();
+
+        @Config("connect_timeout")
+        @ConfigDefault("30000")
+        public int getConnectTimeout();
+
+        @Config("socket_timeout")
+        @ConfigDefault("10000")
+        public int getSocketTimeout();
+
+        /**
+         * Timeout for data transfer. socketTimeout + dataTransferTimeout is sent to ClickHouse as max_execution_time.
+         * ClickHouse rejects request execution if its time exceeds max_execution_time
+         */
+        @Config("data_transfer_timeout")
+        @ConfigDefault("10000")
+        public Optional<Integer> getDataTransferTimeout();
+
+        @Config("keep_alive_timeout")
+        @ConfigDefault("30000")
+        public Optional<Integer> getKeepAliveTimeout();
     }
 
     @Override
@@ -65,22 +93,25 @@ public class ClickHouseInputPlugin
             props.setProperty("password", t.getPassword().get());
         }
 
+        // ClickHouse Connection Options
+        if ( t.getApacheBufferSize().isPresent()){
+            props.setProperty(ClickHouseConnectionSettings.APACHE_BUFFER_SIZE.getKey(), String.valueOf(t.getApacheBufferSize().get())); // byte?
+        }
+        if ( t.getBufferSize().isPresent()){
+            props.setProperty(ClickHouseConnectionSettings.BUFFER_SIZE.getKey(), String.valueOf(t.getBufferSize().get())); // byte?
+        }
+        if ( t.getDataTransferTimeout().isPresent() ){
+            props.setProperty(ClickHouseConnectionSettings.DATA_TRANSFER_TIMEOUT.getKey(), String.valueOf(t.getDataTransferTimeout().get())); // seconds
+        }
+        props.setProperty(ClickHouseConnectionSettings.SOCKET_TIMEOUT.getKey(), String.valueOf(t.getSocketTimeout())); // seconds
+        props.setProperty(ClickHouseConnectionSettings.CONNECTION_TIMEOUT.getKey(), String.valueOf(t.getConnectTimeout())); // seconds
         props.putAll(t.getOptions());
 
         final String url = String.format("jdbc:clickhouse://%s:%d/%s", t.getHost(), t.getPort(), t.getDatabase());
 
-        Driver driver;
-        try {
-            // TODO check Class.forName(driverClass) is a Driver before newInstance
-            //      for security
-            driver = (Driver) Class.forName(DriverClass).newInstance();
-        } catch (Exception ex) {
-            throw Throwables.propagate(ex);
-        }
-
         logConnectionProperties(url, props);
 
-        Connection con = driver.connect(url, props);
+        Connection con = DriverManager.getConnection(url, props);
         try {
             ClickHouseInputConnection c = new ClickHouseInputConnection(con, null);
             con = null;
