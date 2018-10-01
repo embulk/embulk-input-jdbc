@@ -1,13 +1,10 @@
 package org.embulk.input.clickhouse.getter;
 
-import com.google.gson.Gson;
 import org.embulk.input.jdbc.getter.AbstractColumnGetter;
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.json.JsonParseException;
-import org.embulk.spi.json.JsonParser;
 import org.embulk.spi.type.Type;
-import org.msgpack.value.Value;
 
 import java.sql.Array;
 import java.sql.ResultSet;
@@ -19,9 +16,7 @@ import java.sql.SQLException;
 public class ArrayColumnGetter extends AbstractColumnGetter
 {
     protected Array value;
-
-    private final Gson gson = new Gson();
-    private final JsonParser jsonParser = new JsonParser();
+    Column2JsonUtil c2j = new Column2JsonUtil();
 
     public ArrayColumnGetter(PageBuilder to, Type toType)
     {
@@ -44,9 +39,7 @@ public class ArrayColumnGetter extends AbstractColumnGetter
     public void jsonColumn(Column column)
     {
         try {
-            String jsonString = gson.toJson(value.getArray());
-            Value v = jsonParser.parse(jsonString);
-            to.setJson(column, v);
+            c2j.jsonColumn(column, to, value.getArray());
         }
         catch (JsonParseException | SQLException | ClassCastException e) {
             super.jsonColumn(column);
@@ -57,8 +50,7 @@ public class ArrayColumnGetter extends AbstractColumnGetter
     public void stringColumn(Column column)
     {
         try {
-            String jsonString = gson.toJson(value.getArray());
-            to.setString(column, jsonString);
+            c2j.stringColumn(column, to, value.getArray());
         }
         catch (SQLException e) {
             to.setString(column, value.toString());
