@@ -24,6 +24,10 @@ public class ClickHouseColumnGetterFactory extends ColumnGetterFactory {
             return new BigIntegerColumnGetter(to, getToType(option), column.getTypeName());
         }
 
+        if (column.getSqlType() == java.sql.Types.ARRAY) {
+            return new ArrayColumnGetter(to, getToType(option));
+        }
+
         return super.newColumnGetter(con, task, column, option);
     }
 }
