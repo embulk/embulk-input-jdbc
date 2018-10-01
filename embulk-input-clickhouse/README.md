@@ -45,6 +45,42 @@ ClickHouse input plugin for Embulk loads records from ClickHouse.
 (string, value of default_timezone option is used by default)
 - **after_select**: if set, this SQL will be executed after the SELECT query in the same transaction.
 
+## Example
+
+```yaml
+in:
+  type: clickhouse
+  host: localhost
+  database: my_database
+  table: my_table
+  select: "col1, col2, col3"
+  where: "col4 != 'a'"
+  order_by: "col1 DESC"
+```
+
+This configuration will generate following SQL:
+
+```
+SELECT col1, col2, col3
+FROM "my_table"
+WHERE col4 != 'a'
+ORDER BY col1 DESC
+```
+
+Advanced configuration:
+
+```yaml
+in:
+  type: clickhouse
+  driver_path: ./path/to/clickhouse-jdbc-x.y.jar
+  database: my_database
+  host: localhost
+  socket_timeout:  1000000
+  query: SELECT * from my_table
+  column_options:
+    col1: {type: string} # If col1 include too large integer value(UInt64), convert to string.
+```
+
 ## Build
 
 ```
