@@ -2,6 +2,7 @@ package org.embulk.input.clickhouse;
 
 import org.embulk.input.clickhouse.getter.ArrayColumnGetter;
 import org.embulk.input.clickhouse.getter.BigIntegerColumnGetter;
+import org.embulk.input.clickhouse.getter.TupleColumnGetter;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
@@ -26,6 +27,10 @@ public class ClickHouseColumnGetterFactory extends ColumnGetterFactory {
 
         if (column.getSqlType() == java.sql.Types.ARRAY) {
             return new ArrayColumnGetter(to, getToType(option));
+        }
+
+        if ( column.getTypeName().startsWith("Tuple")){
+            return new TupleColumnGetter(to, getToType(option));
         }
 
         return super.newColumnGetter(con, task, column, option);
