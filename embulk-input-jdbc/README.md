@@ -77,6 +77,8 @@ CREATE INDEX embulk_incremental_loading_index ON table (updated_at, id);
 
 Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds an auto-increment primary key. Currently, only strings and integers are supported as incremental_columns.
 
+TIMESTAMP, TIMESTAMPTZ, DATE and DATETIME are also supported depends on each RDBMS
+
 ### Use incremental loading with raw query
 
 **IMPORTANT**: This is an advanced feature and assume you have an enough knowledge about incremental loading using Embulk and this plugin

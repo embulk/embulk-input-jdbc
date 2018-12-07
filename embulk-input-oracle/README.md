@@ -80,7 +80,7 @@ Then, it updates `last_record: ` so that next execution uses the updated last_re
 CREATE INDEX embulk_incremental_loading_index ON table (updated_at, id);
 ```
 
-Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds a primary key. Currently, only strings and integers are supported as incremental_columns.
+Recommended usage is to leave `incremental_columns` unset and let this plugin automatically finds a primary key. Currently, only strings, integers, DATE and TIMESTAMP are supported as incremental_columns.
 
 ### Use incremental loading with raw query
 
