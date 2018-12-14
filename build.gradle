@@ -1,7 +1,7 @@
 
 plugins {
-    id 'com.jfrog.bintray' version '1.6'
-    id 'com.github.jruby-gradle.base' version '1.2.1'
+    id 'com.jfrog.bintray' version '1.8.4'
+    id 'com.github.jruby-gradle.base' version '1.6.0'
     id 'java'
     id 'checkstyle'
 }
@@ -72,13 +72,13 @@ subprojects {
         defaultJdbcDriver
     }
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
     dependencies {
-        compile  'org.embulk:embulk-core:0.8.15'
-        provided 'org.embulk:embulk-core:0.8.15'
-        testCompile 'org.embulk:embulk-test:0.8.15'
+        compile  'org.embulk:embulk-core:0.9.11'
+        provided 'org.embulk:embulk-core:0.9.11'
+        testCompile 'org.embulk:embulk-test:0.9.11'
     }
 
     tasks.withType(JavaCompile) {
@@ -142,8 +142,9 @@ subprojects {
     }
 
     task gem(type: JRubyExec, dependsOn: ['build', 'gemspec', 'classpath', 'defaultJdbcDriver']) {
-        jrubyArgs '-rrubygems/gem_runner', "-eGem::GemRunner.new.run(ARGV)", 'build'
-        scriptArgs "${project.projectDir.absolutePath}/build/gemspec"
+        jrubyArgs "-S"
+        script "gem"
+        scriptArgs "build", "${project.projectDir.absolutePath}/build/gemspec"
         doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "${parent.projectDir}/pkg") }
     }
 
@@ -182,9 +183,10 @@ subprojects {
         }
     }
 
-    task gemspec << {
-        file('build').mkdirs();
-        file('build/gemspec').write($/
+    task gemspec {
+        doLast {
+            file('build').mkdirs()
+            file('build/gemspec').write($/
 Gem::Specification.new do |spec|
   spec.name          = "${project.name}"
   spec.version       = "${project.version}"
@@ -200,15 +202,18 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 end
 /$)
+        }
     }
 }
 
-task gemPush << {
-    "gem push pkg/embulk-input-jdbc-${project.version}.gem".execute().waitFor()
-    "gem push pkg/embulk-input-mysql-${project.version}.gem".execute().waitFor()
-    "gem push pkg/embulk-input-postgresql-${project.version}.gem".execute().waitFor()
-    "gem push pkg/embulk-input-redshift-${project.version}.gem".execute().waitFor()
-    "gem push pkg/embulk-input-oracle-${project.version}.gem".execute().waitFor()
-    "gem push pkg/embulk-input-sqlserver-${project.version}.gem".execute().waitFor()
-    "gem push pkg/embulk-input-db2-${project.version}.gem".execute().waitFor()
+task gemPush {
+    doLast {
+        "gem push pkg/embulk-input-jdbc-${project.version}.gem".execute().waitFor()
+        "gem push pkg/embulk-input-mysql-${project.version}.gem".execute().waitFor()
+        "gem push pkg/embulk-input-postgresql-${project.version}.gem".execute().waitFor()
+        "gem push pkg/embulk-input-redshift-${project.version}.gem".execute().waitFor()
+        "gem push pkg/embulk-input-oracle-${project.version}.gem".execute().waitFor()
+        "gem push pkg/embulk-input-sqlserver-${project.version}.gem".execute().waitFor()
+        "gem push pkg/embulk-input-db2-${project.version}.gem".execute().waitFor()
+    }
 }
