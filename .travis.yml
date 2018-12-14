@@ -14,6 +14,7 @@ jdk:
   - oraclejdk8
 env:
   global:
+    - _JAVA_OPTIONS="-Xmx2048m -Xms512m"
     - EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=$TRAVIS_BUILD_DIR/ci/travis_postgresql.yml
     - EMBULK_INPUT_MYSQL_TEST_CONFIG=$TRAVIS_BUILD_DIR/ci/travis_mysql.yml
 cache:
