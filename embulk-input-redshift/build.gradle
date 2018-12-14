@@ -4,5 +4,5 @@ dependencies {
 
     testCompile project(':embulk-input-jdbc').sourceSets.test.output
 
-    testCompile 'org.embulk:embulk-standards:0.8.15'
+    testCompile 'org.embulk:embulk-standards:0.9.11'
 }
