@@ -1,0 +1,6 @@
+type: postgresql
+host: 127.0.0.1
+port: 15432
+database: postgres
+user: postgres
+password: test
