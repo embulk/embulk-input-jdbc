@@ -191,10 +191,22 @@ in:
 $ ./gradlew gem
 ```
 
-Running tests:
+## Run tests:
 
 ```
-$ cp ci/travis_mysql.yml ci/mysql.yml  # edit this file if necessary
+$ vi ci/mysql.yml  # edit this file if necessary
+
+$ docker-compose up -d
+Creating network "embulk-input-jdbc_default" with the default driver
+Creating embulk-input-postgresql-server ... done
+Creating embulk-input-mysql-server      ... done
+
+$ docker-compose ps
+             Name                           Command              State            Ports
+------------------------------------------------------------------------------------------------
+embulk-input-mysql-server        docker-entrypoint.sh mysqld     Up      0.0.0.0:13306->3306/tcp
+embulk-input-postgresql-server   docker-entrypoint.sh postgres   Up      0.0.0.0:15432->5432/tcp
+
 $ EMBULK_INPUT_MYSQL_TEST_CONFIG=`pwd`/ci/mysql.yml ./gradlew :embulk-input-mysql:check --info
 ```
 
