@@ -23,6 +23,7 @@ public class PostgreSQLTests
         pb.environment().put("PGUSER", config.get(String.class, "user"));
         pb.environment().put("PGPASSWORD", config.get(String.class, "password"));
         pb.environment().put("PGDATABASE", config.get(String.class, "database"));
+        pb.environment().put("PGHOST", config.get(String.class, "host", "localhost"));
         pb.environment().put("PGPORT", config.get(String.class, "port", "5432"));
         pb.redirectErrorStream(true);
         int code;
