@@ -1,27 +1,22 @@
 language: java
 dist: trusty
 sudo: required
-addons:
-  postgresql: "9.4"
-  apt:
-    packages:
-      - mysql-server-5.6
-      - mysql-client-core-5.6
-      - mysql-client-5.6
 services:
-  - postgresql
+  - docker
 jdk:
   - oraclejdk8
+
 env:
   global:
-    - EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=$TRAVIS_BUILD_DIR/ci/travis_postgresql.yml
-    - EMBULK_INPUT_MYSQL_TEST_CONFIG=$TRAVIS_BUILD_DIR/ci/travis_mysql.yml
+    - EMBULK_INPUT_POSTGRESQL_TEST_CONFIG=$TRAVIS_BUILD_DIR/ci/postgresql.yml
+    - EMBULK_INPUT_MYSQL_TEST_CONFIG=$TRAVIS_BUILD_DIR/ci/mysql.yml
 cache:
   directories:  # run "travis cache --delete" to delete caches
     - $HOME/.gradle
+
 before_script:
-  - psql -c "create database travis_ci_test;" -U postgres
-  - mysql -u root -e "create database travis_ci_test;"
-  - mysql -u root -e "grant all on travis_ci_test.* to travis@localhost identified by '';" # give 'travis' user grant to create/drop tables.
+  - docker-compose up -d
+  - docker-compose ps
+
 script:
   - ./gradlew --info check
