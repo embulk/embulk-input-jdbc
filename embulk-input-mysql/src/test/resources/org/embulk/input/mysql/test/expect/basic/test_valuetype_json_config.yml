@@ -1,0 +1,3 @@
+table: test1
+column_options:
+  c10: {value_type: json}

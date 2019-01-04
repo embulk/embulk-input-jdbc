@@ -134,4 +134,13 @@ public class BasicTest
         assertThat(readSortedFile(out1), is(readResource("test_valuetype_decimal_expected.csv")));
         assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_valuetype_decimal_expected.diff")));
     }
+
+    @Test
+    public void testValueTypeJson() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_valuetype_json_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_valuetype_json_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_valuetype_json_expected.diff")));
+    }
 }
