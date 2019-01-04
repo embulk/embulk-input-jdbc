@@ -61,4 +61,13 @@ public class MySQLColumnGetterFactory
             return getter;
         }
     }
+
+    @Override
+    protected String sqlTypeToValueType(JdbcColumn column, int sqlType)
+    {
+        if ("json".equals(column.getTypeName())) {
+            return "json";
+        }
+        return super.sqlTypeToValueType(column, sqlType);
+    }
 }
