@@ -1,6 +1,6 @@
 dependencies {
     compile project(':embulk-input-jdbc')
 
-    testCompile 'org.embulk:embulk-standards:0.9.11'
+    testCompile 'org.embulk:embulk-standards:0.9.12'
     testCompile files('test_jdbc_driver/ojdbc7.jar')
 }
