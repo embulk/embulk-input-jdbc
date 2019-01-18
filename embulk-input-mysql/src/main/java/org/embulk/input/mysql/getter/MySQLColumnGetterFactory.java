@@ -1,6 +1,5 @@
 package org.embulk.input.mysql.getter;
 
-import com.google.common.base.Optional;
 import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin.PluginTask;
 import org.embulk.input.jdbc.JdbcColumn;
@@ -8,8 +7,10 @@ import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
+import org.embulk.input.jdbc.getter.JsonColumnGetter;
 import org.embulk.input.mysql.MySQLInputConnection;
 import org.embulk.spi.PageBuilder;
+import org.embulk.spi.type.Types;
 import org.joda.time.DateTimeZone;
 
 import java.util.TimeZone;
@@ -54,8 +55,19 @@ public class MySQLColumnGetterFactory
             else { // TIMESTAMP
                 return new MySQLTimestampTimestampIncrementalHandler(sessionTimeZone, getter);
             }
+        case "JSON":
+            return new JsonColumnGetter(to, Types.JSON);
         default:
             return getter;
         }
+    }
+
+    @Override
+    protected String sqlTypeToValueType(JdbcColumn column, int sqlType)
+    {
+        if ("json".equals(column.getTypeName())) {
+            return "json";
+        }
+        return super.sqlTypeToValueType(column, sqlType);
     }
 }

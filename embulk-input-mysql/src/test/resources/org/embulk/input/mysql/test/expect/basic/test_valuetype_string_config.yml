@@ -1,3 +1,4 @@
 table: test1
 column_options:
   c1: {value_type: string}
+  c16: {value_type: string}

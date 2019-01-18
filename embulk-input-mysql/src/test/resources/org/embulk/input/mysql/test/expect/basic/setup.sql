@@ -17,6 +17,7 @@ create table test1 (
     c13 timestamp,
     c14 time,
     c15 datetime(6),
+    c16 json,
     primary key(id)
 );
 
@@ -35,6 +36,7 @@ insert into test1 values(
     null,
     null,
     '2015-06-04 23:45:06',
+    null,
     null,
     null
 );
@@ -55,7 +57,8 @@ insert into test1 values(
     '2015-06-04 12:34:56',
     '2015-06-04 23:45:06',
     '08:04:02',
-    '2015-06-04 01:02:03.123456'
+    '2015-06-04 01:02:03.123456',
+    '{"key":"value"}'
 );
 
 drop table if exists test2;
