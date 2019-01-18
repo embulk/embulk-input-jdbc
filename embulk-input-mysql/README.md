@@ -7,6 +7,10 @@ MySQL input plugin for Embulk loads records from MySQL.
 * **Plugin type**: input
 * **Resume supported**: yes
 
+**[WARNING!]**
+
+- The default embulk type for MySQL JSON type will be changed from `string` to `json`.
+
 ## Configuration
 
 - **driver_path**: path to the jar file of the MySQL JDBC driver. If not set, the bundled JDBC driver (MySQL Connector/J 5.1.44) will be used (string). NOTE: embulk-input-mysql 0.9.0 upgraded the bundled MySQL Connector/J version from 5.1.34 to 5.1.44 . And set useLegacyDatetimeCode=false by default in order to get correct datetime value when the server timezone and the client timezone are different. Set useLegacyDatetimeCode=true if you need to get datetime value same as older embulk-input-mysql.
