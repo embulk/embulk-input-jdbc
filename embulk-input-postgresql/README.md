@@ -131,7 +131,7 @@ In the following example, prepared statement `:foo_id` will be replaced with val
 ```yaml
 in:
   type: postgresql
-  query:
+  query: |
     SELECT
       foo.id as foo_id, bar.name
     FROM
