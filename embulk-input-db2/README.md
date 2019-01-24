@@ -94,7 +94,7 @@ In the following example, prepared statement `:foo_id` will be replaced with val
 
 ```yaml
 in:
-  type: jdbc
+  type: db2
   query: |
     SELECT
       foo.id as foo_id, bar.name
