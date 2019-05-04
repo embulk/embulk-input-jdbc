@@ -151,6 +151,10 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("{}")
         public Map<String, JdbcColumnOption> getDefaultColumnOptions();
 
+        @Config("before_select")
+        @ConfigDefault("null")
+        public Optional<String> getBeforeSelect();
+
         @Config("after_select")
         @ConfigDefault("null")
         public Optional<String> getAfterSelect();
@@ -474,6 +478,10 @@ public abstract class AbstractJdbcInputPlugin
         LastRecordStore lastRecordStore = null;
 
         try (JdbcInputConnection con = newConnection(task)) {
+            if (task.getBeforeSelect().isPresent()) {
+                con.executeUpdate(task.getBeforeSelect().get());
+            }
+
             List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
             try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(), task.getSocketTimeout())) {
                 while (true) {
@@ -503,8 +511,9 @@ public abstract class AbstractJdbcInputPlugin
             //      after_commit moves those values to the actual table.
             if (task.getAfterSelect().isPresent()) {
                 con.executeUpdate(task.getAfterSelect().get());
-                con.connection.commit();
             }
+            con.connection.commit();
+
         } catch (SQLException ex) {
             throw Throwables.propagate(ex);
         }
