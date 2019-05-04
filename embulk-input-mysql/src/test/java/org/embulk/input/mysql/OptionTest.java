@@ -73,4 +73,21 @@ public class OptionTest
         assertThat(readSortedFile(out2), is(readResource("after_select_expected.csv")));
     }
 
+    @Test
+    public void testColumnOptions() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "column_options.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("column_options_expected.csv")));
+    }
+
+    @Test
+    public void testDefaultColumnOptions() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "default_column_options.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("default_column_options_expected.csv")));
+    }
+
+
 }
