@@ -1,0 +1,3 @@
+table: test1
+order_by: 'id'
+after_select: delete from test1 where id = 3

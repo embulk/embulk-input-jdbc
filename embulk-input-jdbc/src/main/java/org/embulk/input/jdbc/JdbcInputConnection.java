@@ -480,8 +480,14 @@ public class JdbcInputConnection
         }
     }
 
-    public void showDriverVersion() throws SQLException {
+    public void showDriverVersion() throws SQLException
+    {
         DatabaseMetaData meta = connection.getMetaData();
         logger.info(String.format(Locale.ENGLISH,"Using JDBC Driver %s",meta.getDriverVersion()));
+    }
+
+    public void commit() throws SQLException
+    {
+        connection.commit();
     }
 }
