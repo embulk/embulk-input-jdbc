@@ -3,11 +3,14 @@ package org.embulk.input.mysql;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
+
 import org.embulk.config.ConfigSource;
 import org.embulk.test.EmbulkTests;
 
 import java.io.IOException;
 
+import jnr.ffi.Platform;
+import jnr.ffi.Platform.OS;
 import static java.util.Locale.ENGLISH;
 
 public class MySQLTests
@@ -35,7 +38,7 @@ public class MySQLTests
                 .add(config.get(String.class, "port", "3306"))
                 .add(config.get(String.class, "database"))
                 .add("-e")
-                .add(sql);
+                .add(convert(sql));
 
         ProcessBuilder pb = new ProcessBuilder(args.build());
         pb.redirectErrorStream(true);
@@ -51,5 +54,14 @@ public class MySQLTests
             throw new RuntimeException(String.format(ENGLISH,
                     "Command finished with non-zero exit code. Exit code is %d.", code));
         }
+    }
+
+    private static String convert(String sql)
+    {
+        if (Platform.getNativePlatform().getOS().equals(OS.WINDOWS)) {
+            // '"' should be '\"' and '\' should be '\\' in Windows
+            return sql.replace("\\\\", "\\").replace("\\", "\\\\").replace("\"", "\\\"");
+        }
+        return sql;
     }
 }
