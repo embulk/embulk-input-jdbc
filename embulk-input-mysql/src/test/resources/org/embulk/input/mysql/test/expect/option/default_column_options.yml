@@ -1,0 +1,6 @@
+table: test3
+order_by: 'id'
+default_column_options:
+  TIMESTAMP: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S', timezone: "+0000"}
+column_options:
+  datetime2: {type: string, timestamp_format: '%Y-%m-%d %H:%M:%S', timezone: "+0900"}
