@@ -44,6 +44,7 @@ Oracle input plugin for Embulk loads records from Oracle.
   - **timestamp_format**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted by this timestamp_format. And if the embulk type is `timestamp`, this timestamp_format may be used in the output plugin. For example, stdout plugin use the timestamp_format, but *csv formatter plugin doesn't use*. (string, default : `%Y-%m-%d` for `date`, `%H:%M:%S` for `time`, `%Y-%m-%d %H:%M:%S` for `timestamp`)
   - **timezone**: If the sql type of the column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted in this timezone.
 (string, value of default_timezone option is used by default)
+- **before_select**: if set, this SQL will be executed before the SELECT query in the same transaction.
 - **after_select**: if set, this SQL will be executed after the SELECT query in the same transaction.
 
 
