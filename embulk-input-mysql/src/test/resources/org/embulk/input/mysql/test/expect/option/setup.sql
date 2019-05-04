@@ -12,3 +12,4 @@ insert into test1 values
 (3, 'C'),
 (4, 'D');
 
+drop table if exists test2;

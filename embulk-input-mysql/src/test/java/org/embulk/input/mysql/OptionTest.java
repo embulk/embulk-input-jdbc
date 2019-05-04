@@ -45,6 +45,14 @@ public class OptionTest
     }
 
     @Test
+    public void testBeforeSetup() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "before_setup.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("before_setup_expected.csv")));
+    }
+
+    @Test
     public void testBeforeSelect() throws Exception
     {
         Path out1 = embulk.createTempFile("csv");

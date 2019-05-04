@@ -151,6 +151,10 @@ public abstract class AbstractJdbcInputPlugin
         @ConfigDefault("{}")
         public Map<String, JdbcColumnOption> getDefaultColumnOptions();
 
+        @Config("before_setup")
+        @ConfigDefault("null")
+        public Optional<String> getBeforeSetup();
+
         @Config("before_select")
         @ConfigDefault("null")
         public Optional<String> getBeforeSelect();
@@ -200,6 +204,11 @@ public abstract class AbstractJdbcInputPlugin
         Schema schema;
         try (JdbcInputConnection con = newConnection(task)) {
             con.showDriverVersion();
+
+            if (task.getBeforeSetup().isPresent()) {
+                con.executeUpdate(task.getBeforeSetup().get());
+                con.commit();
+            }
 
             // TODO incremental_columns is not set => get primary key
             schema = setupTask(con, task);
@@ -512,7 +521,7 @@ public abstract class AbstractJdbcInputPlugin
             if (task.getAfterSelect().isPresent()) {
                 con.executeUpdate(task.getAfterSelect().get());
             }
-            con.connection.commit();
+            con.commit();
 
         } catch (SQLException ex) {
             throw Throwables.propagate(ex);

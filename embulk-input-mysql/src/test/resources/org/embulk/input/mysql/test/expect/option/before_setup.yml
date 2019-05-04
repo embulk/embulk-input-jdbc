@@ -1,0 +1,6 @@
+table: test2
+order_by: 'id'
+before_setup: create table test2 (id int, num int); insert into test2 values(1, 999), (2, 0);
+d: insert into test2 values(1, 999), (2, 0);
+options:
+  allowMultiQueries: true
