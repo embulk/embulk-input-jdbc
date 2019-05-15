@@ -155,7 +155,9 @@ public class ArrayColumnGetter
             }
             builder.append(",");
         }
-        builder.deleteCharAt(builder.length() - 1);
+        if (values.length > 0) {
+            builder.deleteCharAt(builder.length() - 1);
+        }
         builder.append("}");
     }
 
