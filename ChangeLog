@@ -1,3 +1,12 @@
+Releaes 0.10.0 - 2019-05-23
+
+The following two are incompatible changes.
+* Requires Java 8 or later (no longer supports Java 7), and requires embulk 0.9 or later.
+* The default embulk type for MySQL JSON type was changed from `string` to `json` (@tvhung83++).
+
+* Enabled to execute SQL before setting up and selecting by 'before_setup' option and 'before_select' option.
+* Fixed missing left brace when getting empty array column in embulk-input-postgresql (@ommadawn46++).
+
 Releaes 0.9.3 - 2018-08-10
 * Added `use_raw_query_with_incremental` property in order to write optimized query for incremental loading.
 
