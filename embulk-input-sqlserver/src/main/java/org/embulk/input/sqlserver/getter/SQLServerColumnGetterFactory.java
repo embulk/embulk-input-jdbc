@@ -18,12 +18,21 @@ public class SQLServerColumnGetterFactory extends ColumnGetterFactory {
     @Override
     public ColumnGetter newColumnGetter(JdbcInputConnection con, AbstractJdbcInputPlugin.PluginTask task, JdbcColumn column, JdbcColumnOption option)
     {
-        ColumnGetter getter = super.newColumnGetter(con, task, column, option);
+        ColumnGetter getter;
         switch (column.getTypeName()) {
-            case "datetime":
-                return new TimestampWithoutTimeZoneIncrementalHandler(getter);
-            default:
-                return getter;
+        case "date":
+        case "datetime2":
+        case "time":
+        case "sql_variant":
+        // DateTimeOffset is available only in MSSQL
+        case "datetimeoffset":
+            return new StringColumnGetter(to,  getToType(option));
+        case "datetime":
+            getter = super.newColumnGetter(con, task, column, option);
+            return new TimestampWithoutTimeZoneIncrementalHandler(getter);
+        default:
+            getter = super.newColumnGetter(con, task, column, option);
+            return getter;
         }
     }
 
