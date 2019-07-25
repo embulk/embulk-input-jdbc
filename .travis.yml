@@ -1,11 +1,11 @@
 language: java
-dist: trusty
+dist: xernial
 sudo: required
 addons:
   postgresql: "9.4"
   apt:
     sources:
-      - mysql-5.7-trusty
+      - mysql-5.7-xenial
     packages:
       - mysql-server
       - mysql-client
