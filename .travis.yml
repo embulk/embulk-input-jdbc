@@ -22,7 +22,7 @@ cache:
   directories:  # run "travis cache --delete" to delete caches
     - $HOME/.gradle
 before_install:
-  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 6B05F25D762E3157
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 762E3157
   - sudo mysql -e "use mysql; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
   - sudo mysql_upgrade -u root
   - sudo service mysql restart
