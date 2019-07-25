@@ -12,7 +12,7 @@ addons:
 services:
   - postgresql
 jdk:
-  - oraclejdk8
+  - openjdk8
 env:
   global:
     - _JAVA_OPTIONS="-Xmx2048m -Xms512m"
