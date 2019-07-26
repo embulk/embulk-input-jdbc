@@ -22,7 +22,6 @@ cache:
   directories:  # run "travis cache --delete" to delete caches
     - $HOME/.gradle
 before_install:
-  - sudo service mysql start
   - sudo mysql -e "UPDATE mysql.user SET authentication_string=PASSWORD(''), plugin='mysql_native_password' WHERE User='root';"
   - sudo mysql_upgrade -u root
   - sudo service mysql restart
