@@ -1,18 +1,18 @@
 language: java
-dist: trusty
+dist: xernial
 sudo: required
 addons:
   postgresql: "9.4"
   apt:
     sources:
-      - mysql-5.7-trusty
+      - mysql-5.7-xenial
     packages:
       - mysql-server
       - mysql-client
 services:
   - postgresql
 jdk:
-  - oraclejdk8
+  - openjdk8
 env:
   global:
     - _JAVA_OPTIONS="-Xmx2048m -Xms512m"
@@ -22,7 +22,7 @@ cache:
   directories:  # run "travis cache --delete" to delete caches
     - $HOME/.gradle
 before_install:
-  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 762E3157
+  - sudo service mysql start
   - sudo mysql -e "use mysql; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
   - sudo mysql_upgrade -u root
   - sudo service mysql restart
