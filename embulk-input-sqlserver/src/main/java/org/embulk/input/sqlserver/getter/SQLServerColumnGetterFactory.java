@@ -18,7 +18,6 @@ public class SQLServerColumnGetterFactory extends ColumnGetterFactory {
     @Override
     public ColumnGetter newColumnGetter(JdbcInputConnection con, AbstractJdbcInputPlugin.PluginTask task, JdbcColumn column, JdbcColumnOption option)
     {
-        ColumnGetter getter;
         switch (column.getTypeName()) {
         case "date":
         case "datetime2":
@@ -26,13 +25,15 @@ public class SQLServerColumnGetterFactory extends ColumnGetterFactory {
         case "sql_variant":
         // DateTimeOffset is available only in MSSQL
         case "datetimeoffset":
+            // because jTDS driver, default JDBC driver for older embulk-input-sqlserver, returns Types.VARCHAR as JDBC type for these types.
             return new StringColumnGetter(to,  getToType(option));
+
         case "datetime":
-            getter = super.newColumnGetter(con, task, column, option);
+            ColumnGetter getter = super.newColumnGetter(con, task, column, option);
             return new TimestampWithoutTimeZoneIncrementalHandler(getter);
+
         default:
-            getter = super.newColumnGetter(con, task, column, option);
-            return getter;
+            return super.newColumnGetter(con, task, column, option);
         }
     }
 

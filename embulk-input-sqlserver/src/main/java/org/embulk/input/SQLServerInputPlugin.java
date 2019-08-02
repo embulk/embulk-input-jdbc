@@ -33,6 +33,10 @@ public class SQLServerInputPlugin
         @ConfigDefault("null")
         public Optional<String> getDriverPath();
 
+        @Config("driver_type")
+        @ConfigDefault("\"mssql-jdbc\"")
+        public String getDriverType();
+
         @Config("host")
         @ConfigDefault("null")
         public Optional<String> getHost();
@@ -115,24 +119,30 @@ public class SQLServerInputPlugin
         Driver driver;
         if (sqlServerTask.getDriverPath().isPresent()) {
             addDriverJarToClasspath(sqlServerTask.getDriverPath().get());
-            try {
-                driver = (Driver) Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver").newInstance();
-            }
-            catch (Exception e) {
-                throw new ConfigException("Driver set at field 'driver_path' doesn't include Microsoft SQLServerDriver", e);
-            }
-        }
-        else {
-            // prefer Microsoft SQLServerDriver if it is in classpath
-            try {
-                driver = (Driver) Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver").newInstance();
-            }
-            catch (Exception e) {
-                throw new ConfigException("Can't load SQLServerDrive from classpath", e);
-            }
         }
 
-        UrlAndProperties urlAndProps = buildUrlAndProperties(sqlServerTask);
+        boolean useJtdsDriver;
+        if (sqlServerTask.getDriverType().equalsIgnoreCase("mssql-jdbc")) {
+            useJtdsDriver = false;
+            try {
+                driver = (Driver) Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver").newInstance();
+            }
+            catch (Exception e) {
+                throw new ConfigException("Can't load Microsoft SQLServerDriver from classpath", e);
+            }
+        } else if (sqlServerTask.getDriverType().equalsIgnoreCase("jtds")) {
+            useJtdsDriver = true;
+            try {
+                driver = (Driver) Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
+            }
+            catch (Exception e) {
+                throw new ConfigException("Can't load jTDS Driver from classpath", e);
+            }
+        } else {
+            throw new ConfigException("Unknown driver_type : " + sqlServerTask.getDriverType());
+        }
+
+        UrlAndProperties urlAndProps = buildUrlAndProperties(sqlServerTask, useJtdsDriver);
 
         Properties props = urlAndProps.getProperties();
         props.putAll(sqlServerTask.getOptions());
@@ -161,7 +171,7 @@ public class SQLServerInputPlugin
         return new SQLServerColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
-    private UrlAndProperties buildUrlAndProperties(SQLServerPluginTask sqlServerTask)
+    private UrlAndProperties buildUrlAndProperties(SQLServerPluginTask sqlServerTask, boolean useJtdsDriver)
     {
         Properties props = new Properties();
 
@@ -171,21 +181,32 @@ public class SQLServerInputPlugin
         }
         props.setProperty("password", sqlServerTask.getPassword());
 
-        // SQLServerDriver properties
-        props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
+        if (useJtdsDriver) {
+            // jTDS properties
+            props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
+            props.setProperty("socketTimeout", String.valueOf(sqlServerTask.getSocketTimeout())); // seconds
 
-        props.setProperty("applicationName", sqlServerTask.getApplicationName());
+            props.setProperty("appName", sqlServerTask.getApplicationName());
 
-        // TODO support more options as necessary
-        // List of properties: https://msdn.microsoft.com/en-us/library/ms378988(v=sql.110).aspx
+            // TODO support more options as necessary
+            // List of properties: http://jtds.sourceforge.net/faq.html
+        }
+        else {
+            // SQLServerDriver properties
+            props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
+
+            props.setProperty("applicationName", sqlServerTask.getApplicationName());
+
+            // TODO support more options as necessary
+            // List of properties: https://msdn.microsoft.com/en-us/library/ms378988(v=sql.110).aspx
+        }
 
         // skip URL build if it's set
         if (sqlServerTask.getUrl().isPresent()) {
             if (sqlServerTask.getHost().isPresent()
                     || sqlServerTask.getInstance().isPresent()
-                    || sqlServerTask.getDatabase().isPresent()
-                    || sqlServerTask.getIntegratedSecurity()) {
-                throw new ConfigException("'host', 'port', 'instance', 'database' and 'integratedSecurity' options are invalid if 'url' option is set.");
+                    || sqlServerTask.getDatabase().isPresent()) {
+                throw new ConfigException("'host', 'instance' and 'database' options are invalid if 'url' option is set.");
             }
 
             return new UrlAndProperties(sqlServerTask.getUrl().get(), props);
@@ -198,34 +219,64 @@ public class SQLServerInputPlugin
             throw new ConfigException("'host' option is required but not set.");
         }
 
-        // SQLServerDriver URL: host:port[;databaseName=] or host\instance[;databaseName=]
-        // host\instance:port[;databaseName] is allowed but \instance will be ignored in this case.
-        if (sqlServerTask.getInstance().isPresent()) {
-            if (sqlServerTask.getPort() != DEFAULT_PORT) {
-                logger.warn("'port: {}' option is ignored because instance option is set", sqlServerTask.getPort());
+        if (useJtdsDriver) {
+            // jTDS URL: host:port[/database] or host[/database][;instance=]
+            // host:port;instance= is allowed but port will be ignored? in this case.
+            if (sqlServerTask.getInstance().isPresent()) {
+                if (sqlServerTask.getPort() != DEFAULT_PORT) {
+                    logger.warn("'port: {}' option is ignored because instance option is set", sqlServerTask.getPort());
+                }
+                url = String.format(ENGLISH, "jdbc:jtds:sqlserver://%s", sqlServerTask.getHost().get());
+                props.setProperty("instance", sqlServerTask.getInstance().get());
             }
-            url = String.format(ENGLISH, "jdbc:sqlserver://%s\\%s", sqlServerTask.getHost().get(), sqlServerTask.getInstance().get());
-        }
-        else {
-            url = String.format(ENGLISH, "jdbc:sqlserver://%s:%d", sqlServerTask.getHost().get(), sqlServerTask.getPort());
-        }
-
-        // ;databaseName=s
-        if (sqlServerTask.getDatabase().isPresent()) {
-            props.setProperty("databaseName", sqlServerTask.getDatabase().get());
-        }
-
-        // integratedSecutiry or user + password is required
-        if (sqlServerTask.getIntegratedSecurity()) {
-            if (sqlServerTask.getUser().isPresent()) {
-                throw new ConfigException("'user' options are invalid if 'integratedSecutiry' option is set.");
+            else {
+                url = String.format(ENGLISH, "jdbc:jtds:sqlserver://%s:%d", sqlServerTask.getHost().get(), sqlServerTask.getPort());
             }
-            props.setProperty("integratedSecurity", "true");
-            props.setProperty("authenticationScheme", "JavaKerberos");
-        }
-        else {
+
+            // /database
+            if (sqlServerTask.getDatabase().isPresent()) {
+                url += "/" + sqlServerTask.getDatabase().get();
+            }
+
+            // integratedSecutiry is not supported, user + password is required
+            if (sqlServerTask.getIntegratedSecurity()) {
+                throw new ConfigException("'integratedSecutiry' option is not supported with jTDS driver. Set 'driver_path: /path/to/sqljdbc.jar' option if you want to use Microsoft SQLServerDriver.");
+            }
+
             if (!sqlServerTask.getUser().isPresent()) {
                 throw new ConfigException("'user' option is required but not set.");
+            }
+        }
+        else {
+            // SQLServerDriver URL: host:port[;databaseName=database] or host\instance[;databaseName=database]
+            // host\instance:port[;databaseName] is allowed but \instance will be ignored in this case.
+            if (sqlServerTask.getInstance().isPresent()) {
+                if (sqlServerTask.getPort() != DEFAULT_PORT) {
+                    logger.warn("'port: {}' option is ignored because instance option is set", sqlServerTask.getPort());
+                }
+                url = String.format(ENGLISH, "jdbc:sqlserver://%s\\%s", sqlServerTask.getHost().get(), sqlServerTask.getInstance().get());
+            }
+            else {
+                url = String.format(ENGLISH, "jdbc:sqlserver://%s:%d", sqlServerTask.getHost().get(), sqlServerTask.getPort());
+            }
+
+            // ;databaseName=database
+            if (sqlServerTask.getDatabase().isPresent()) {
+                props.setProperty("databaseName", sqlServerTask.getDatabase().get());
+            }
+
+            // integratedSecutiry or user + password is required
+            if (sqlServerTask.getIntegratedSecurity()) {
+                if (sqlServerTask.getUser().isPresent()) {
+                    throw new ConfigException("'user' options are invalid if 'integratedSecutiry' option is set.");
+                }
+                props.setProperty("integratedSecurity", "true");
+                props.setProperty("authenticationScheme", "JavaKerberos");
+            }
+            else {
+                if (!sqlServerTask.getUser().isPresent()) {
+                    throw new ConfigException("'user' option is required but not set.");
+                }
             }
         }
 
