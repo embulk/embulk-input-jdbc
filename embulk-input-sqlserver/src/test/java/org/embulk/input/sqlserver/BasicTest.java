@@ -53,4 +53,13 @@ public class BasicTest
         assertThat(readSortedFile(out1), is(readResource("test_expected.csv")));
         assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_expected.diff")));
     }
+
+    @Test
+    public void testJTDS() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "jtds_config.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("test_expected.csv")));
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_expected.diff")));
+    }
 }
