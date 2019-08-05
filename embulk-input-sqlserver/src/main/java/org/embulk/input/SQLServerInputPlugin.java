@@ -194,6 +194,7 @@ public class SQLServerInputPlugin
         else {
             // SQLServerDriver properties
             props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
+            props.setProperty("socketTimeout", String.valueOf(sqlServerTask.getSocketTimeout() * 1000L)); // milliseconds
 
             props.setProperty("applicationName", sqlServerTask.getApplicationName());
 
