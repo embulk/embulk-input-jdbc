@@ -1,0 +1,6 @@
+
+INSERT INTO INT_LOAD (NUM, NOTE) VALUES (0, 'more_skip');
+INSERT INTO INT_LOAD (NUM, NOTE) VALUES (4, 'more_skip');
+INSERT INTO INT_LOAD (NUM, NOTE) VALUES (9, 'more_load');
+INSERT INTO INT_LOAD (NUM, NOTE) VALUES (5, 'more_load');
+

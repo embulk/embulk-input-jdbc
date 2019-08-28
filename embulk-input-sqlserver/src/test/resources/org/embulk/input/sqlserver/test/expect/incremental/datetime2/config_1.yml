@@ -1,0 +1,4 @@
+table: DT_LOAD
+default_time_zone: +0300 # should be ignored
+incremental: true
+incremental_columns: [TIME]

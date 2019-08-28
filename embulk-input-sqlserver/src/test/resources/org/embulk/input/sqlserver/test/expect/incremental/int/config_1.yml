@@ -1,0 +1,3 @@
+table: INT_LOAD
+incremental: true
+incremental_columns: [NUM]

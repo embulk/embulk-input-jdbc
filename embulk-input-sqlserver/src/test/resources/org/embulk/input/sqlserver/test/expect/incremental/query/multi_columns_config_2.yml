@@ -1,0 +1,17 @@
+last_record: [4,104]
+incremental: true
+incremental_columns: [NUM,NUM2]
+use_raw_query_with_incremental: true
+query: |
+  SELECT
+    *
+  FROM
+    QUERY_LOAD
+  WHERE
+    NUM IS NOT NULL
+    AND NUM > :NUM
+    AND NUM2 IS NOT NULL
+    OR (NUM = :NUM AND NUM2 > :NUM2)
+  ORDER BY
+    NUM ASC,
+    NUM2 ASC

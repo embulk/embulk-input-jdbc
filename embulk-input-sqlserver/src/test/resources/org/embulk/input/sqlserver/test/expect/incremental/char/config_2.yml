@@ -1,0 +1,4 @@
+table: CHAR_LOAD
+last_record: ['A4']
+incremental: true
+incremental_columns: [NAME]
