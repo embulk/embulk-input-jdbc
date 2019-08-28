@@ -78,6 +78,38 @@ public class IncrementalTest
     }
 
     @Test
+    public void simpleChar() throws Exception
+    {
+        // setup first rows
+        execute(readResource("char/setup.sql"));
+
+        Path out1 = embulk.createTempFile("csv");
+        RunResult result1 = embulk.runInput(
+                baseConfig.merge(loadYamlResource(embulk, "char/config_1.yml")),
+                out1);
+        assertThat(
+                readSortedFile(out1),
+                is(readResource("char/expected_1.csv")));
+        assertThat(
+                result1.getConfigDiff(),
+                is((ConfigDiff) loadYamlResource(embulk, "char/expected_1.diff")));
+
+        // insert more rows
+        execute(readResource("char/insert_more.sql"));
+
+        Path out2 = embulk.createTempFile("csv");
+        RunResult result2 = embulk.runInput(
+                baseConfig.merge(loadYamlResource(embulk, "char/config_2.yml")),
+                out2);
+        assertThat(
+                readSortedFile(out2),
+                is(readResource("char/expected_2.csv")));
+        assertThat(
+                result2.getConfigDiff(),
+                is((ConfigDiff) loadYamlResource(embulk, "char/expected_2.diff")));
+    }
+
+    @Test
     public void simpleTimestampWithoutTimeZone() throws Exception
     {
         // setup first rows
