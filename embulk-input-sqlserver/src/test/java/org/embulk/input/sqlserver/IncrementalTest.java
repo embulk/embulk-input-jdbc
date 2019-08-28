@@ -94,6 +94,8 @@ public class IncrementalTest
         Path out1 = embulk.createTempFile("csv");
         RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "datetime2/config_1.yml")), out1);
         assertThat(readSortedFile(out1), is(readResource("datetime2/expected_1.csv")));
+        // SQL Server datetime2 type is mapped to StringColumnGetter, not to TimestampWithoutTimeZoneIncrementalHandler, for compatibility.
+        // So a timestamp value in JSON will be like 'yyyy-MM-dd HH:mm:ss.SSSSSSS', not like 'yyyy-MM-ddTHH:mm:ss.SSSSSS'.
         assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "datetime2/expected_1.diff")));
 
         // insert more rows
