@@ -2,21 +2,25 @@ package org.embulk.input.jdbc.getter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+
+import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
 import org.embulk.spi.time.TimestampFormatter;
+import org.embulk.spi.time.TimestampParseException;
 import org.embulk.spi.time.TimestampParser;
 
 public class TimestampWithTimeZoneIncrementalHandler
         extends AbstractIncrementalHandler
 {
-    private static final String ISO_USEC_FORMAT = "%Y-%m-%dT%H:%M:%S.%6NZ";
+    private static final String ISO_USEC_FORMAT = "%Y-%m-%dT%H:%M:%S.%6NZ"; // maybe "...%6N%Z", but shouldn't correct for compatibility.
     private static final String ISO_USEC_PATTERN = "%Y-%m-%dT%H:%M:%S.%N%z";
 
     private long epochSecond;
@@ -47,6 +51,11 @@ public class TimestampWithTimeZoneIncrementalHandler
     @Override
     public JsonNode encodeToJson()
     {
+        return jsonNodeFactory.textNode(format(epochSecond, nano));
+    }
+
+    private String format(long epochSecond, int nano)
+    {
         // TODO: Switch to a newer TimestampFormatter constructor after a reasonable interval.
         // Traditional constructor is used here for compatibility.
         final ConfigSource configSource = Exec.newConfigSource();
@@ -55,8 +64,7 @@ public class TimestampWithTimeZoneIncrementalHandler
         TimestampFormatter formatter = new TimestampFormatter(
             Exec.newConfigSource().loadConfig(FormatterIntlTask.class),
             Optional.fromNullable(configSource.loadConfig(FormatterIntlColumnOption.class)));
-        String text = formatter.format(org.embulk.spi.time.Timestamp.ofEpochSecond(epochSecond, nano));
-        return jsonNodeFactory.textNode(text);
+        return formatter.format(org.embulk.spi.time.Timestamp.ofEpochSecond(epochSecond, nano));
     }
 
     private static interface ParserIntlTask extends Task, TimestampParser.Task {}
@@ -74,10 +82,20 @@ public class TimestampWithTimeZoneIncrementalHandler
         TimestampParser parser = new TimestampParser(
             Exec.newConfigSource().loadConfig(ParserIntlTask.class),
             configSource.loadConfig(ParserIntlColumnOption.class));
-        org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
 
-        Timestamp sqlTimestamp = new Timestamp(epoch.getEpochSecond() * 1000);
-        sqlTimestamp.setNanos(epoch.getNano());
-        toStatement.setTimestamp(toIndex, sqlTimestamp);
+        try {
+            org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
+            Timestamp sqlTimestamp = new Timestamp(epoch.getEpochSecond() * 1000);
+            sqlTimestamp.setNanos(epoch.getNano());
+            toStatement.setTimestamp(toIndex, sqlTimestamp);
+
+        } catch (TimestampParseException e) {
+            long now = System.currentTimeMillis();
+            String sample = format(now / 1000, (int)((now % 1000)*1000000));
+            throw new ConfigException("Invalid timestamp with time zone pattern: " + fromValue + "."
+                    + " The pattern must be 'yyyy-MM-ddTHH:mm:ss.SSSSSSZ'."
+                    + " e.g. \"" + sample + "\" or \"" + sample.replace("Z", "+0000") + "\"");
+        }
+
     }
 }
