@@ -1,5 +1,5 @@
 language: java
-dist: xernial
+dist: xenial
 sudo: required
 addons:
   postgresql: "9.4"
