@@ -39,7 +39,7 @@ embulk "-J-Djava.library.path=C:\drivers" run input-sqlserver.yml
 - **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
 - **options**: extra JDBC properties (hash, default: {})
 - **incremental**: if true, enables incremental loading. See next section for details (boolean, default: false)
-- **incremental_columns**: column names for incremental loading (array of strings, default: use primary keys)
+- **incremental_columns**: column names for incremental loading (array of strings, default: use primary keys). Columns of integer types, string types and `datetime2` are supported.
 - **last_record**: values of the last record for incremental loading (array of objects, default: load all records)
 - **default_timezone**: If the sql type of a column is `date`/`time`/`datetime` and the embulk type is `string`, column values are formatted int this default_timezone. You can overwrite timezone for each columns using column_options option. (string, default: `UTC`)
 - **default_column_options**: advanced: column_options for each JDBC type as default. key-value pairs where key is a JDBC type (e.g. 'DATE', 'BIGINT') and value is same as column_options's value.
@@ -73,13 +73,13 @@ ORDER BY updated_at, id
 
 When bulk data loading finishes successfully, it outputs `last_record: ` paramater as config-diff so that next execution uses it.
 
-At the next execution, when `last_record: ` is also set, this plugin generates additional WHERE conditions to load records larger than the last record. For example, if `last_record: ["2017-01-01 00:32:12", 5291]` is set,
+At the next execution, when `last_record: ` is also set, this plugin generates additional WHERE conditions to load records larger than the last record. For example, if `last_record: ["2017-01-01 00:32:12.4876590", 5291]` is set,
 
 ```
 SELECT * FROM (
   ...original query is here...
 )
-WHERE updated_at > '2017-01-01 00:32:12' OR (updated_at = '2017-01-01 00:32:12' AND id > 5291)
+WHERE updated_at > '2017-01-01 00:32:12.4876590' OR (updated_at = '2017-01-01 00:32:12.4876590' AND id > 5291)
 ORDER BY updated_at, id
 ```
 

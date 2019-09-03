@@ -1,0 +1,4 @@
+table: DT_LOAD
+last_record: ['2016-11-02 04:00:05.3330030']
+incremental: true
+incremental_columns: [TIME]

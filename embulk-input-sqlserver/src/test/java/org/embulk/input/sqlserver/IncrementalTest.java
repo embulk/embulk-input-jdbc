@@ -1,8 +1,8 @@
-package org.embulk.input.mysql;
+package org.embulk.input.sqlserver;
 
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
-import org.embulk.input.MySQLInputPlugin;
+import org.embulk.input.SQLServerInputPlugin;
 import org.embulk.spi.InputPlugin;
 import org.embulk.test.EmbulkTests;
 import org.embulk.test.TestingEmbulk;
@@ -13,14 +13,14 @@ import org.junit.Test;
 
 import java.nio.file.Path;
 
-import static org.embulk.input.mysql.MySQLTests.execute;
+import static org.embulk.input.sqlserver.SQLServerTests.execute;
 import static org.embulk.test.EmbulkTests.readSortedFile;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class IncrementalTest
 {
-    private static final String BASIC_RESOURCE_PATH = "org/embulk/input/mysql/test/expect/incremental/";
+    private static final String BASIC_RESOURCE_PATH = "org/embulk/input/sqlserver/test/expect/incremental/";
 
     private static ConfigSource loadYamlResource(TestingEmbulk embulk, String fileName)
     {
@@ -34,7 +34,7 @@ public class IncrementalTest
 
     @Rule
     public TestingEmbulk embulk = TestingEmbulk.builder()
-            .registerPlugin(InputPlugin.class, "mysql", MySQLInputPlugin.class)
+            .registerPlugin(InputPlugin.class, "sqlserver", SQLServerInputPlugin.class)
             .build();
 
     private ConfigSource baseConfig;
@@ -42,7 +42,7 @@ public class IncrementalTest
     @Before
     public void setup()
     {
-        baseConfig = MySQLTests.baseConfig();
+        baseConfig = SQLServerTests.baseConfig();
     }
 
     @Test
@@ -86,43 +86,25 @@ public class IncrementalTest
     }
 
     @Test
-    public void testDateTime() throws Exception
+    public void testDateTime2() throws Exception
     {
         // setup first rows
-        execute(readResource("dt/setup.sql"));
+        execute(readResource("datetime2/setup.sql"));
 
         Path out1 = embulk.createTempFile("csv");
-        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "dt/config_1.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("dt/expected_1.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "dt/expected_1.diff")));
+        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "datetime2/config_1.yml")), out1);
+        assertThat(readSortedFile(out1), is(readResource("datetime2/expected_1.csv")));
+        // SQL Server datetime2 type is mapped to StringColumnGetter, not to TimestampWithoutTimeZoneIncrementalHandler, for compatibility.
+        // So a timestamp value in JSON will be like 'yyyy-MM-dd HH:mm:ss.SSSSSSS', not like 'yyyy-MM-ddTHH:mm:ss.SSSSSS'.
+        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "datetime2/expected_1.diff")));
 
         // insert more rows
-        execute(readResource("dt/insert_more.sql"));
+        execute(readResource("datetime2/insert_more.sql"));
 
         Path out2 = embulk.createTempFile("csv");
-        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "dt/config_2.yml")), out2);
-        assertThat(readSortedFile(out2), is(readResource("dt/expected_2.csv")));
-        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "dt/expected_2.diff")));
-    }
-
-    @Test
-    public void testTimestamp() throws Exception
-    {
-        // setup first rows
-        execute(readResource("ts/setup.sql"));
-
-        Path out1 = embulk.createTempFile("csv");
-        RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "ts/config_1.yml")), out1);
-        assertThat(readSortedFile(out1), is(readResource("ts/expected_1.csv")));
-        assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "ts/expected_1.diff")));
-
-        // insert more rows
-        execute(readResource("ts/insert_more.sql"));
-
-        Path out2 = embulk.createTempFile("csv");
-        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "ts/config_2.yml")), out2);
-        assertThat(readSortedFile(out2), is(readResource("ts/expected_2.csv")));
-        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "ts/expected_2.diff")));
+        RunResult result2 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "datetime2/config_2.yml")), out2);
+        assertThat(readSortedFile(out2), is(readResource("datetime2/expected_2.csv")));
+        assertThat(result2.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "datetime2/expected_2.diff")));
     }
 
     @Test

@@ -1,0 +1,3 @@
+table: char_load
+incremental: true
+incremental_columns: [name]

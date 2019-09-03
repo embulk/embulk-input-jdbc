@@ -5,8 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.embulk.config.ConfigException;
@@ -42,7 +40,12 @@ public class TimestampWithoutTimeZoneIncrementalHandler
     @Override
     public JsonNode encodeToJson()
     {
-        String text = String.format(ENGLISH,
+        return jsonNodeFactory.textNode(format(dateTime));
+    }
+
+    private String format(Timestamp dateTime)
+    {
+        return String.format(ENGLISH,
                 ISO_USEC_FORMAT,
                 dateTime.getYear() + 1900,
                 dateTime.getMonth() + 1,
@@ -51,7 +54,6 @@ public class TimestampWithoutTimeZoneIncrementalHandler
                 dateTime.getMinutes(),
                 dateTime.getSeconds(),
                 dateTime.getNanos() / 1000);
-        return jsonNodeFactory.textNode(text);
     }
 
     @Override
@@ -60,7 +62,9 @@ public class TimestampWithoutTimeZoneIncrementalHandler
     {
         Matcher matcher = ISO_USEC_PATTERN.matcher(fromValue.asText());
         if (!matcher.matches()) {
-            throw new ConfigException("Invalid timestamp without time zone pattern: " + fromValue);
+            throw new ConfigException("Invalid timestamp without time zone pattern: " + fromValue + "."
+                    + " The pattern must be 'yyyy-MM-ddTHH:mm:ss.SSSSSS'."
+                    + " e.g. \"" + format(new Timestamp(System.currentTimeMillis())) + "\"");
         }
         Timestamp sqlDateTime = new Timestamp(
                 Integer.parseInt(matcher.group(1)) - 1900,  // year
