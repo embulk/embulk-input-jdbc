@@ -1,4 +1,4 @@
-Release 0.8.6 - 2019-09-06
+Release 0.10.1 - 2019-09-06
 
 * Changed the default JDBC driver for SQL Server from jTDS JDBC Driver to Microsoft JDBC Driver (@hieudion++).
 * embulk-input-sqlserver supported socket_timeout for Microsoft JDBC Driver.
