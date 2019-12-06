@@ -39,6 +39,7 @@ MySQL input plugin for Embulk loads records from MySQL.
     - Internally, `useCursorFetch=false` is used and `java.sql.Statement.setFetchSize` is not set.
 - **connect_timeout**: timeout for socket connect. 0 means no timeout. (integer (seconds), default: 300)
 - **socket_timeout**: timeout on network socket operations. 0 means no timeout. (integer (seconds), default: 1800)
+- **ssl**: use SSL to connect to the database (string, default: `disable`. `enable` uses SSL without server-side validation and `verify` checks the certificate. For compatibility reasons, `true` behaves as `enable` and `false` behaves as `disable`.)
 - **options**: extra JDBC properties (hash, default: {})
 - **incremental**: if true, enables incremental loading. See next section for details (boolean, default: false)
 - **incremental_columns**: column names for incremental loading (array of strings, default: use primary keys). Columns of integer types, string types, `datetime` and `timestamp` are supported.
