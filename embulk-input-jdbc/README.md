@@ -14,7 +14,6 @@ Generic JDBC input plugin for Embulk loads records from a database using a JDBC 
 - **url**: URL of the JDBC connection (e.g. 'jdbc:sqlite:mydb.sqlite3') (string, required)
 - **user**: database login user name (string, optional)
 - **password**: database login password (string, default: optional)
-- **ssl**: use SSL to connect to the database (string, default: `disable`. `enable` uses SSL without server-side validation and `verify` checks the certificate. For compatibility reasons, `true` behaves as `enable` and `false` behaves as `disable`.)
 - **schema**: destination schema name (string, default: use the default schema)
 - **fetch_rows**: number of rows to fetch one time (integer, default: 10000)
 - **connect_timeout**: not supported.
