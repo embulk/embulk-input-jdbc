@@ -47,13 +47,13 @@ public abstract class AbstractMySQLTimestampIncrementalHandler
     public JsonNode encodeToJson()
     {
         final TimestampFormatter formatter = TimestampFormatter.builder(getTimestampFormat(), true).build();
-        String text = formatter.format(utcTimestampFromSessionTime(epochSecond, nano).getInstant());
+        String text = formatter.format(utcTimestampFromSessionTime(epochSecond, nano));
         return jsonNodeFactory.textNode(text);
     }
 
     protected abstract String getTimestampFormat();
 
-    protected abstract org.embulk.spi.time.Timestamp utcTimestampFromSessionTime(long epochSecond, int nano);
+    protected abstract Instant utcTimestampFromSessionTime(long epochSecond, int nano);
 
     @Override
     public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
@@ -61,10 +61,10 @@ public abstract class AbstractMySQLTimestampIncrementalHandler
     {
         final TimestampFormatter formatter = TimestampFormatter.builder(getTimestampPattern(), true).build();
         final Instant epoch = formatter.parse(fromValue.asText());
-        toStatement.setTimestamp(toIndex, utcTimestampToSessionTime(org.embulk.spi.time.Timestamp.ofInstant(epoch)));
+        toStatement.setTimestamp(toIndex, utcTimestampToSessionTime(epoch));
     }
 
     protected abstract String getTimestampPattern();
 
-    protected abstract Timestamp utcTimestampToSessionTime(org.embulk.spi.time.Timestamp ts);
+    protected abstract Timestamp utcTimestampToSessionTime(Instant ts);
 }
