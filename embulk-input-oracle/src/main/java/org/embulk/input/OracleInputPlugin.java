@@ -1,6 +1,6 @@
 package org.embulk.input;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
@@ -124,7 +124,7 @@ public class OracleInputPlugin
 
         Connection con = DriverManager.getConnection(url, props);
         try {
-            OracleInputConnection c = new OracleInputConnection(con, oracleTask.getSchema().orNull());
+            OracleInputConnection c = new OracleInputConnection(con, oracleTask.getSchema().orElse(null));
             con = null;
             return c;
         } finally {

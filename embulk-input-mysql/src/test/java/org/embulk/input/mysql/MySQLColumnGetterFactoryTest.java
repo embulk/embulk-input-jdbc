@@ -1,6 +1,6 @@
 package org.embulk.input.mysql;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import org.embulk.config.TaskSource;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
@@ -32,19 +32,19 @@ public class MySQLColumnGetterFactoryTest
             @Override
             public Optional<Type> getType()
             {
-                return Optional.absent();
+                return Optional.empty();
             }
 
             @Override
             public Optional<TimestampFormat> getTimestampFormat()
             {
-                return Optional.absent();
+                return Optional.empty();
             }
 
             @Override
             public Optional<DateTimeZone> getTimeZone()
             {
-                return Optional.absent();
+                return Optional.empty();
             }
 
             @Override

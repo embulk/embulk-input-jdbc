@@ -6,8 +6,8 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Optional;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 
 import org.embulk.config.Config;

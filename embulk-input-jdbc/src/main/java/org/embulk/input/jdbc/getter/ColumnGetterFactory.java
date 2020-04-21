@@ -4,8 +4,8 @@ import java.lang.reflect.Field;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-import com.google.common.base.Optional;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
@@ -191,10 +191,19 @@ public class ColumnGetterFactory
         configSource.set("format", option.getTimestampFormat().isPresent()
                                    ? option.getTimestampFormat().get().getFormat()
                                    : defaultTimestampFormat);
-        configSource.set("timezone", option.getTimeZone().or(this.defaultTimeZone));
-        return new TimestampFormatter(
-            Exec.newConfigSource().loadConfig(FormatterIntlTask.class),
-            Optional.fromNullable(configSource.loadConfig(FormatterIntlColumnOption.class)));
+        configSource.set("timezone", option.getTimeZone().orElse(this.defaultTimeZone));
+
+        final FormatterIntlTask task = Exec.newConfigSource().loadConfig(FormatterIntlTask.class);
+        final Optional<? extends TimestampFormatter.TimestampColumnOption> columnOption =
+                Optional.ofNullable(configSource.loadConfig(FormatterIntlColumnOption.class));
+
+        return TimestampFormatter.of(
+                columnOption.isPresent()
+                        ? columnOption.get().getFormat().or(task.getDefaultTimestampFormat())
+                        : task.getDefaultTimestampFormat(),
+                columnOption.isPresent()
+                        ? columnOption.get().getTimeZoneId().or(task.getDefaultTimeZoneId())
+                        : task.getDefaultTimeZoneId());
     }
 
     private static UnsupportedOperationException unsupportedOperationException(JdbcColumn column)

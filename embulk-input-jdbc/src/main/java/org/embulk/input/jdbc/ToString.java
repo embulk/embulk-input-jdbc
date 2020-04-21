@@ -1,11 +1,11 @@
 package org.embulk.input.jdbc;
 
-import com.google.common.base.Optional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Optional;
 
 public class ToString
 {
@@ -19,7 +19,7 @@ public class ToString
     @JsonCreator
     ToString(Optional<JsonNode> option) throws JsonMappingException
     {
-        JsonNode node = option.or(NullNode.getInstance());
+        JsonNode node = option.orElse(NullNode.getInstance());
         if (node.isTextual()) {
             this.string = node.textValue();
         } else if (node.isValueNode()) {

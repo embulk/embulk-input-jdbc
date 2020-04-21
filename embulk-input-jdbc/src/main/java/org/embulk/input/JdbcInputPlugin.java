@@ -2,11 +2,11 @@ package org.embulk.input;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
@@ -87,7 +87,7 @@ public class JdbcInputPlugin
 
         Connection con = driver.connect(t.getUrl(), props);
         try {
-            JdbcInputConnection c = new JdbcInputConnection(con, t.getSchema().orNull());
+            JdbcInputConnection c = new JdbcInputConnection(con, t.getSchema().orElse(null));
             con = null;
             return c;
         } finally {

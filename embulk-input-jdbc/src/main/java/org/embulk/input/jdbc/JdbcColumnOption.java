@@ -1,5 +1,6 @@
 package org.embulk.input.jdbc;
 
+import java.util.Optional;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigInject;
@@ -7,8 +8,6 @@ import org.embulk.config.Task;
 import org.embulk.spi.time.TimestampFormat;
 import org.embulk.spi.type.Type;
 import org.joda.time.DateTimeZone;
-
-import com.google.common.base.Optional;
 
 public interface JdbcColumnOption
         extends Task

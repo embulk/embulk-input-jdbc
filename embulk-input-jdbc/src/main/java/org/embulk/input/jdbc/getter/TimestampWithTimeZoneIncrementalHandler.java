@@ -1,12 +1,12 @@
 package org.embulk.input.jdbc.getter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Optional;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
@@ -61,9 +61,17 @@ public class TimestampWithTimeZoneIncrementalHandler
         final ConfigSource configSource = Exec.newConfigSource();
         configSource.set("format", ISO_USEC_FORMAT);
         configSource.set("timezone", "UTC");
-        TimestampFormatter formatter = new TimestampFormatter(
-            Exec.newConfigSource().loadConfig(FormatterIntlTask.class),
-            Optional.fromNullable(configSource.loadConfig(FormatterIntlColumnOption.class)));
+        final FormatterIntlTask task = Exec.newConfigSource().loadConfig(FormatterIntlTask.class);
+        final Optional<? extends TimestampFormatter.TimestampColumnOption> columnOption =
+                Optional.ofNullable(configSource.loadConfig(FormatterIntlColumnOption.class));
+        final TimestampFormatter formatter = TimestampFormatter.of(
+                columnOption.isPresent()
+                        ? columnOption.get().getFormat().or(task.getDefaultTimestampFormat())
+                        : task.getDefaultTimestampFormat(),
+                columnOption.isPresent()
+                        ? columnOption.get().getTimeZoneId().or(task.getDefaultTimeZoneId())
+                        : task.getDefaultTimeZoneId());
+
         return formatter.format(org.embulk.spi.time.Timestamp.ofEpochSecond(epochSecond, nano));
     }
 

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.Optional;
 import javax.validation.constraints.Size;
 
 import org.embulk.config.Config;
@@ -14,7 +15,6 @@ import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.sqlserver.SQLServerInputConnection;
 
-import com.google.common.base.Optional;
 import org.embulk.input.sqlserver.getter.SQLServerColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.joda.time.DateTimeZone;
@@ -151,8 +151,8 @@ public class SQLServerInputPlugin
         if (driver != null) {
             Connection con = driver.connect(urlAndProps.getUrl(), props);
             try {
-                SQLServerInputConnection c = new SQLServerInputConnection(con, sqlServerTask.getSchema().orNull(),
-                        sqlServerTask.getTransactionIsolationLevel().orNull());
+                SQLServerInputConnection c = new SQLServerInputConnection(con, sqlServerTask.getSchema().orElse(null),
+                        sqlServerTask.getTransactionIsolationLevel().orElse(null));
                 con = null;
                 return c;
             }
