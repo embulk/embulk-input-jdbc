@@ -10,7 +10,6 @@ import org.embulk.input.jdbc.getter.StringColumnGetter;
 import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
 import org.embulk.spi.time.TimestampFormat;
 import org.embulk.spi.type.Type;
-import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,7 +41,7 @@ public class MySQLColumnGetterFactoryTest
             }
 
             @Override
-            public Optional<DateTimeZone> getTimeZone()
+            public Optional<String> getTimeZone()
             {
                 return Optional.empty();
             }

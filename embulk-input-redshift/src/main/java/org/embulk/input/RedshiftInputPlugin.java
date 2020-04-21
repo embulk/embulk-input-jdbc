@@ -13,7 +13,6 @@ import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.postgresql.PostgreSQLInputConnection;
 import org.embulk.input.redshift.getter.RedshiftColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
-import org.joda.time.DateTimeZone;
 
 public class RedshiftInputPlugin
         extends AbstractJdbcInputPlugin
@@ -97,7 +96,7 @@ public class RedshiftInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
     {
         return new RedshiftColumnGetterFactory(pageBuilder, dateTimeZone);
     }

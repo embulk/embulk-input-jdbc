@@ -45,7 +45,6 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.JdbcInputConnection.BatchSelect;
 import org.embulk.input.jdbc.JdbcInputConnection.PreparedQuery;
-import org.joda.time.DateTimeZone;
 
 import static java.util.Locale.ENGLISH;
 
@@ -145,7 +144,7 @@ public abstract class AbstractJdbcInputPlugin
 
         @Config("default_timezone")
         @ConfigDefault("\"UTC\"")
-        public DateTimeZone getDefaultTimeZone();
+        public String getDefaultTimeZone();
 
         @Config("default_column_options")
         @ConfigDefault("{}")
@@ -535,7 +534,7 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, String dateTimeZone)
     {
         return new ColumnGetterFactory(pageBuilder, dateTimeZone);
     }

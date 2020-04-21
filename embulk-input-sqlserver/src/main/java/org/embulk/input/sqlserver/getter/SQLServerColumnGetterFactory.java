@@ -6,11 +6,10 @@ import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.*;
 import org.embulk.spi.PageBuilder;
-import org.joda.time.DateTimeZone;
 
 public class SQLServerColumnGetterFactory extends ColumnGetterFactory {
 
-    public SQLServerColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
+    public SQLServerColumnGetterFactory(final PageBuilder to, final String defaultTimeZone)
     {
         super(to, defaultTimeZone);
     }

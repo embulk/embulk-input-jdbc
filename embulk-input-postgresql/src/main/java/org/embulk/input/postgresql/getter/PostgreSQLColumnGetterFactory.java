@@ -11,11 +11,10 @@ import org.embulk.input.jdbc.getter.TimestampWithTimeZoneIncrementalHandler;
 import org.embulk.input.jdbc.getter.TimestampWithoutTimeZoneIncrementalHandler;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Types;
-import org.joda.time.DateTimeZone;
 
 public class PostgreSQLColumnGetterFactory extends ColumnGetterFactory
 {
-    public PostgreSQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
+    public PostgreSQLColumnGetterFactory(final PageBuilder to, final String defaultTimeZone)
     {
         super(to, defaultTimeZone);
     }

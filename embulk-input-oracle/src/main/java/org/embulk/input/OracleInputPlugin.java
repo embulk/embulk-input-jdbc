@@ -9,7 +9,6 @@ import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.oracle.OracleInputConnection;
 import org.embulk.input.oracle.getter.OracleColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
-import org.joda.time.DateTimeZone;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -135,7 +134,7 @@ public class OracleInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone) {
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone) {
         return new OracleColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 

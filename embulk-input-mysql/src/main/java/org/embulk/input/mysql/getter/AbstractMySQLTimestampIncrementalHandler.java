@@ -9,22 +9,22 @@ import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
 import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.time.TimestampParser;
-import org.joda.time.DateTimeZone;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.Optional;
 
 public abstract class AbstractMySQLTimestampIncrementalHandler
         extends AbstractIncrementalHandler
 {
-    protected final DateTimeZone sessionTimeZone;
+    protected final ZoneId sessionTimeZone;
     protected long epochSecond;
     protected int nano;
 
-    public AbstractMySQLTimestampIncrementalHandler(DateTimeZone sessionTimeZone, ColumnGetter next)
+    public AbstractMySQLTimestampIncrementalHandler(final ZoneId sessionTimeZone, final ColumnGetter next)
     {
         super(next);
         this.sessionTimeZone = sessionTimeZone;
