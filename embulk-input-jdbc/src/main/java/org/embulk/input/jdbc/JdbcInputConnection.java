@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.embulk.spi.Exec;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableSet;
 public class JdbcInputConnection
         implements AutoCloseable
 {
-    protected final Logger logger = Exec.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final Connection connection;
     protected final String schemaName;
