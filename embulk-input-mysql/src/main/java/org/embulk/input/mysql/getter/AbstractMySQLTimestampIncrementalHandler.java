@@ -7,13 +7,13 @@ import org.embulk.input.jdbc.getter.AbstractIncrementalHandler;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
-import org.embulk.spi.time.TimestampParser;
 import org.embulk.util.timestamp.TimestampFormatter;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Optional;
 
@@ -55,23 +55,13 @@ public abstract class AbstractMySQLTimestampIncrementalHandler
 
     protected abstract org.embulk.spi.time.Timestamp utcTimestampFromSessionTime(long epochSecond, int nano);
 
-    private static interface ParserIntlTask extends Task, TimestampParser.Task {}
-    private static interface ParserIntlColumnOption extends Task, TimestampParser.TimestampColumnOption {}
-
     @Override
     public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
             throws SQLException
     {
-        // TODO: Switch to a newer TimestampParser constructor after a reasonable interval.
-        // Traditional constructor is used here for compatibility.
-        final ConfigSource configSource = Exec.newConfigSource();
-        configSource.set("format", getTimestampPattern());
-        configSource.set("timezone", "UTC");
-        TimestampParser parser = new TimestampParser(
-            Exec.newConfigSource().loadConfig(ParserIntlTask.class),
-            configSource.loadConfig(ParserIntlColumnOption.class));
-        org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
-        toStatement.setTimestamp(toIndex, utcTimestampToSessionTime(epoch));
+        final TimestampFormatter formatter = TimestampFormatter.builder(getTimestampPattern(), true).build();
+        final Instant epoch = formatter.parse(fromValue.asText());
+        toStatement.setTimestamp(toIndex, utcTimestampToSessionTime(org.embulk.spi.time.Timestamp.ofInstant(epoch)));
     }
 
     protected abstract String getTimestampPattern();

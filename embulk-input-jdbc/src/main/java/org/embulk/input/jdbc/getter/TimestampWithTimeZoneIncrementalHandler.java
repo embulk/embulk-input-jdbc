@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 import org.embulk.config.ConfigException;
@@ -14,8 +15,6 @@ import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
-import org.embulk.spi.time.TimestampParseException;
-import org.embulk.spi.time.TimestampParser;
 import org.embulk.util.timestamp.TimestampFormatter;
 
 public class TimestampWithTimeZoneIncrementalHandler
@@ -24,7 +23,7 @@ public class TimestampWithTimeZoneIncrementalHandler
     // maybe "...%6N%Z", but shouldn't correct for compatibility.
     private static final TimestampFormatter FORMATTER = TimestampFormatter.builderWithRuby("%Y-%m-%dT%H:%M:%S.%6NZ").build();
 
-    private static final String ISO_USEC_PATTERN = "%Y-%m-%dT%H:%M:%S.%N%z";
+    private static final TimestampFormatter PARSER = TimestampFormatter.builderWithRuby("%Y-%m-%dT%H:%M:%S.%N%z").build();
 
     private long epochSecond;
     private int nano;
@@ -59,29 +58,17 @@ public class TimestampWithTimeZoneIncrementalHandler
         return FORMATTER.format(Instant.ofEpochSecond(epochSecond, nano));
     }
 
-    private static interface ParserIntlTask extends Task, TimestampParser.Task {}
-    private static interface ParserIntlColumnOption extends Task, TimestampParser.TimestampColumnOption {}
-
     @Override
     public void decodeFromJsonTo(PreparedStatement toStatement, int toIndex, JsonNode fromValue)
         throws SQLException
     {
-        // TODO: Switch to a newer TimestampParser constructor after a reasonable interval.
-        // Traditional constructor is used here for compatibility.
-        final ConfigSource configSource = Exec.newConfigSource();
-        configSource.set("format", ISO_USEC_PATTERN);
-        configSource.set("timezone", "UTC");
-        TimestampParser parser = new TimestampParser(
-            Exec.newConfigSource().loadConfig(ParserIntlTask.class),
-            configSource.loadConfig(ParserIntlColumnOption.class));
-
         try {
-            org.embulk.spi.time.Timestamp epoch = parser.parse(fromValue.asText());
-            Timestamp sqlTimestamp = new Timestamp(epoch.getEpochSecond() * 1000);
+            final Instant epoch = PARSER.parse(fromValue.asText());
+            Timestamp sqlTimestamp = new Timestamp(epoch.getEpochSecond() * 1000L);
             sqlTimestamp.setNanos(epoch.getNano());
             toStatement.setTimestamp(toIndex, sqlTimestamp);
 
-        } catch (TimestampParseException e) {
+        } catch (final DateTimeParseException e) {
             long now = System.currentTimeMillis();
             String sample = format(now / 1000, (int)((now % 1000)*1000000));
             throw new ConfigException("Invalid timestamp with time zone pattern: " + fromValue + "."
