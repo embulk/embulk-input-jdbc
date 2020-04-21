@@ -1,6 +1,12 @@
 dependencies {
-    compile project(':embulk-input-jdbc')
+    compile(project(path: ":embulk-input-jdbc", configuration: "runtimeElements"))
 
-    testCompile 'org.embulk:embulk-standards:0.9.12'
+    testCompile 'org.embulk:embulk-standards:0.9.23'
     testCompile files('test_jdbc_driver/ojdbc7.jar')
+}
+
+embulkPlugin {
+    mainClass = "org.embulk.input.OracleInputPlugin"
+    category = "input"
+    type = "oracle"
 }

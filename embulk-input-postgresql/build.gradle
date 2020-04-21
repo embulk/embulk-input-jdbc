@@ -1,8 +1,15 @@
 dependencies {
-    compile project(':embulk-input-jdbc')
+    compile(project(path: ":embulk-input-jdbc", configuration: "runtimeElements"))
 
-    compile 'org.postgresql:postgresql:9.4-1205-jdbc41'
+    compileOnly "org.postgresql:postgresql:9.4-1205-jdbc41"
     defaultJdbcDriver 'org.postgresql:postgresql:9.4-1205-jdbc41'
 
-    testCompile 'org.embulk:embulk-standards:0.9.12'
+    testCompile 'org.embulk:embulk-standards:0.9.23'
+    testCompile "org.postgresql:postgresql:9.4-1205-jdbc41"
+}
+
+embulkPlugin {
+    mainClass = "org.embulk.input.PostgreSQLInputPlugin"
+    category = "input"
+    type = "postgresql"
 }

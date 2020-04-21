@@ -1,2 +1,8 @@
 dependencies {
 }
+
+embulkPlugin {
+    mainClass = "org.embulk.input.JdbcInputPlugin"
+    category = "input"
+    type = "jdbc"
+}

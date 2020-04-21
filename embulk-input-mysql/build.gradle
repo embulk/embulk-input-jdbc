@@ -1,8 +1,15 @@
 dependencies {
-    compile project(':embulk-input-jdbc')
+    compile(project(path: ":embulk-input-jdbc", configuration: "runtimeElements"))
 
-    compile 'mysql:mysql-connector-java:5.1.44'
+    compileOnly "mysql:mysql-connector-java:5.1.44"
     defaultJdbcDriver 'mysql:mysql-connector-java:5.1.44'
 
-    testCompile 'org.embulk:embulk-standards:0.9.12'
+    testCompile 'org.embulk:embulk-standards:0.9.23'
+    testCompile "mysql:mysql-connector-java:5.1.44"
+}
+
+embulkPlugin {
+    mainClass = "org.embulk.input.MySQLInputPlugin"
+    category = "input"
+    type = "mysql"
 }
