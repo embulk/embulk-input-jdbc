@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.embulk.config.ConfigException;
@@ -45,15 +46,16 @@ public class TimestampWithoutTimeZoneIncrementalHandler
 
     private String format(Timestamp dateTime)
     {
+        final LocalDateTime localDateTime = dateTime.toLocalDateTime();
         return String.format(ENGLISH,
                 ISO_USEC_FORMAT,
-                dateTime.getYear() + 1900,
-                dateTime.getMonth() + 1,
-                dateTime.getDate(),
-                dateTime.getHours(),
-                dateTime.getMinutes(),
-                dateTime.getSeconds(),
-                dateTime.getNanos() / 1000);
+                localDateTime.getYear(),
+                localDateTime.getMonthValue(),
+                localDateTime.getDayOfMonth(),
+                localDateTime.getHour(),
+                localDateTime.getMinute(),
+                localDateTime.getSecond(),
+                localDateTime.getNano() / 1000);
     }
 
     @Override
@@ -66,14 +68,15 @@ public class TimestampWithoutTimeZoneIncrementalHandler
                     + " The pattern must be 'yyyy-MM-ddTHH:mm:ss.SSSSSS'."
                     + " e.g. \"" + format(new Timestamp(System.currentTimeMillis())) + "\"");
         }
-        Timestamp sqlDateTime = new Timestamp(
-                Integer.parseInt(matcher.group(1)) - 1900,  // year
-                Integer.parseInt(matcher.group(2)) - 1,  // month
+        final LocalDateTime localDateTime = LocalDateTime.of(
+                Integer.parseInt(matcher.group(1)),  // year
+                Integer.parseInt(matcher.group(2)),  // month
                 Integer.parseInt(matcher.group(3)),  // day
                 Integer.parseInt(matcher.group(4)),  // hour
                 Integer.parseInt(matcher.group(5)),  // minute
                 Integer.parseInt(matcher.group(6)),  // second
                 Integer.parseInt(matcher.group(7)) * 1000);  // usec -> nsec
+        final Timestamp sqlDateTime = Timestamp.valueOf(localDateTime);
         toStatement.setTimestamp(toIndex, sqlDateTime);
     }
 }
