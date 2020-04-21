@@ -3,8 +3,8 @@ package org.embulk.input.jdbc.getter;
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.Timestamp;
-import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.type.Type;
+import org.embulk.util.timestamp.TimestampFormatter;
 
 public abstract class AbstractTimestampColumnGetter
         extends AbstractColumnGetter
@@ -22,7 +22,7 @@ public abstract class AbstractTimestampColumnGetter
     @Override
     public void stringColumn(Column column)
     {
-        to.setString(column, timestampFormatter.format(value));
+        to.setString(column, timestampFormatter.format(value.getInstant()));
     }
 
     @Override

@@ -35,7 +35,7 @@ public class MySQLColumnGetterFactoryTest
             }
 
             @Override
-            public Optional<TimestampFormat> getTimestampFormat()
+            public Optional<String> getTimestampFormat()
             {
                 return Optional.empty();
             }

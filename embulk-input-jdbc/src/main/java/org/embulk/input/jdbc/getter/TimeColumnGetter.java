@@ -5,9 +5,9 @@ import java.sql.SQLException;
 import java.sql.Time;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.Timestamp;
-import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
+import org.embulk.util.timestamp.TimestampFormatter;
 
 public class TimeColumnGetter
         extends AbstractTimestampColumnGetter

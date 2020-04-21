@@ -7,8 +7,8 @@ import org.embulk.input.jdbc.getter.AbstractIncrementalHandler;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
-import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.time.TimestampParser;
+import org.embulk.util.timestamp.TimestampFormatter;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,28 +43,11 @@ public abstract class AbstractMySQLTimestampIncrementalHandler
         super.getAndSet(from, fromIndex, toColumn);
     }
 
-    private static interface FormatterIntlTask extends Task, TimestampFormatter.Task {}
-    private static interface FormatterIntlColumnOption extends Task, TimestampFormatter.TimestampColumnOption {}
-
     @Override
     public JsonNode encodeToJson()
     {
-        // TODO: Switch to a newer TimestampFormatter constructor after a reasonable interval.
-        // Traditional constructor is used here for compatibility.
-        final ConfigSource configSource = Exec.newConfigSource();
-        configSource.set("format", getTimestampFormat());
-        configSource.set("timezone", "UTC");
-        final FormatterIntlTask task = Exec.newConfigSource().loadConfig(FormatterIntlTask.class);
-        final Optional<? extends TimestampFormatter.TimestampColumnOption> columnOption =
-                Optional.ofNullable(configSource.loadConfig(FormatterIntlColumnOption.class));
-        final TimestampFormatter formatter = TimestampFormatter.of(
-                columnOption.isPresent()
-                        ? columnOption.get().getFormat().or(task.getDefaultTimestampFormat())
-                        : task.getDefaultTimestampFormat(),
-                columnOption.isPresent()
-                        ? columnOption.get().getTimeZoneId().or(task.getDefaultTimeZoneId())
-                        : task.getDefaultTimeZoneId());
-        String text = formatter.format(utcTimestampFromSessionTime(epochSecond, nano));
+        final TimestampFormatter formatter = TimestampFormatter.builder(getTimestampFormat(), true).build();
+        String text = formatter.format(utcTimestampFromSessionTime(epochSecond, nano).getInstant());
         return jsonNodeFactory.textNode(text);
     }
 
