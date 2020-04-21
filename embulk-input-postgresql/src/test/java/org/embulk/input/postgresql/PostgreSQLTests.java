@@ -19,11 +19,14 @@ public class PostgreSQLTests
     public static void execute(String sql)
     {
         ConfigSource config = baseConfig();
-        ProcessBuilder pb = new ProcessBuilder("psql", "-w", "--set", "ON_ERROR_STOP=1", "-c", convert(sql));
-        pb.environment().put("PGUSER", config.get(String.class, "user"));
+        ProcessBuilder pb = new ProcessBuilder(
+                "psql", "-w",
+                "--set", "ON_ERROR_STOP=1",
+                "--host", config.get(String.class, "host"),
+                "--username", config.get(String.class, "user"),
+                "--dbname", config.get(String.class, "database"),
+                "-c", convert(sql));
         pb.environment().put("PGPASSWORD", config.get(String.class, "password"));
-        pb.environment().put("PGDATABASE", config.get(String.class, "database"));
-        pb.environment().put("PGPORT", config.get(String.class, "port", "5432"));
         pb.redirectErrorStream(true);
         int code;
         try {

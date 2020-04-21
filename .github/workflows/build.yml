@@ -1,0 +1,223 @@
+name: Build and test
+on: push
+jobs:
+  db2:  # https://hub.docker.com/r/ibmcom/db2
+    runs-on: ubuntu-latest
+    services:
+      db2:
+        # To run locallly:
+        # docker run -it --priviledged=true --name db2container -p 50000:50000 -p 55000:55000 -e LICENSE=accept -e DB2INSTANCE=db2inst1 -e DB2INST1_PASSWORD=password -e DBNAME=testdb -e SAMPLEDB=true ibmcom/db2:11.5.0.0a
+        image: docker://ibmcom/db2:11.5.0.0a
+        # "--priviledged=true" is required. "‑‑ipc=host ‑‑cap‑add=IPC_OWNER" may work instead, though.
+        #
+        # Considerations for building and deploying DB2 Docker containers
+        # https://www.ibm.com/developerworks/jp/library/dm-1602-db2-docker-trs/index.html
+        options: --name "db2container" --privileged=true --health-cmd "su - db2inst1 -c \"db2 GET DBM CFG\"" --health-interval 20s --health-timeout 30s --health-retries 128
+        ports:
+        - "50000:50000"
+        - "55000:55000"
+        env:
+          LICENSE: accept
+          DB2INSTANCE: db2inst1
+          DB2INST1_PASSWORD: password
+          DBNAME: testdb
+          SAMPLEDB: true
+    steps:
+    - uses: actions/checkout@v1
+    # TODO: Find a better way to wait for completing setup.
+    - name: Sleep for 5 minutes to complete all the DB2 setup process
+      run: sleep 300
+    - name: List Docker containers
+      run: docker ps -a
+    - name: Show Docker logs
+      run: docker logs db2container
+    - name: Show DB2 configs
+      run: docker exec db2container su - db2inst1 -c "db2 \"GET DBM CFG\""
+    - name: Set env
+      run: echo ::set-env name=workspace::$GITHUB_WORKSPACE
+    - name: Install ksh to run installDSDriver
+      run: sudo apt-get install ksh
+    - name: Make working directory
+      run: mkdir "${{ env.workspace }}/clpplus"
+    - name: Download clpplus
+      # https://github.com/rickdesantis/docker-files/tree/e3bbc10080be9e31635223c23091526bc5d9eff6/clpplus
+      run: curl "https://raw.githubusercontent.com/rickdesantis/docker-files/master/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz" -o "${{ env.workspace }}/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz"
+    - name: Extract clpplus
+      run: tar zxf "${{ env.workspace }}/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz" -C "${{ env.workspace }}/clpplus"
+    - name: Make installDSDriver runnable
+      run: chmod +x installDSDriver
+      working-directory: "${{ env.workspace }}/clpplus/dsdriver"
+    - name: Run installDSDriver
+      run: ./installDSDriver
+      working-directory: "${{ env.workspace }}/clpplus/dsdriver"
+    - name: Dump installDSDriver.log
+      run: cat installDSDriver.log
+      working-directory: "${{ env.workspace }}/clpplus/dsdriver"
+    - name: List files
+      run: ls -C -R
+      working-directory: "${{ env.workspace }}"
+    - name: Run clpplus
+      run: "${{ env.workspace }}/clpplus/dsdriver/bin/clpplus -verbose 'db2inst1/password@127.0.0.1:50000/testdb' @${{ env.workspace }}/embulk-input-db2/src/test/resources/org/embulk/input/db2/test/expect/basic/setup.sql"
+    - name: Build with testing
+      run: ./gradlew --stacktrace :embulk-input-db2:check
+      env:
+        _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
+        EMBULK_INPUT_DB2_TEST_CONFIG: "${{ env.workspace }}/ci/db2.yml"
+        EMBULK_INPUT_DB2_TEST_CLPPLUS_COMMAND: "${{ env.workspace }}/clpplus/dsdriver/bin/clpplus"
+    - uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: db2
+        path: embulk-input-db2/build/reports/tests/test
+  mysql:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        options: --health-cmd "mysqladmin ping -h localhost" --health-interval 20s --health-timeout 10s --health-retries 10
+        ports:
+        - "3306:3306"
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: password
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Connect
+      run: mysql -h 127.0.0.1 --port 3306 -uroot -proot -e "show databases;"
+    - name: Create database
+      run: mysql -h 127.0.0.1 --port 3306 -uroot -proot -e "create database ci_test;"
+    - name: Set env
+      run: echo ::set-env name=workspace::$GITHUB_WORKSPACE
+    - name: Build with testing
+      run: ./gradlew --stacktrace :embulk-input-mysql:check
+      env:
+        _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
+        EMBULK_INPUT_MYSQL_TEST_CONFIG: "${{ env.workspace }}/ci/mysql.yml"
+    - uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: mysql
+        path: embulk-input-mysql/build/reports/tests/test
+  oracle:  # https://hub.docker.com/_/oracle-database-enterprise-edition
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Test for Oracle Database does not run on GitHub Actions.
+      run: echo "Test for Oracle Database does not run on GitHub Actions."
+  postgresql:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:9.4
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+        - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: postgres
+    steps:
+    - uses: actions/checkout@v1
+    - name: Connect
+      run: psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "\l"
+      env:
+        PGPASSWORD: postgres
+    - name: Create database
+      run: psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "create database ci_test;"
+      env:
+        PGPASSWORD: postgres
+    - name: Set env
+      run: echo ::set-env name=workspace::$GITHUB_WORKSPACE
+    - name: Build with testing
+      run: ./gradlew --stacktrace :embulk-input-postgresql:check
+      env:
+        _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
+        EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ env.workspace }}/ci/postgresql.yml"
+    - uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: postgresql
+        path: embulk-input-postgresql/build/reports/tests/test
+  redshift:
+    runs-on: ubuntu-latest
+    # Testing embulk-input-redshift emulated with PostgreSQL.
+    services:
+      postgres:
+        image: postgres:9.4
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+        - "5439:5432"
+        env:
+          POSTGRES_PASSWORD: postgres
+    steps:
+    - uses: actions/checkout@v1
+    - name: Connect
+      run: psql -h 127.0.0.1 -p 5439 -U postgres -d postgres -c "\l"
+      env:
+        PGPASSWORD: postgres
+    - name: Create database
+      run: psql -h 127.0.0.1 -p 5439 -U postgres -d postgres -c "create database ci_test;"
+      env:
+        PGPASSWORD: postgres
+    - name: Set env
+      run: echo ::set-env name=workspace::$GITHUB_WORKSPACE
+    - name: Build with testing
+      run: ./gradlew --stacktrace :embulk-input-redshift:check
+      env:
+        _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
+        EMBULK_INPUT_REDSHIFT_TEST_CONFIG: "${{ env.workspace }}/ci/redshift.yml"
+    - uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: redshift
+        path: embulk-input-redshift/build/reports/tests/test
+  sqlserver:  # https://hub.docker.com/_/microsoft-mssql-server
+    runs-on: ubuntu-16.04
+    services:
+      sqlserver:
+        # To run locallly:
+        # docker run -it --name mssqlcontainer -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=somepassword' -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-CU4-ubuntu-16.04
+        image: docker://mcr.microsoft.com/mssql/server:2019-CU4-ubuntu-16.04
+        options: --name "mssqlcontainer"  --health-cmd "/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P P@ssw0rd -Q \"SELECT * FROM sys.objects;\"" --health-interval 20s --health-timeout 30s --health-retries 128
+        ports:
+        - "1433:1433"
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: "P@ssw0rd"
+    steps:
+    - uses: actions/checkout@v1
+    # TODO: Find a better way to wait for completing setup.
+    - name: Sleep for 30 seconds to complete all the SQL Server setup process
+      run: sleep 30
+    - name: List Docker containers
+      run: docker ps -a
+    - name: Confirm log
+      run: docker logs mssqlcontainer
+    - name: Set env
+      run: echo ::set-env name=workspace::$GITHUB_WORKSPACE
+    - name: Copy test resources into Docker container
+      run: docker cp ${{ env.workspace }}/embulk-input-sqlserver/src/test/resources/org/embulk/input/sqlserver/test/expect/. mssqlcontainer:/tmp
+    - name: List resource files
+      run: docker exec mssqlcontainer ls -R /tmp
+    - name: Show SQL Server objects
+      run: docker exec mssqlcontainer /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P "P@ssw0rd" -Q "SELECT * FROM sys.objects;"
+    - name: Create testdb
+      run: docker exec mssqlcontainer /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P "P@ssw0rd" -Q "CREATE DATABASE testdb;"
+    - name: Show SQL Server objects in testdb
+      run: docker exec mssqlcontainer /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P "P@ssw0rd" -d testdb -Q "SELECT * FROM sys.objects;"
+    - name: Build with testing
+      run: ./gradlew --stacktrace :embulk-input-sqlserver:check
+      env:
+        _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
+        EMBULK_INPUT_SQLSERVER_TEST_CONFIG: "${{ env.workspace }}/ci/sqlserver.yml"
+        EMBULK_INPUT_SQLSERVER_TEST_SQLCMD_COMMAND: "docker exec mssqlcontainer /opt/mssql-tools/bin/sqlcmd"
+    - uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: sqlserver
+        path: embulk-input-sqlserver/build/reports/tests/test

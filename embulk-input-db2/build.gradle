@@ -2,5 +2,11 @@ dependencies {
     compile project(':embulk-input-jdbc')
 
     testCompile 'org.embulk:embulk-standards:0.9.12'
-    testCompile files('test_jdbc_driver/db2jcc4.jar')
+
+    // The driver is available on Maven Central since Nov 30, 2018.
+    // https://repo1.maven.org/maven2/com/ibm/db2/jcc/db2jcc/db2jcc4/
+    //
+    // Its license is, however, not a common open-sourcing one.
+    // So, we use it only in tests. The plugin artifact does not depend on nor contain it.
+    testCompile "com.ibm.db2.jcc:db2jcc:db2jcc4"
 }

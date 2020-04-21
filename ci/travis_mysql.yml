@@ -1,6 +1,0 @@
-type: mysql
-host: localhost
-port: 3306
-database: travis_ci_test
-user: travis
-password: ""

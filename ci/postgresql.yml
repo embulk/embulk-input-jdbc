@@ -1,0 +1,6 @@
+type: postgresql
+host: 127.0.0.1
+port: 5432
+database: ci_test
+user: postgres
+password: postgres
