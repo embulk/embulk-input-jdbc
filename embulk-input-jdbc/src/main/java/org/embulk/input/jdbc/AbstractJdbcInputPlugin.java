@@ -13,6 +13,8 @@ import java.util.Properties;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.TreeMap;
 
@@ -188,6 +190,15 @@ public abstract class AbstractJdbcInputPlugin
             InputPlugin.Control control)
     {
         PluginTask task = config.loadConfig(getTaskClass());
+
+        // Invalid timezones should fail immediately when configuring.
+        throwAgainstInvalidTimeZone(task.getDefaultTimeZone());
+        for (final JdbcColumnOption option : task.getColumnOptions().values()) {
+            throwAgainstInvalidTimeZone(option.getTimeZone().orElse(null));
+        }
+        for (final JdbcColumnOption option : task.getDefaultColumnOptions().values()) {
+            throwAgainstInvalidTimeZone(option.getTimeZone().orElse(null));
+        }
 
         if (task.getIncremental()) {
             if (task.getOrderBy().isPresent()) {
@@ -724,5 +735,16 @@ public abstract class AbstractJdbcInputPlugin
             }
         }
         logger.info("Connecting to {} options {}", url, maskedProps);
+    }
+
+    private static void throwAgainstInvalidTimeZone(final String timezone) {
+        if (timezone == null) {
+            return;
+        }
+        try {
+            ZoneId.of(timezone);
+        } catch (final DateTimeException ex) {
+            throw new ConfigException("Time zone '" + timezone + "' is not recognised.", ex);
+        }
     }
 }
