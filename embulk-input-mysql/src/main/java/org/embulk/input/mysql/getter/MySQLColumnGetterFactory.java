@@ -47,8 +47,7 @@ public class MySQLColumnGetterFactory
             }
 
             TimeZone timeZone = mysqlInputConnection.getServerTimezoneTZ();
-            // Joda-Time's timezone mapping is probably not compatible with java.util.TimeZone if null is returned.
-            final ZoneId sessionTimeZone = checkNotNull(timeZone.toZoneId());
+            final ZoneId sessionTimeZone = timeZone.toZoneId();
             if (column.getTypeName().equals("DATETIME")) {
                 return new MySQLDateTimeTimestampIncrementalHandler(sessionTimeZone, getter);
             }
