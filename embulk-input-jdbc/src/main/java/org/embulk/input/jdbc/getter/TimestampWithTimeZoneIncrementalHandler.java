@@ -64,7 +64,7 @@ public class TimestampWithTimeZoneIncrementalHandler
     {
         try {
             final Instant epoch = PARSER.parse(fromValue.asText());
-            Timestamp sqlTimestamp = new Timestamp(epoch.getEpochSecond() * 1000L);
+            final Timestamp sqlTimestamp = Timestamp.from(epoch);
             sqlTimestamp.setNanos(epoch.getNano());
             toStatement.setTimestamp(toIndex, sqlTimestamp);
 
