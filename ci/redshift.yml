@@ -1,0 +1,7 @@
+type: redshift
+host: 127.0.0.1
+port: 5439
+database: ci_test
+user: postgres
+password: postgres
+fetch_rows: 1000

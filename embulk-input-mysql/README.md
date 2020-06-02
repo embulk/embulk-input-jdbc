@@ -205,8 +205,8 @@ $ ./gradlew gem
 Running tests:
 
 ```
-$ cp ci/travis_mysql.yml ci/mysql.yml  # edit this file if necessary
-$ EMBULK_INPUT_MYSQL_TEST_CONFIG=`pwd`/ci/mysql.yml ./gradlew :embulk-input-mysql:check --info
+$ cp ci/mysql.yml ci/mysql_tentative.yml  # edit this file if necessary
+$ EMBULK_INPUT_MYSQL_TEST_CONFIG=`pwd`/ci/mysql_tentative.yml ./gradlew :embulk-input-mysql:check --info
 ```
 
 This test data are expected by using 'UTC' as MySQL server's timezone. On the other hand, unit tests use 'Europe/Helsinki' as jdbc driver's session timezone.

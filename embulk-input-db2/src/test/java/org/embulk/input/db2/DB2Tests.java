@@ -5,6 +5,8 @@ import static java.util.Locale.ENGLISH;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.embulk.config.ConfigSource;
 import org.embulk.test.EmbulkTests;
@@ -21,11 +23,7 @@ public class DB2Tests
 
     public static void execute(String sqlName) throws Exception
     {
-        try {
-            Class.forName("com.ibm.db2.jcc.DB2Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("You should put 'db2jcc4.jar' in 'embulk-input-db2/test_jdbc_driver' directory in order to test.");
-        }
+        Class.forName("com.ibm.db2.jcc.DB2Driver");
 
         // DB2Tests.excute takes a resource name of SQL file, doesn't take a SQL sentence as other XXXTests do.
         // Because TestingEmbulk.createTempFile might create a file whose name contains ' ' and DB2 clpplus cannot read such a file.
@@ -39,11 +37,20 @@ public class DB2Tests
         String password = config.get(String.class, "password");
         String database = config.get(String.class, "database");
 
-        boolean isWindows = File.separatorChar == '\\';
-        ProcessBuilder pb = new ProcessBuilder(
-                "clpplus." + (isWindows ? "bat" : "sh"),
-                user + "/" + password + "@" + host + ":" + port + "/" + database,
-                "@" + new File(sqlRrl.toURI()).getAbsolutePath());
+        final ArrayList<String> commandLine = new ArrayList<>();
+
+        // JFYI: We may use the "db2" command instead of "clpplus".
+        // https://publib.boulder.ibm.com/tividd/td/ITCM/GC23-4702-01/ja_JA/HTML/CM_PI107.htm
+        final String clpplusCommand = System.getenv("EMBULK_INPUT_DB2_TEST_CLPPLUS_COMMAND");
+        if (clpplusCommand == null || clpplusCommand.isEmpty()) {
+            commandLine.add("clpplus." + (File.separatorChar == '\\' ? "bat" : "sh"));
+        } else {
+            commandLine.addAll(Arrays.asList(clpplusCommand.split(" ")));
+        }
+        commandLine.add(user + "/" + password + "@" + host + ":" + port + "/" + database);
+        commandLine.add("@" + new File(sqlRrl.toURI()).getAbsolutePath());
+        System.out.println(commandLine);
+        final ProcessBuilder pb = new ProcessBuilder(commandLine);
         pb.redirectErrorStream(true);
         int code;
         try {

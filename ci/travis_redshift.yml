@@ -1,7 +1,0 @@
-type: redshift
-host: localhost
-port: 5439
-database: travis_ci_test
-user: redshift
-password: ""
-fetch_rows: 1000

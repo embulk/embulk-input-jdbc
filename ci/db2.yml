@@ -1,0 +1,6 @@
+type: db2
+host: 127.0.0.1
+port: 50000
+database: testdb
+user: db2inst1
+password: password

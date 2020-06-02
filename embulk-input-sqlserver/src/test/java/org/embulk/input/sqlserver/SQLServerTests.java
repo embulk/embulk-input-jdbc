@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,23 +30,30 @@ public class SQLServerTests
     {
         ConfigSource config = baseConfig();
 
-        ImmutableList.Builder<String> args = ImmutableList.builder();
-        args.add("sqlcmd")
-                .add("-U")
-                .add(config.get(String.class, "user"))
-                .add("-P")
-                .add(config.get(String.class, "password"))
-                .add("-H")
-                .add(config.get(String.class, "host"))
-                .add("-d")
-                .add(config.get(String.class, "database"))
-                .add("-Q")
-                .add(sql);
+        final ArrayList<String> args = new ArrayList<>();
+
+        final String sqlcmdCommand = System.getenv("EMBULK_INPUT_SQLSERVER_TEST_SQLCMD_COMMAND");
+        if (sqlcmdCommand == null || sqlcmdCommand.isEmpty()) {
+            args.add("sqlcmd");
+        } else {
+            args.addAll(Arrays.asList(sqlcmdCommand.split(" ")));
+        }
+
+        args.add("-U");
+        args.add(config.get(String.class, "user"));
+        args.add("-P");
+        args.add(config.get(String.class, "password"));
+        args.add("-H");
+        args.add(config.get(String.class, "host"));
+        args.add("-d");
+        args.add(config.get(String.class, "database"));
+        args.add("-Q");
+        args.add(sql);
         for (String option : options) {
             args.add(option);
         }
 
-        ProcessBuilder pb = new ProcessBuilder(args.build());
+        ProcessBuilder pb = new ProcessBuilder(args);
         pb.redirectErrorStream(true);
         int code;
         try {
