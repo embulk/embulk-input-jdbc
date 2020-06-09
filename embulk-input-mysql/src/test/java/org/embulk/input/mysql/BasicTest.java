@@ -1,7 +1,9 @@
 package org.embulk.input.mysql;
 
 import org.embulk.config.ConfigDiff;
+import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
+import org.embulk.exec.PartialExecutionException;
 import org.embulk.input.MySQLInputPlugin;
 import org.embulk.spi.InputPlugin;
 import org.embulk.test.EmbulkTests;
@@ -15,7 +17,9 @@ import java.nio.file.Path;
 import static org.embulk.input.mysql.MySQLTests.execute;
 import static org.embulk.test.EmbulkTests.readSortedFile;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class BasicTest
 {
@@ -115,6 +119,21 @@ public class BasicTest
         TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_timestamp3_config.yml")), out1);
         assertThat(readSortedFile(out1), is(readResource("test_timestamp3_expected.csv")));
         assertThat(result1.getConfigDiff(), is((ConfigDiff) loadYamlResource(embulk, "test_timestamp3_expected.diff")));
+    }
+
+    @Test
+    public void testInvalidTimeZone() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        try {
+            embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_invalid_zone_config.yml")), out1);
+        } catch (final PartialExecutionException ex) {
+            final Throwable cause = ex.getCause();
+            assertThat(cause, instanceOf(ConfigException.class));
+            assertThat(cause.getMessage(), is("Time zone 'Somewhere/Some_City' is not recognised."));
+            return;
+        }
+        fail();
     }
 
     @Test
