@@ -1,8 +1,15 @@
 dependencies {
-    compile project(':embulk-input-jdbc')
-    compile project(':embulk-input-postgresql')
+    compile(project(path: ":embulk-input-jdbc", configuration: "runtimeElements"))
+    compile(project(path: ":embulk-input-postgresql", configuration: "runtimeElements"))
+    compile "org.postgresql:postgresql:9.4-1205-jdbc41"
 
     testCompile project(':embulk-input-jdbc').sourceSets.test.output
 
-    testCompile 'org.embulk:embulk-standards:0.9.12'
+    testCompile 'org.embulk:embulk-standards:0.9.23'
+}
+
+embulkPlugin {
+    mainClass = "org.embulk.input.RedshiftInputPlugin"
+    category = "input"
+    type = "redshift"
 }
