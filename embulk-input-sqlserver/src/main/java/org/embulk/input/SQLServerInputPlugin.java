@@ -17,7 +17,6 @@ import org.embulk.input.sqlserver.SQLServerInputConnection;
 
 import org.embulk.input.sqlserver.getter.SQLServerColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
-import org.joda.time.DateTimeZone;
 
 import static java.util.Locale.ENGLISH;
 
@@ -166,7 +165,7 @@ public class SQLServerInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
     {
         return new SQLServerColumnGetterFactory(pageBuilder, dateTimeZone);
     }

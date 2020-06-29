@@ -18,7 +18,6 @@ import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.mysql.MySQLInputConnection;
 import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
-import org.joda.time.DateTimeZone;
 
 public class MySQLInputPlugin
         extends AbstractJdbcInputPlugin
@@ -136,7 +135,7 @@ public class MySQLInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, DateTimeZone dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
     {
         return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }

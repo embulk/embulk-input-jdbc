@@ -1,14 +1,14 @@
 package org.embulk.input.mysql.getter;
 
 import org.embulk.input.jdbc.getter.ColumnGetter;
-import org.joda.time.DateTimeZone;
 
 import java.sql.Timestamp;
+import java.time.ZoneId;
 
 public class MySQLTimestampTimestampIncrementalHandler
         extends AbstractMySQLTimestampIncrementalHandler
 {
-    public MySQLTimestampTimestampIncrementalHandler(DateTimeZone sessionTimeZone, ColumnGetter next)
+    public MySQLTimestampTimestampIncrementalHandler(final ZoneId sessionTimeZone, final ColumnGetter next)
     {
         super(sessionTimeZone, next);
     }

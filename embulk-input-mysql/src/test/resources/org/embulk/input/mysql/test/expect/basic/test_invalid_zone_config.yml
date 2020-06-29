@@ -1,0 +1,8 @@
+table: test1
+order_by: 'id'
+column_options:
+  c11: {type: string, timestamp_format: '%Y/%m/%d'}
+  c12: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S'}
+  c13: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S', timezone: 'Somewhere/Some_City'}
+  c14: {type: string, timestamp_format: '%H-%M-%S', timezone: 'UTC'}
+  c15: {type: string, timestamp_format: '%Y/%m/%d %H:%M:%S.%6N'}

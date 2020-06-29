@@ -11,8 +11,8 @@ import org.embulk.input.jdbc.getter.JsonColumnGetter;
 import org.embulk.input.mysql.MySQLInputConnection;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Types;
-import org.joda.time.DateTimeZone;
 
+import java.time.ZoneId;
 import java.util.TimeZone;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class MySQLColumnGetterFactory
         extends ColumnGetterFactory
 {
-    public MySQLColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
+    public MySQLColumnGetterFactory(final PageBuilder to, final String defaultTimeZone)
     {
         super(to, defaultTimeZone);
     }
@@ -47,8 +47,7 @@ public class MySQLColumnGetterFactory
             }
 
             TimeZone timeZone = mysqlInputConnection.getServerTimezoneTZ();
-            // Joda-Time's timezone mapping is probably not compatible with java.util.TimeZone if null is returned.
-            DateTimeZone sessionTimeZone = checkNotNull(DateTimeZone.forTimeZone(timeZone));
+            final ZoneId sessionTimeZone = timeZone.toZoneId();
             if (column.getTypeName().equals("DATETIME")) {
                 return new MySQLDateTimeTimestampIncrementalHandler(sessionTimeZone, getter);
             }

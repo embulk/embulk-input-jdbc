@@ -9,11 +9,10 @@ import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.getter.TimestampWithTimeZoneIncrementalHandler;
 import org.embulk.input.jdbc.getter.TimestampWithoutTimeZoneIncrementalHandler;
 import org.embulk.spi.PageBuilder;
-import org.joda.time.DateTimeZone;
 
 public class RedshiftColumnGetterFactory extends ColumnGetterFactory
 {
-    public RedshiftColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
+    public RedshiftColumnGetterFactory(final PageBuilder to, final String defaultTimeZone)
     {
         super(to, defaultTimeZone);
     }

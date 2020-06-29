@@ -8,12 +8,11 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.getter.TimestampWithoutTimeZoneIncrementalHandler;
 import org.embulk.spi.PageBuilder;
-import org.joda.time.DateTimeZone;
 
 public class OracleColumnGetterFactory extends ColumnGetterFactory
 {
 
-  public OracleColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone) {
+  public OracleColumnGetterFactory(final PageBuilder to, final String defaultTimeZone) {
     super(to, defaultTimeZone);
   }
 

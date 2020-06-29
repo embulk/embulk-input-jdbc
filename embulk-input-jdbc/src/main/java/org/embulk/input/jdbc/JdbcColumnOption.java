@@ -7,7 +7,6 @@ import org.embulk.config.ConfigInject;
 import org.embulk.config.Task;
 import org.embulk.spi.time.TimestampFormat;
 import org.embulk.spi.type.Type;
-import org.joda.time.DateTimeZone;
 
 public interface JdbcColumnOption
         extends Task
@@ -26,5 +25,5 @@ public interface JdbcColumnOption
 
     @Config("timezone")
     @ConfigDefault("null")
-    public Optional<DateTimeZone> getTimeZone();
+    public Optional<String> getTimeZone();
 }

@@ -18,17 +18,16 @@ import org.embulk.spi.PageBuilder;
 import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
-import org.joda.time.DateTimeZone;
 
 import static java.util.Locale.ENGLISH;
 
 public class ColumnGetterFactory
 {
     protected final PageBuilder to;
-    private final DateTimeZone defaultTimeZone;
+    private final String defaultTimeZone;
     private final Map<Integer, String> jdbcTypes = getAllJDBCTypes();
 
-    public ColumnGetterFactory(PageBuilder to, DateTimeZone defaultTimeZone)
+    public ColumnGetterFactory(PageBuilder to, String defaultTimeZone)
     {
         this.to = to;
         this.defaultTimeZone = defaultTimeZone;
