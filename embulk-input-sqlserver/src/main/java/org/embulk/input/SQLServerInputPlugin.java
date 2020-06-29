@@ -17,12 +17,15 @@ import org.embulk.input.sqlserver.SQLServerInputConnection;
 
 import org.embulk.input.sqlserver.getter.SQLServerColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.Locale.ENGLISH;
 
 public class SQLServerInputPlugin
     extends AbstractJdbcInputPlugin
 {
+    private static final Logger logger = LoggerFactory.getLogger(SQLServerInputPlugin.class);
     private static int DEFAULT_PORT = 1433;
 
     public interface SQLServerPluginTask

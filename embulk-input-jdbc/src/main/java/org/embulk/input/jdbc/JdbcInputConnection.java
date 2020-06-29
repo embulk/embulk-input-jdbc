@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableSet;
 public class JdbcInputConnection
         implements AutoCloseable
 {
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(JdbcInputConnection.class);
 
     protected final Connection connection;
     protected final String schemaName;

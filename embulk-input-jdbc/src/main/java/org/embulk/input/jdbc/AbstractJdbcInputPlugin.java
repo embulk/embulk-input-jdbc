@@ -52,7 +52,7 @@ import static java.util.Locale.ENGLISH;
 public abstract class AbstractJdbcInputPlugin
         implements InputPlugin
 {
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(AbstractJdbcInputPlugin.class);
 
     public interface PluginTask extends Task
     {

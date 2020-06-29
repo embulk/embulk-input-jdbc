@@ -18,10 +18,14 @@ import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.mysql.MySQLInputConnection;
 import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MySQLInputPlugin
         extends AbstractJdbcInputPlugin
 {
+    private static final Logger logger = LoggerFactory.getLogger(MySQLInputPlugin.class);
+
     public interface MySQLPluginTask
             extends PluginTask
     {
