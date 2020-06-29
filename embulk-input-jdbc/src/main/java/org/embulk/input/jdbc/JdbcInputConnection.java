@@ -19,12 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -237,7 +237,7 @@ public class JdbcInputConnection
         StringBuilder sb = new StringBuilder();
 
         sb.append("SELECT ");
-        sb.append(selectExpression.or("*"));
+        sb.append(selectExpression.orElse("*"));
         sb.append(" FROM ").append(buildTableName(tableName));
 
         if (whereCondition.isPresent()) {

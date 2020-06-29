@@ -3,6 +3,7 @@ package org.embulk.input;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.embulk.config.Config;
@@ -11,7 +12,6 @@ import org.embulk.input.db2.DB2InputConnection;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
 
-import com.google.common.base.Optional;
 import static java.util.Locale.ENGLISH;
 
 public class DB2InputPlugin
@@ -82,7 +82,7 @@ public class DB2InputPlugin
 
         Connection con = DriverManager.getConnection(url, props);
         try {
-            DB2InputConnection c = new DB2InputConnection(con, db2Task.getSchema().orNull());
+            DB2InputConnection c = new DB2InputConnection(con, db2Task.getSchema().orElse(null));
             con = null;
             return c;
         } finally {

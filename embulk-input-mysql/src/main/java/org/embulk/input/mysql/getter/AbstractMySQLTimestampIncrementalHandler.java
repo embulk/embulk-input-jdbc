@@ -1,7 +1,6 @@
 package org.embulk.input.mysql.getter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Optional;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.input.jdbc.getter.AbstractIncrementalHandler;
@@ -16,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 public abstract class AbstractMySQLTimestampIncrementalHandler
         extends AbstractIncrementalHandler
@@ -54,9 +54,16 @@ public abstract class AbstractMySQLTimestampIncrementalHandler
         final ConfigSource configSource = Exec.newConfigSource();
         configSource.set("format", getTimestampFormat());
         configSource.set("timezone", "UTC");
-        TimestampFormatter formatter = new TimestampFormatter(
-            Exec.newConfigSource().loadConfig(FormatterIntlTask.class),
-            Optional.fromNullable(configSource.loadConfig(FormatterIntlColumnOption.class)));
+        final FormatterIntlTask task = Exec.newConfigSource().loadConfig(FormatterIntlTask.class);
+        final Optional<? extends TimestampFormatter.TimestampColumnOption> columnOption =
+                Optional.ofNullable(configSource.loadConfig(FormatterIntlColumnOption.class));
+        final TimestampFormatter formatter = TimestampFormatter.of(
+                columnOption.isPresent()
+                        ? columnOption.get().getFormat().or(task.getDefaultTimestampFormat())
+                        : task.getDefaultTimestampFormat(),
+                columnOption.isPresent()
+                        ? columnOption.get().getTimeZoneId().or(task.getDefaultTimeZoneId())
+                        : task.getDefaultTimeZoneId());
         String text = formatter.format(utcTimestampFromSessionTime(epochSecond, nano));
         return jsonNodeFactory.textNode(text);
     }

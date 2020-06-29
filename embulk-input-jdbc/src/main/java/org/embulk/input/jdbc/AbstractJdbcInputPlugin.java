@@ -13,14 +13,13 @@ import java.util.Properties;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
@@ -570,18 +569,14 @@ public abstract class AbstractJdbcInputPlugin
             }
         }
 
-        return Optional
-                .fromNullable(columnOption)
-                .or(Optional.fromNullable(defaultColumnOptions.get(targetColumnSQLType)))
-                .or(
-                    // default column option
-                    new Supplier<JdbcColumnOption>()
-                    {
-                        public JdbcColumnOption get()
-                        {
-                            return Exec.newConfigSource().loadConfig(JdbcColumnOption.class);
-                        }
-                    });
+        if (columnOption != null) {
+            return columnOption;
+        }
+        final JdbcColumnOption defaultColumnOption = defaultColumnOptions.get(targetColumnSQLType);
+        if (defaultColumnOption != null) {
+            return defaultColumnOption;
+        }
+        return Exec.newConfigSource().loadConfig(JdbcColumnOption.class);
     }
 
     private long fetch(BatchSelect cursor,

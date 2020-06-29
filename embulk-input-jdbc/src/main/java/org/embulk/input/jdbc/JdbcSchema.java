@@ -1,7 +1,7 @@
 package org.embulk.input.jdbc;
 
 import java.util.List;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -50,6 +50,6 @@ public class JdbcSchema
                 return Optional.of(i);
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }

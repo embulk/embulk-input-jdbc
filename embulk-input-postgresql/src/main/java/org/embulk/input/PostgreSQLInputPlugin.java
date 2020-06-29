@@ -4,6 +4,7 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
@@ -13,8 +14,6 @@ import org.embulk.input.postgresql.PostgreSQLInputConnection;
 import org.embulk.input.postgresql.getter.PostgreSQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.joda.time.DateTimeZone;
-
-import com.google.common.base.Optional;
 
 public class PostgreSQLInputPlugin
         extends AbstractJdbcInputPlugin
