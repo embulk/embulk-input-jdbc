@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.slf4j.Logger;
-import org.embulk.spi.Exec;
+import org.slf4j.LoggerFactory;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
 import org.embulk.input.jdbc.getter.ColumnGetter;
@@ -14,7 +14,7 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 public class PostgreSQLInputConnection
         extends JdbcInputConnection
 {
-    private final Logger logger = Exec.getLogger(PostgreSQLInputConnection.class);
+    private final Logger logger = LoggerFactory.getLogger(PostgreSQLInputConnection.class);
 
     public PostgreSQLInputConnection(Connection connection, String schemaName)
             throws SQLException

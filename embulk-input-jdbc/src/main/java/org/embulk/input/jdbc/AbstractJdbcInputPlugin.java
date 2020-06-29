@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Optional;
@@ -52,7 +53,7 @@ import static java.util.Locale.ENGLISH;
 public abstract class AbstractJdbcInputPlugin
         implements InputPlugin
 {
-    protected final Logger logger = Exec.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     public interface PluginTask extends Task
     {
