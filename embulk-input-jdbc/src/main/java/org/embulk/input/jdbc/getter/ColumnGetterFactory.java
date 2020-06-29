@@ -15,9 +15,9 @@ import org.embulk.input.jdbc.JdbcColumnOption;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.spi.Exec;
 import org.embulk.spi.PageBuilder;
-import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
+import org.embulk.util.timestamp.TimestampFormatter;
 
 import static java.util.Locale.ENGLISH;
 
@@ -174,35 +174,16 @@ public class ColumnGetterFactory
         }
         Type toType = option.getType().get();
         if (toType instanceof TimestampType && option.getTimestampFormat().isPresent()) {
-            toType = ((TimestampType)toType).withFormat(option.getTimestampFormat().get().getFormat());
+            toType = ((TimestampType)toType).withFormat(option.getTimestampFormat().get());
         }
         return toType;
     }
 
-    private static interface FormatterIntlTask extends Task, TimestampFormatter.Task {}
-    private static interface FormatterIntlColumnOption extends Task, TimestampFormatter.TimestampColumnOption {}
-
     private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat)
     {
-        // TODO: Switch to a newer TimestampFormatter constructor after a reasonable interval.
-        // Traditional constructor is used here for compatibility.
-        final ConfigSource configSource = Exec.newConfigSource();
-        configSource.set("format", option.getTimestampFormat().isPresent()
-                                   ? option.getTimestampFormat().get().getFormat()
-                                   : defaultTimestampFormat);
-        configSource.set("timezone", option.getTimeZone().orElse(this.defaultTimeZone));
-
-        final FormatterIntlTask task = Exec.newConfigSource().loadConfig(FormatterIntlTask.class);
-        final Optional<? extends TimestampFormatter.TimestampColumnOption> columnOption =
-                Optional.ofNullable(configSource.loadConfig(FormatterIntlColumnOption.class));
-
-        return TimestampFormatter.of(
-                columnOption.isPresent()
-                        ? columnOption.get().getFormat().or(task.getDefaultTimestampFormat())
-                        : task.getDefaultTimestampFormat(),
-                columnOption.isPresent()
-                        ? columnOption.get().getTimeZoneId().or(task.getDefaultTimeZoneId())
-                        : task.getDefaultTimeZoneId());
+        final String format = option.getTimestampFormat().orElse(defaultTimestampFormat);
+        final String timezone = option.getTimeZone().orElse(this.defaultTimeZone);
+        return TimestampFormatter.builder(format, true).setDefaultZoneFromString(timezone).build();
     }
 
     private static UnsupportedOperationException unsupportedOperationException(JdbcColumn column)

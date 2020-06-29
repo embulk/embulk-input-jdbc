@@ -3,6 +3,7 @@ package org.embulk.input.mysql.getter;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZoneId;
 
 public class MySQLTimestampTimestampIncrementalHandler
@@ -20,9 +21,9 @@ public class MySQLTimestampTimestampIncrementalHandler
     }
 
     @Override
-    public org.embulk.spi.time.Timestamp utcTimestampFromSessionTime(long epochSecond, int nano)
+    public Instant utcTimestampFromSessionTime(final long epochSecond, final int nano)
     {
-        return org.embulk.spi.time.Timestamp.ofEpochSecond(epochSecond, nano);
+        return Instant.ofEpochSecond(epochSecond, nano);
     }
 
     @Override
@@ -32,7 +33,7 @@ public class MySQLTimestampTimestampIncrementalHandler
     }
 
     @Override
-    public Timestamp utcTimestampToSessionTime(org.embulk.spi.time.Timestamp ts)
+    public Timestamp utcTimestampToSessionTime(final Instant ts)
     {
         Timestamp sqlTimestamp = new Timestamp(ts.getEpochSecond() * 1000);
         sqlTimestamp.setNanos(ts.getNano());
