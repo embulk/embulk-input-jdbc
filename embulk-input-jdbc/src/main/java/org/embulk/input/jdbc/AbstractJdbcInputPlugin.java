@@ -29,7 +29,6 @@ import org.embulk.config.Config;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
-import org.embulk.config.ConfigInject;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.config.TaskReport;
@@ -172,9 +171,6 @@ public abstract class AbstractJdbcInputPlugin
 
         public List<Integer> getIncrementalColumnIndexes();
         public void setIncrementalColumnIndexes(List<Integer> indexes);
-
-        @ConfigInject
-        public BufferAllocator getBufferAllocator();
     }
 
     // for subclasses to add @Config
@@ -489,7 +485,7 @@ public abstract class AbstractJdbcInputPlugin
 
         PreparedQuery builtQuery = task.getBuiltQuery();
         JdbcSchema querySchema = task.getQuerySchema();
-        BufferAllocator allocator = task.getBufferAllocator();
+        BufferAllocator allocator = Exec.getBufferAllocator();
         PageBuilder pageBuilder = new PageBuilder(allocator, schema, output);
 
         long totalRows = 0;
