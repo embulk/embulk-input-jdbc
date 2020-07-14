@@ -11,10 +11,14 @@ import java.util.TimeZone;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
 import org.embulk.input.jdbc.getter.ColumnGetter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MySQLInputConnection
         extends JdbcInputConnection
 {
+    private static final Logger logger = LoggerFactory.getLogger(MySQLInputConnection.class);
+
     public MySQLInputConnection(Connection connection)
             throws SQLException
     {

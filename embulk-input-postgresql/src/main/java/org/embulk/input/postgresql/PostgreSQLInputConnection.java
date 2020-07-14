@@ -14,7 +14,7 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 public class PostgreSQLInputConnection
         extends JdbcInputConnection
 {
-    private final Logger logger = LoggerFactory.getLogger(PostgreSQLInputConnection.class);
+    private static final Logger logger = LoggerFactory.getLogger(PostgreSQLInputConnection.class);
 
     public PostgreSQLInputConnection(Connection connection, String schemaName)
             throws SQLException
