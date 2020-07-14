@@ -1,3 +1,9 @@
+Release 0.11.0 - 2020-11-14
+
+* Updated the whole build process -- using the "org.embulk.embulk-plugins" Gradle plugin, and else.
+* Caught up with the latest API/SPI -- getLogger, Optional, BufferAllocator, and else.
+* Started to use embulk-util-timestamp in formatting and parsing timestamps.
+
 Release 0.10.1 - 2019-09-06
 
 * Changed the default JDBC driver for SQL Server from jTDS JDBC Driver to Microsoft JDBC Driver (@hieudion++).
@@ -199,4 +205,3 @@ Release 0.2.1 - 2015-02-17
 * output-mysql sets zeroDateTimeBehavior=convertToNull to the connection
   parameter to avoid 'SQLException: Value '0000-00-00' can not be represented
   as java.sql.Date' exception (@shun0102++)
-
