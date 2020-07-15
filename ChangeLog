@@ -1,4 +1,4 @@
-Release 0.11.0 - 2020-11-14
+Release 0.11.0 - 2020-11-15
 
 * Updated the whole build process -- using the "org.embulk.embulk-plugins" Gradle plugin, and else.
 * Caught up with the latest API/SPI -- getLogger, Optional, BufferAllocator, and else.
@@ -9,7 +9,7 @@ Release 0.10.1 - 2019-09-06
 * Changed the default JDBC driver for SQL Server from jTDS JDBC Driver to Microsoft JDBC Driver (@hieudion++).
 * embulk-input-sqlserver supported socket_timeout for Microsoft JDBC Driver.
 
-Releaes 0.10.0 - 2019-05-23
+Release 0.10.0 - 2019-05-23
 
 The following two are incompatible changes.
 * Requires Java 8 or later (no longer supports Java 7), and requires embulk 0.9 or later.
@@ -18,7 +18,7 @@ The following two are incompatible changes.
 * Enabled to execute SQL before setting up and selecting by 'before_setup' option and 'before_select' option.
 * Fixed missing left brace when getting empty array column in embulk-input-postgresql (@ommadawn46++).
 
-Releaes 0.9.3 - 2018-08-10
+Release 0.9.3 - 2018-08-10
 * Added `use_raw_query_with_incremental` property in order to write optimized query for incremental loading.
 
 Release 0.9.2 - 2018-07-03
