@@ -243,7 +243,11 @@ public abstract class AbstractJdbcInputPlugin
             TreeMap<String, Integer> columnNames = new TreeMap<>(new Comparator<String>() {
                 @Override
                 public int compare(String val1, String val2) {
-                    return val2.length() - val1.length();
+                    int c = val2.length() - val1.length();
+                    if (c != 0) {
+                        return c;
+                    }
+                    return val1.compareTo(val2);
                 }
             });
             for (int i = 0; i < task.getIncrementalColumns().size(); i++) {
