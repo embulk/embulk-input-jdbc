@@ -366,12 +366,10 @@ public class JdbcInputConnection
         return index.get().intValue();
     }
 
-    private List<JdbcLiteral> replacePlaceholder(StringBuilder sb, String rawQuery, JdbcSchema querySchema,
-                                                 List<String> incrementalColumns, List<JsonNode> incrementalValues)
-            throws SQLException
+    protected TreeMap<String, Integer> createColumnNameSortedMap()
     {
-        // Insert pair of columnName:columnIndex order by column name length DESC
-        TreeMap<String, Integer> columnNames = new TreeMap<>(new Comparator<String>() {
+        // sort column names in descending order of the length
+        return new TreeMap<>(new Comparator<String>() {
             @Override
             public int compare(String val1, String val2) {
                 int c = val2.length() - val1.length();
@@ -381,6 +379,14 @@ public class JdbcInputConnection
                 return val1.compareTo(val2);
             }
         });
+    }
+
+    private List<JdbcLiteral> replacePlaceholder(StringBuilder sb, String rawQuery, JdbcSchema querySchema,
+                                                 List<String> incrementalColumns, List<JsonNode> incrementalValues)
+            throws SQLException
+    {
+        // Insert pair of columnName:columnIndex order by column name length DESC
+        TreeMap<String, Integer> columnNames = createColumnNameSortedMap();
 
         ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
         for (String columnName : incrementalColumns) {

@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -240,16 +239,7 @@ public abstract class AbstractJdbcInputPlugin
             String temporaryQuery = rawQuery;
 
             // Insert pair of columnName:columnIndex order by column name length DESC
-            TreeMap<String, Integer> columnNames = new TreeMap<>(new Comparator<String>() {
-                @Override
-                public int compare(String val1, String val2) {
-                    int c = val2.length() - val1.length();
-                    if (c != 0) {
-                        return c;
-                    }
-                    return val1.compareTo(val2);
-                }
-            });
+            TreeMap<String, Integer> columnNames = con.createColumnNameSortedMap();
             for (int i = 0; i < task.getIncrementalColumns().size(); i++) {
                 columnNames.put(task.getIncrementalColumns().get(i), i);
             }
