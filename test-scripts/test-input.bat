@@ -7,8 +7,6 @@ echo "mysql-input/test.bat"
 call test.bat >> %LOG%
 echo "mysql-input/test_desc.bat"
 call test_desc.bat >> %LOG%
-echo "mysql-input/test_inc.bat"
-call test_inc.bat >> %LOG%
 cd ..
 
 cd oracle-input
