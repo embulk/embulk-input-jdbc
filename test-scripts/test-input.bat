@@ -5,8 +5,6 @@ del %LOG%
 cd mysql-input
 echo "mysql-input/test.bat"
 call test.bat >> %LOG%
-echo "mysql-input/test_desc.bat"
-call test_desc.bat >> %LOG%
 cd ..
 
 cd oracle-input

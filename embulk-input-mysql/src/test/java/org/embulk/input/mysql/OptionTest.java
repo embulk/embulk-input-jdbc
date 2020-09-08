@@ -12,6 +12,7 @@ import org.junit.Test;
 import java.nio.file.Path;
 
 import static org.embulk.input.mysql.MySQLTests.execute;
+import static org.embulk.test.EmbulkTests.readFile;
 import static org.embulk.test.EmbulkTests.readSortedFile;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -89,5 +90,28 @@ public class OptionTest
         assertThat(readSortedFile(out1), is(readResource("default_column_options_expected.csv")));
     }
 
+    @Test
+    public void testOrderBy() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "order_by.yml")), out1);
+        assertThat(readFile(out1), is(readResource("order_by_expected.csv")));
+    }
+
+    @Test
+    public void testOrderByAsc() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "order_by_asc.yml")), out1);
+        assertThat(readFile(out1), is(readResource("order_by_asc_expected.csv")));
+    }
+
+    @Test
+    public void testOrderByDesc() throws Exception
+    {
+        Path out1 = embulk.createTempFile("csv");
+        TestingEmbulk.RunResult result1 = embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "order_by_desc.yml")), out1);
+        assertThat(readFile(out1), is(readResource("order_by_desc_expected.csv")));
+    }
 
 }
