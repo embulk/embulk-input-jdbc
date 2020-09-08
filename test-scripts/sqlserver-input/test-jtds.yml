@@ -1,0 +1,23 @@
+in:
+  type: sqlserver
+  application_name: embulk_test(jtds)
+  host: localhost
+  port: 1433
+  database: TESTDB
+  user: TEST_USER
+  password: XXXXXXXX
+  table: EMBULK_INPUT
+  select: "*"
+  column_options:
+    ID: {type: string}
+    NUM: {type: string}
+    DT: {type: string, timestamp_format: '%Y-%m-%d', timezone: "+0900"}
+    DTTM: {type: string, timestamp_format: '%Y-%m-%d %H:%M:%S.%3N', timezone: "+0900"}
+    DTTM2: {type: string, timestamp_format: '%Y-%m-%d %H:%M:%S.%7N', timezone: "+0900"}
+    SDTTM: {type: string, timestamp_format: '%Y-%m-%d %H:%M:%S', timezone: "+0900"}
+out:
+  type: file
+  path_prefix: data/test
+  file_ext: csv
+  formatter:
+    type: csv
