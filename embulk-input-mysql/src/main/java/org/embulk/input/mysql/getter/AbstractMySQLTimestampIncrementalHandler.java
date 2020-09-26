@@ -2,11 +2,11 @@ package org.embulk.input.mysql.getter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.embulk.config.ConfigSource;
-import org.embulk.config.Task;
 import org.embulk.input.jdbc.getter.AbstractIncrementalHandler;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
+import org.embulk.util.config.Task;
 import org.embulk.util.timestamp.TimestampFormatter;
 
 import java.sql.PreparedStatement;

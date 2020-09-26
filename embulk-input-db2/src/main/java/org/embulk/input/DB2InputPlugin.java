@@ -6,11 +6,11 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.input.db2.DB2InputConnection;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
 
 import static java.util.Locale.ENGLISH;
 

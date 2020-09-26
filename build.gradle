@@ -33,6 +33,8 @@ subprojects {
 
     dependencies {
         compileOnly "org.embulk:embulk-core:0.9.23"
+
+        compile "org.embulk:embulk-util-config:0.1.3"
         compile "org.embulk:embulk-util-timestamp:0.2.1"
 
         testCompile "org.embulk:embulk-core:0.9.23"

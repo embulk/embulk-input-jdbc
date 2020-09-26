@@ -8,8 +8,8 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import com.google.common.base.Throwables;
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
 

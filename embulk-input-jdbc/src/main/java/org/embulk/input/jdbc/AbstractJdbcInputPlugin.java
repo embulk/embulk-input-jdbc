@@ -24,12 +24,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
-import org.embulk.config.Config;
 import org.embulk.config.ConfigException;
-import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
-import org.embulk.config.Task;
 import org.embulk.config.TaskReport;
 import org.embulk.config.TaskSource;
 import org.embulk.plugin.PluginClassLoader;
@@ -45,6 +42,12 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.JdbcInputConnection.BatchSelect;
 import org.embulk.input.jdbc.JdbcInputConnection.PreparedQuery;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
+import org.embulk.util.config.ConfigMapper;
+import org.embulk.util.config.ConfigMapperFactory;
+import org.embulk.util.config.Task;
+import org.embulk.util.config.TaskMapper;
 
 import static java.util.Locale.ENGLISH;
 
@@ -52,6 +55,7 @@ public abstract class AbstractJdbcInputPlugin
         implements InputPlugin
 {
     private static final Logger logger = LoggerFactory.getLogger(AbstractJdbcInputPlugin.class);
+    private static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory.builder().addDefaultModules().build();
 
     public interface PluginTask extends Task
     {
@@ -184,7 +188,8 @@ public abstract class AbstractJdbcInputPlugin
     public ConfigDiff transaction(ConfigSource config,
             InputPlugin.Control control)
     {
-        PluginTask task = config.loadConfig(getTaskClass());
+        final ConfigMapper configMapper = CONFIG_MAPPER_FACTORY.createConfigMapper();
+        final PluginTask task = configMapper.map(config, getTaskClass());
 
         // Invalid timezones should fail immediately when configuring.
         throwAgainstInvalidTimeZone(task.getDefaultTimeZone());
@@ -401,7 +406,8 @@ public abstract class AbstractJdbcInputPlugin
             Schema schema, int taskCount,
             InputPlugin.Control control)
     {
-        PluginTask task = taskSource.loadTask(getTaskClass());
+        final TaskMapper taskMapper = CONFIG_MAPPER_FACTORY.createTaskMapper();
+        final PluginTask task = taskMapper.map(taskSource, getTaskClass());
 
         // TODO when parallel execution is implemented and enabled, (maybe) order_by
         //      is necessary to resume. transaction() gets the range of order_by
@@ -475,7 +481,8 @@ public abstract class AbstractJdbcInputPlugin
             Schema schema, int taskIndex,
             PageOutput output)
     {
-        PluginTask task = taskSource.loadTask(getTaskClass());
+        final TaskMapper taskMapper = CONFIG_MAPPER_FACTORY.createTaskMapper();
+        final PluginTask task = taskMapper.map(taskSource, getTaskClass());
 
         PreparedQuery builtQuery = task.getBuiltQuery();
         JdbcSchema querySchema = task.getQuerySchema();
@@ -576,7 +583,7 @@ public abstract class AbstractJdbcInputPlugin
         if (defaultColumnOption != null) {
             return defaultColumnOption;
         }
-        return Exec.newConfigSource().loadConfig(JdbcColumnOption.class);
+        return CONFIG_MAPPER_FACTORY.createConfigMapper().map(CONFIG_MAPPER_FACTORY.newConfigSource(), JdbcColumnOption.class);
     }
 
     private long fetch(BatchSelect cursor,
