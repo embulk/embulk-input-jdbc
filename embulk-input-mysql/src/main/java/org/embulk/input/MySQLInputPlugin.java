@@ -1,17 +1,9 @@
 package org.embulk.input;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Properties;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Optional;
-
 import com.google.common.base.Throwables;
-
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
+import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.Ssl;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
@@ -20,6 +12,16 @@ import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public class MySQLInputPlugin
         extends AbstractJdbcInputPlugin
@@ -158,7 +160,7 @@ public class MySQLInputPlugin
         // Here implements a workaround as as workaround.
         Field f = null;
         try {
-            Class<?> timeUtilClass = Class.forName("com.mysql.jdbc.TimeUtil");
+            Class<?> timeUtilClass = getTimeUtilClass();
             f = timeUtilClass.getDeclaredField("timeZoneMappings");
             f.setAccessible(true);
 
@@ -166,12 +168,12 @@ public class MySQLInputPlugin
             if (timeZoneMappings == null) {
                 timeZoneMappings = new Properties();
                 synchronized (timeUtilClass) {
-                    timeZoneMappings.load(this.getClass().getResourceAsStream("/com/mysql/jdbc/TimeZoneMapping.properties"));
+                    loadTimezoneMappings(timeZoneMappings);
                 }
                 f.set(null, timeZoneMappings);
             }
         }
-        catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | IOException e) {
+        catch (IllegalAccessException | NoSuchFieldException e) {
             throw Throwables.propagate(e);
         }
         finally {
@@ -179,6 +181,41 @@ public class MySQLInputPlugin
                 f.setAccessible(false);
             }
         }
+    }
+
+    private Class<?> getTimeUtilClass() {
+        Class<?> timeUtilClass;
+        List<String> timeUtilClassNames = Arrays.asList(
+                "com.mysql.jdbc.TimeUtil",   // Connector/J v5.X
+                "com.mysql.cj.util.TimeUtil" // Connector/J v8.X
+        );
+
+        for (String name : timeUtilClassNames) {
+            try {
+                timeUtilClass = Class.forName(name);
+                return timeUtilClass;
+            } catch (ClassNotFoundException e) {
+                // do nothing.
+            }
+        }
+        throw new ConfigException("Can't find TimeUtil Class");
+    }
+
+    private void loadTimezoneMappings(Properties timeZoneMappings) {
+        List<String> timeZoneResources = Arrays.asList(
+                "/com/mysql/jdbc/TimeZoneMapping.properties",   // Connector/J v5.X
+                "/com/mysql/cj/util/TimeZoneMapping.properties" // Connector/J v8.X
+        );
+
+        for (String resource : timeZoneResources) {
+            try {
+                timeZoneMappings.load(this.getClass().getResourceAsStream(resource));
+                return;
+            } catch (IOException | NullPointerException e) {
+                // do nothing.
+            }
+        }
+        throw new ConfigException("Can't find Timezone mapping property file.");
     }
 
 }
