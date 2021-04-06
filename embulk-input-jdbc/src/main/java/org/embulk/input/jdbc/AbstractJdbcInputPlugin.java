@@ -3,8 +3,10 @@ package org.embulk.input.jdbc;
 import java.io.File;
 import java.io.FileFilter;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -218,6 +220,10 @@ public abstract class AbstractJdbcInputPlugin
             // TODO incremental_columns is not set => get primary key
             schema = setupTask(con, task);
         } catch (SQLException ex) {
+            final Throwable cause = ex.getCause();
+            if (cause instanceof SocketTimeoutException || cause instanceof UnknownHostException) {
+                throw new ConfigException(ex);
+            }
             throw Throwables.propagate(ex);
         }
 
