@@ -33,10 +33,8 @@ jobs:
       run: docker logs db2container
     - name: Show DB2 configs
       run: docker exec db2container su - db2inst1 -c "db2 \"GET DBM CFG\""
-    - name: Show env
-      run: echo $GITHUB_WORKSPACE
     - name: Set env
-      run: echo "name=workspace::$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      run: echo "workspace=$GITHUB_WORKSPACE" >> $GITHUB_ENV
     - name: Install ksh to run installDSDriver
       run: sudo apt-get install ksh
     - name: Make working directory
@@ -95,8 +93,10 @@ jobs:
       run: mysql -h 127.0.0.1 --port 3306 -uroot -proot -e "show databases;"
     - name: Create database
       run: mysql -h 127.0.0.1 --port 3306 -uroot -proot -e "create database ci_test;"
+    - name: Show env
+      run: echo $GITHUB_WORKSPACE
     - name: Set env
-      run: echo "name=workspace::$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      run: echo "workspace=$GITHUB_WORKSPACE" >> $GITHUB_ENV
     - name: Build with testing
       run: ./gradlew --stacktrace :embulk-input-mysql:check
       env:
@@ -134,7 +134,7 @@ jobs:
       env:
         PGPASSWORD: postgres
     - name: Set env
-      run: echo "name=workspace::$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      run: echo "workspace=$GITHUB_WORKSPACE" >> $GITHUB_ENV
     - name: Build with testing
       run: ./gradlew --stacktrace :embulk-input-postgresql:check
       env:
@@ -167,7 +167,7 @@ jobs:
       env:
         PGPASSWORD: postgres
     - name: Set env
-      run: echo "name=workspace::$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      run: echo "workspace=$GITHUB_WORKSPACE" >> $GITHUB_ENV
     - name: Build with testing
       run: ./gradlew --stacktrace :embulk-input-redshift:check
       env:
@@ -201,7 +201,7 @@ jobs:
     - name: Confirm log
       run: docker logs mssqlcontainer
     - name: Set env
-      run: echo "name=workspace::$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      run: echo "workspace=$GITHUB_WORKSPACE" >> $GITHUB_ENV
     - name: Copy test resources into Docker container
       run: docker cp ${{ env.workspace }}/embulk-input-sqlserver/src/test/resources/org/embulk/input/sqlserver/test/expect/. mssqlcontainer:/tmp
     - name: List resource files
