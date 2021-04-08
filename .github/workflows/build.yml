@@ -133,6 +133,8 @@ jobs:
       run: psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "create database ci_test;"
       env:
         PGPASSWORD: postgres
+    - name: Show env
+      run: echo $GITHUB_WORKSPACE
     - name: Set env
       run: echo "workspace=$GITHUB_WORKSPACE" >> $GITHUB_ENV
     - name: Build with testing
