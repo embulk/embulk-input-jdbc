@@ -135,12 +135,14 @@ jobs:
         PGPASSWORD: postgres
     - name: Show env
       run: echo ${{ github.workspace }}
+    - name: current
+      run: pwd
     - name: Build with testing
-      run: ./gradlew --stacktrace :embulk-input-postgresql:clean check
+      run: ./gradlew --stacktrace :embulk-input-postgresql:check
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ github.workspace }}/ci/postgresql.yml"
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       if: always()
       with:
         name: postgresql
