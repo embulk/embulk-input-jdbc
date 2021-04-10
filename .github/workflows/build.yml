@@ -24,6 +24,10 @@ jobs:
           SAMPLEDB: true
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-java@v2
+      with:
+        java-version: 8
+        distribution: 'zulu'
     # TODO: Find a better way to wait for completing setup.
     - name: Sleep for 5 minutes to complete all the DB2 setup process
       run: sleep 300
@@ -154,6 +158,10 @@ jobs:
           POSTGRES_PASSWORD: postgres
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-java@v2
+      with:
+        java-version: 8
+        distribution: 'zulu'
     - name: Connect
       run: psql -h 127.0.0.1 -p 5439 -U postgres -d postgres -c "\l"
       env:
