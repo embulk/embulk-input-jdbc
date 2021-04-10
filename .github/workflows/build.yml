@@ -38,32 +38,32 @@ jobs:
     - name: Install ksh to run installDSDriver
       run: sudo apt-get install ksh
     - name: Make working directory
-      run: mkdir "${{ env.workspace }}/clpplus"
+      run: mkdir "${{ github.workspace }}/clpplus"
     - name: Download clpplus
       # https://github.com/rickdesantis/docker-files/tree/e3bbc10080be9e31635223c23091526bc5d9eff6/clpplus
-      run: curl "https://raw.githubusercontent.com/rickdesantis/docker-files/master/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz" -o "${{ env.workspace }}/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz"
+      run: curl "https://raw.githubusercontent.com/rickdesantis/docker-files/master/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz" -o "${{ github.workspace }}/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz"
     - name: Extract clpplus
-      run: tar zxf "${{ env.workspace }}/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz" -C "${{ env.workspace }}/clpplus"
+      run: tar zxf "${{ github.workspace }}/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz" -C "${{ github.workspace }}/clpplus"
     - name: Make installDSDriver runnable
       run: chmod +x installDSDriver
-      working-directory: "${{ env.workspace }}/clpplus/dsdriver"
+      working-directory: "${{ github.workspace }}/clpplus/dsdriver"
     - name: Run installDSDriver
       run: ./installDSDriver
-      working-directory: "${{ env.workspace }}/clpplus/dsdriver"
+      working-directory: "${{ github.workspace }}/clpplus/dsdriver"
     - name: Dump installDSDriver.log
       run: cat installDSDriver.log
-      working-directory: "${{ env.workspace }}/clpplus/dsdriver"
+      working-directory: "${{ github.workspace }}/clpplus/dsdriver"
     - name: List files
       run: ls -C -R
-      working-directory: "${{ env.workspace }}"
+      working-directory: "${{ github.workspace }}"
     - name: Run clpplus
-      run: "${{ env.workspace }}/clpplus/dsdriver/bin/clpplus -verbose 'db2inst1/password@127.0.0.1:50000/testdb' @${{ env.workspace }}/embulk-input-db2/src/test/resources/org/embulk/input/db2/test/expect/basic/setup.sql"
+      run: "${{ github.workspace }}/clpplus/dsdriver/bin/clpplus -verbose 'db2inst1/password@127.0.0.1:50000/testdb' @${{ github.workspace }}/embulk-input-db2/src/test/resources/org/embulk/input/db2/test/expect/basic/setup.sql"
     - name: Build with testing
       run: ./gradlew --stacktrace :embulk-input-db2:check
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
-        EMBULK_INPUT_DB2_TEST_CONFIG: "${{ env.workspace }}/ci/db2.yml"
-        EMBULK_INPUT_DB2_TEST_CLPPLUS_COMMAND: "${{ env.workspace }}/clpplus/dsdriver/bin/clpplus"
+        EMBULK_INPUT_DB2_TEST_CONFIG: "${{ github.workspace }}/ci/db2.yml"
+        EMBULK_INPUT_DB2_TEST_CLPPLUS_COMMAND: "${{ github.workspace }}/clpplus/dsdriver/bin/clpplus"
     - uses: actions/upload-artifact@v1
       if: always()
       with:
@@ -101,7 +101,7 @@ jobs:
       run: ./gradlew --stacktrace :embulk-input-mysql:check
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
-        EMBULK_INPUT_MYSQL_TEST_CONFIG: "${{ env.workspace }}/ci/mysql.yml"
+        EMBULK_INPUT_MYSQL_TEST_CONFIG: "${{ github.workspace }}/ci/mysql.yml"
     - uses: actions/upload-artifact@v1
       if: always()
       with:
@@ -141,7 +141,7 @@ jobs:
       run: ./gradlew --stacktrace :embulk-input-postgresql:check
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
-        EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ env.workspace }}/ci/postgresql.yml"
+        EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ github.workspace }}/ci/postgresql.yml"
     - uses: actions/upload-artifact@v1
       if: always()
       with:
@@ -174,7 +174,7 @@ jobs:
       run: ./gradlew --stacktrace :embulk-input-redshift:check
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
-        EMBULK_INPUT_REDSHIFT_TEST_CONFIG: "${{ env.workspace }}/ci/redshift.yml"
+        EMBULK_INPUT_REDSHIFT_TEST_CONFIG: "${{ github.workspace }}/ci/redshift.yml"
     - uses: actions/upload-artifact@v1
       if: always()
       with:
@@ -205,7 +205,7 @@ jobs:
     - name: Set env
       run: echo "workspace=${{ github.workspace }}" >> $GITHUB_ENV
     - name: Copy test resources into Docker container
-      run: docker cp ${{ env.workspace }}/embulk-input-sqlserver/src/test/resources/org/embulk/input/sqlserver/test/expect/. mssqlcontainer:/tmp
+      run: docker cp ${{ github.workspace }}/embulk-input-sqlserver/src/test/resources/org/embulk/input/sqlserver/test/expect/. mssqlcontainer:/tmp
     - name: List resource files
       run: docker exec mssqlcontainer ls -R /tmp
     - name: Show SQL Server objects
@@ -218,7 +218,7 @@ jobs:
       run: ./gradlew --stacktrace :embulk-input-sqlserver:check
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
-        EMBULK_INPUT_SQLSERVER_TEST_CONFIG: "${{ env.workspace }}/ci/sqlserver.yml"
+        EMBULK_INPUT_SQLSERVER_TEST_CONFIG: "${{ github.workspace }}/ci/sqlserver.yml"
         EMBULK_INPUT_SQLSERVER_TEST_SQLCMD_COMMAND: "docker exec mssqlcontainer /opt/mssql-tools/bin/sqlcmd"
     - uses: actions/upload-artifact@v1
       if: always()
