@@ -86,6 +86,7 @@ jobs:
     - uses: actions/setup-java@v2
       with:
         java-version: 1.8
+        distribution: 'zulu'
     - name: Connect
       run: mysql -h 127.0.0.1 --port 3306 -uroot -proot -e "show databases;"
     - name: Create database
@@ -121,6 +122,7 @@ jobs:
     - uses: actions/setup-java@v2
       with:
         java-version: 1.8
+        distribution: 'zulu'
     - name: Connect
       run: psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "\l"
       env:
