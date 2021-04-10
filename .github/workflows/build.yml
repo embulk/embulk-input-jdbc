@@ -135,10 +135,8 @@ jobs:
         PGPASSWORD: postgres
     - name: Show env
       run: echo ${{ github.workspace }}
-    - name: Set env
-      run: echo "workspace=${{ github.workspace }}" >> $GITHUB_ENV
     - name: Build with testing
-      run: ./gradlew --stacktrace :embulk-input-postgresql:check
+      run: ./gradlew --stacktrace :embulk-input-postgresql:clean check
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ github.workspace }}/ci/postgresql.yml"
