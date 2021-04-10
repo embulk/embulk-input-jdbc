@@ -69,18 +69,16 @@ jobs:
 #      with:
 #        name: db2
 #        path: embulk-input-db2/build/reports/tests/test
-  postgresql111:
-    strategy:
-      fail-fast: false
+  postgresql:
     runs-on: ubuntu-latest
-      services:
-        postgres:
-          image: postgres:9.4
-          options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-          ports:
-          - "5432:5432"
-          env:
-            POSTGRES_PASSWORD: postgres
+    services:
+      postgres:
+        image: postgres:9.4
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+        - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: postgres
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
