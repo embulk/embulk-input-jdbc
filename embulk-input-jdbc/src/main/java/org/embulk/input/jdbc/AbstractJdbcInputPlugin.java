@@ -220,8 +220,7 @@ public abstract class AbstractJdbcInputPlugin
             // TODO incremental_columns is not set => get primary key
             schema = setupTask(con, task);
         } catch (SQLException ex) {
-            final Throwable cause = ex.getCause();
-            if (cause instanceof SocketTimeoutException || cause instanceof UnknownHostException) {
+            if (ex.getCause() instanceof UnknownHostException) {
                 throw new ConfigException(ex);
             }
             throw Throwables.propagate(ex);
