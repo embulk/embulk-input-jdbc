@@ -3,7 +3,6 @@ package org.embulk.input.jdbc;
 import java.io.File;
 import java.io.FileFilter;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
