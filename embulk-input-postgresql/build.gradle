@@ -4,7 +4,12 @@ dependencies {
     compileOnly "org.postgresql:postgresql:9.4-1205-jdbc41"
     defaultJdbcDriver 'org.postgresql:postgresql:9.4-1205-jdbc41'
 
-    testCompile 'org.embulk:embulk-standards:0.9.23'
+    testCompile "com.google.guava:guava:18.0"
+    testCompile "org.embulk:embulk-formatter-csv:0.10.31"
+    testCompile "org.embulk:embulk-input-file:0.10.31"
+    testCompile "org.embulk:embulk-output-file:0.10.31"
+    testCompile "org.embulk:embulk-parser-csv:0.10.31"
+
     testCompile "org.postgresql:postgresql:9.4-1205-jdbc41"
 }
 

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.embulk.input.jdbc.getter.JsonColumnGetter;
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
-import org.embulk.spi.json.JsonParseException;
 import org.embulk.spi.type.Type;
+import org.embulk.util.json.JsonParseException;
 import org.msgpack.value.Value;
 import org.postgresql.util.HStoreConverter;
 

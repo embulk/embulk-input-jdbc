@@ -19,14 +19,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.TreeMap;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 public class JdbcInputConnection
         implements AutoCloseable
@@ -70,7 +70,7 @@ public class JdbcInputConnection
     public List<String> getPrimaryKeys(String tableName) throws SQLException
     {
         ResultSet rs = databaseMetaData.getPrimaryKeys(null, schemaName, tableName);
-        ImmutableList.Builder<String> builder = ImmutableList.builder();
+        final ArrayList<String> builder = new ArrayList<>();
         try {
             while(rs.next()) {
                 builder.add(rs.getString("COLUMN_NAME"));
@@ -78,12 +78,12 @@ public class JdbcInputConnection
         } finally {
             rs.close();
         }
-        return builder.build();
+        return Collections.unmodifiableList(builder);
     }
 
     protected JdbcSchema getSchemaOfResultMetadata(ResultSetMetaData metadata) throws SQLException
     {
-        ImmutableList.Builder<JdbcColumn> columns = ImmutableList.builder();
+        final ArrayList<JdbcColumn> columns = new ArrayList<>();
         for (int i=0; i < metadata.getColumnCount(); i++) {
             int index = i + 1;  // JDBC column index begins from 1
             String name = metadata.getColumnLabel(index);
@@ -93,7 +93,7 @@ public class JdbcInputConnection
             int precision = metadata.getPrecision(index);
             columns.add(new JdbcColumn(name, typeName, sqlType, precision, scale));
         }
-        return new JdbcSchema(columns.build());
+        return new JdbcSchema(Collections.unmodifiableList(columns));
     }
 
     public static class PreparedQuery
@@ -256,7 +256,7 @@ public class JdbcInputConnection
             JdbcSchema querySchema,
             List<String> incrementalColumns, List<JsonNode> incrementalValues) throws SQLException
     {
-        List<JdbcLiteral> parameters = ImmutableList.of();
+        List<JdbcLiteral> parameters = Collections.emptyList();
 
         Optional<String> newWhereCondition;
         if (incrementalValues != null) {
@@ -298,7 +298,7 @@ public class JdbcInputConnection
                                               boolean useRawQuery) throws SQLException
     {
         StringBuilder sb = new StringBuilder();
-        List<JdbcLiteral> parameters = ImmutableList.of();
+        List<JdbcLiteral> parameters = Collections.emptyList();
 
         if (useRawQuery) {
             parameters = replacePlaceholder(sb, rawQuery, querySchema, incrementalColumns, incrementalValues);
@@ -325,7 +325,7 @@ public class JdbcInputConnection
             JdbcSchema querySchema,
             List<String> incrementalColumns, List<JsonNode> incrementalValues) throws SQLException
     {
-        ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
+        final ArrayList<JdbcLiteral> parameters = new ArrayList<>();
 
         List<String> leftColumnNames = new ArrayList<>();
         List<JdbcLiteral> rightLiterals = new ArrayList<>();
@@ -355,7 +355,7 @@ public class JdbcInputConnection
             sb.append(")");
         }
 
-        return parameters.build();
+        return Collections.unmodifiableList(parameters);
     }
 
     private int findIncrementalColumnIndex(JdbcSchema schema, String incrementalColumn)
@@ -388,7 +388,7 @@ public class JdbcInputConnection
         // Insert pair of columnName:columnIndex order by column name length DESC
         TreeMap<String, Integer> columnNames = createColumnNameSortedMap();
 
-        ImmutableList.Builder<JdbcLiteral> parameters = ImmutableList.builder();
+        final ArrayList<JdbcLiteral> parameters = new ArrayList<>();
         for (String columnName : incrementalColumns) {
             int columnIndex = findIncrementalColumnIndex(querySchema, columnName);
             columnNames.put(columnName, columnIndex);
@@ -411,7 +411,7 @@ public class JdbcInputConnection
 
         sb.append(rawQuery);
 
-        return parameters.build();
+        return Collections.unmodifiableList(parameters);
     }
 
     /*
@@ -481,12 +481,12 @@ public class JdbcInputConnection
 
     private Set<String> getColumnNames(String tableName) throws SQLException
     {
-        ImmutableSet.Builder<String> columnNamesBuilder = ImmutableSet.builder();
+        final HashSet<String> columnNamesBuilder = new HashSet<>();
         try (ResultSet rs = connection.getMetaData().getColumns(null, schemaName, tableName, null)) {
             while (rs.next()) {
                 columnNamesBuilder.add(rs.getString("COLUMN_NAME"));
             }
-            return columnNamesBuilder.build();
+            return Collections.unmodifiableSet(columnNamesBuilder);
         }
     }
 

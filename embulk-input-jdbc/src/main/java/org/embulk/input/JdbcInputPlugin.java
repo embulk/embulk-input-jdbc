@@ -7,11 +7,10 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import com.google.common.base.Throwables;
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
 
 public class JdbcInputPlugin
         extends AbstractJdbcInputPlugin
@@ -81,8 +80,10 @@ public class JdbcInputPlugin
             // TODO check Class.forName(driverClass) is a Driver before newInstance
             //      for security
             driver = (Driver) Class.forName(t.getDriverClass()).newInstance();
-        } catch (Exception ex) {
-            throw Throwables.propagate(ex);
+        } catch (final RuntimeException | Error ex) {
+            throw ex;
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
         }
 
         Connection con = driver.connect(t.getUrl(), props);

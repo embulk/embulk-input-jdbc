@@ -1,14 +1,14 @@
 package org.embulk.input;
 
 import java.util.Optional;
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.oracle.OracleInputConnection;
 import org.embulk.input.oracle.getter.OracleColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

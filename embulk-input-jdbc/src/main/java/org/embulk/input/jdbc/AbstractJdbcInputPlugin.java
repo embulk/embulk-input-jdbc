@@ -2,10 +2,15 @@ package org.embulk.input.jdbc;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -21,18 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 
-import org.embulk.config.Config;
 import org.embulk.config.ConfigException;
-import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
-import org.embulk.config.Task;
 import org.embulk.config.TaskReport;
 import org.embulk.config.TaskSource;
-import org.embulk.plugin.PluginClassLoader;
 import org.embulk.spi.BufferAllocator;
 import org.embulk.spi.Column;
 import org.embulk.spi.DataException;
@@ -45,6 +44,12 @@ import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.jdbc.JdbcInputConnection.BatchSelect;
 import org.embulk.input.jdbc.JdbcInputConnection.PreparedQuery;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
+import org.embulk.util.config.ConfigMapper;
+import org.embulk.util.config.ConfigMapperFactory;
+import org.embulk.util.config.Task;
+import org.embulk.util.config.TaskMapper;
 
 import static java.util.Locale.ENGLISH;
 
@@ -52,6 +57,11 @@ public abstract class AbstractJdbcInputPlugin
         implements InputPlugin
 {
     private static final Logger logger = LoggerFactory.getLogger(AbstractJdbcInputPlugin.class);
+
+    protected static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory.builder().addDefaultModules().build();
+
+    protected static final ConfigMapper CONFIG_MAPPER = CONFIG_MAPPER_FACTORY.createConfigMapper();
+    protected static final TaskMapper TASK_MAPPER = CONFIG_MAPPER_FACTORY.createTaskMapper();
 
     public interface PluginTask extends Task
     {
@@ -184,7 +194,7 @@ public abstract class AbstractJdbcInputPlugin
     public ConfigDiff transaction(ConfigSource config,
             InputPlugin.Control control)
     {
-        PluginTask task = config.loadConfig(getTaskClass());
+        final PluginTask task = CONFIG_MAPPER.map(config, this.getTaskClass());
 
         // Invalid timezones should fail immediately when configuring.
         throwAgainstInvalidTimeZone(task.getDefaultTimeZone());
@@ -218,7 +228,7 @@ public abstract class AbstractJdbcInputPlugin
             // TODO incremental_columns is not set => get primary key
             schema = setupTask(con, task);
         } catch (SQLException ex) {
-            throw Throwables.propagate(ex);
+            throw new RuntimeException(ex);
         }
 
         return buildNextConfigDiff(task, control.run(task.dump(), schema, 1));
@@ -302,8 +312,8 @@ public abstract class AbstractJdbcInputPlugin
             }
         }
         else {
-            task.setIncrementalColumnIndexes(ImmutableList.<Integer>of());
-            preparedQuery = new PreparedQuery(rawQuery, ImmutableList.<JdbcLiteral>of());
+            task.setIncrementalColumnIndexes(Collections.<Integer>emptyList());
+            preparedQuery = new PreparedQuery(rawQuery, Collections.<JdbcLiteral>emptyList());
         }
 
         task.setBuiltQuery(preparedQuery);
@@ -312,7 +322,7 @@ public abstract class AbstractJdbcInputPlugin
         newColumnGetters(con, task, querySchema, null);
 
         ColumnGetterFactory factory = newColumnGetterFactory(null, task.getDefaultTimeZone());
-        ImmutableList.Builder<Column> columns = ImmutableList.builder();
+        final ArrayList<Column> columns = new ArrayList<>();
         for (int i = 0; i < querySchema.getCount(); i++) {
             JdbcColumn column = querySchema.getColumn(i);
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), task.getDefaultColumnOptions(), column, factory.getJdbcType(column.getSqlType()));
@@ -320,7 +330,7 @@ public abstract class AbstractJdbcInputPlugin
                     column.getName(),
                     factory.newColumnGetter(con, task, column, columnOption).getToType()));
         }
-        return new Schema(columns.build());
+        return new Schema(Collections.unmodifiableList(columns));
     }
 
     private String normalizeTableNameCase(JdbcInputConnection con, String tableName)
@@ -350,7 +360,7 @@ public abstract class AbstractJdbcInputPlugin
     private List<Integer> findIncrementalColumnIndexes(JdbcSchema schema, List<String> incrementalColumns)
         throws SQLException
     {
-        ImmutableList.Builder<Integer> builder = ImmutableList.builder();
+        final ArrayList<Integer> builder = new ArrayList<>();
         for (String name : incrementalColumns) {
             Optional<Integer> index = schema.findColumn(name);
             if (index.isPresent()) {
@@ -362,7 +372,7 @@ public abstract class AbstractJdbcInputPlugin
                         name));
             }
         }
-        return builder.build();
+        return Collections.unmodifiableList(builder);
     }
 
     private String getRawQuery(PluginTask task, JdbcInputConnection con) throws SQLException
@@ -401,7 +411,7 @@ public abstract class AbstractJdbcInputPlugin
             Schema schema, int taskCount,
             InputPlugin.Control control)
     {
-        PluginTask task = taskSource.loadTask(getTaskClass());
+        final PluginTask task = TASK_MAPPER.map(taskSource, this.getTaskClass());
 
         // TODO when parallel execution is implemented and enabled, (maybe) order_by
         //      is necessary to resume. transaction() gets the range of order_by
@@ -457,7 +467,7 @@ public abstract class AbstractJdbcInputPlugin
 
         public List<JsonNode> getList()
         {
-            ImmutableList.Builder<JsonNode> builder = ImmutableList.builder();
+            final ArrayList<JsonNode> builder = new ArrayList<>();
             for (int i = 0; i < lastValues.length; i++) {
                 if (lastValues[i] == null || lastValues[i].isNull()) {
                     throw new DataException(String.format(ENGLISH,
@@ -466,7 +476,7 @@ public abstract class AbstractJdbcInputPlugin
                 }
                 builder.add(lastValues[i]);
             }
-            return builder.build();
+            return Collections.unmodifiableList(builder);
         }
     }
 
@@ -475,7 +485,7 @@ public abstract class AbstractJdbcInputPlugin
             Schema schema, int taskIndex,
             PageOutput output)
     {
-        PluginTask task = taskSource.loadTask(getTaskClass());
+        final PluginTask task = TASK_MAPPER.map(taskSource, this.getTaskClass());
 
         PreparedQuery builtQuery = task.getBuiltQuery();
         JdbcSchema querySchema = task.getQuerySchema();
@@ -524,7 +534,7 @@ public abstract class AbstractJdbcInputPlugin
             con.commit();
 
         } catch (SQLException ex) {
-            throw Throwables.propagate(ex);
+            throw new RuntimeException(ex);
         }
 
         TaskReport report = Exec.newTaskReport();
@@ -544,12 +554,12 @@ public abstract class AbstractJdbcInputPlugin
             throws SQLException
     {
         ColumnGetterFactory factory = newColumnGetterFactory(pageBuilder, task.getDefaultTimeZone());
-        ImmutableList.Builder<ColumnGetter> getters = ImmutableList.builder();
+        final ArrayList<ColumnGetter> getters = new ArrayList<>();
         for (JdbcColumn c : querySchema.getColumns()) {
             JdbcColumnOption columnOption = columnOptionOf(task.getColumnOptions(), task.getDefaultColumnOptions(), c, factory.getJdbcType(c.getSqlType()));
             getters.add(factory.newColumnGetter(con, task, c, columnOption));
         }
-        return getters.build();
+        return Collections.unmodifiableList(getters);
     }
 
     private static JdbcColumnOption columnOptionOf(Map<String, JdbcColumnOption> columnOptions, Map<String, JdbcColumnOption> defaultColumnOptions, JdbcColumn targetColumn, String targetColumnSQLType)
@@ -576,7 +586,7 @@ public abstract class AbstractJdbcInputPlugin
         if (defaultColumnOption != null) {
             return defaultColumnOption;
         }
-        return Exec.newConfigSource().loadConfig(JdbcColumnOption.class);
+        return CONFIG_MAPPER.map(CONFIG_MAPPER_FACTORY.newConfigSource(), JdbcColumnOption.class);
     }
 
     private long fetch(BatchSelect cursor,
@@ -609,7 +619,7 @@ public abstract class AbstractJdbcInputPlugin
     //// TODO move to embulk.spi.util?
     //private static class ListPageOutput
     //{
-    //    public ImmutableList.Builder<Page> pages;
+    //    public ArrayList<Page> pages;
     //
     //    public ListPageOutput()
     //    {
@@ -639,7 +649,7 @@ public abstract class AbstractJdbcInputPlugin
     //
     //    public void reset()
     //    {
-    //        pages = ImmutableList.builder();
+    //        pages = Collections.unmodifiableList(builder);
     //    }
     //}
 
@@ -683,12 +693,37 @@ public abstract class AbstractJdbcInputPlugin
     protected void addDriverJarToClasspath(String glob)
     {
         // TODO match glob
-        PluginClassLoader loader = (PluginClassLoader) getClass().getClassLoader();
+        final ClassLoader loader = getClass().getClassLoader();
+        if (!(loader instanceof URLClassLoader)) {
+            throw new RuntimeException("Plugin is not loaded by URLClassLoader unexpectedly.");
+        }
+        if (loader.getClass().getCanonicalName().equals("org.embulk.plugin.PluginClassLoader")) {
+            throw new RuntimeException("Plugin is not loaded by URLClassLoader unexpectedly.");
+        }
         Path path = Paths.get(glob);
         if (!path.toFile().exists()) {
              throw new ConfigException("The specified driver jar doesn't exist: " + glob);
         }
-        loader.addPath(Paths.get(glob));
+        final Method addPathMethod;
+        try {
+            addPathMethod = loader.getClass().getMethod("addPath", Path.class);
+        } catch (final NoSuchMethodException ex) {
+            throw new RuntimeException("Plugin is not loaded a ClassLoader, which does not have addPath(Path) unexpectedly.");
+        }
+        try {
+            addPathMethod.invoke(loader, Paths.get(glob));
+        } catch (final IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        } catch (final InvocationTargetException ex) {
+            final Throwable targetException = ex.getTargetException();
+            if (targetException instanceof MalformedURLException) {
+                throw new IllegalArgumentException(targetException);
+            } else if (targetException instanceof RuntimeException) {
+                throw (RuntimeException) targetException;
+            } else {
+                throw new RuntimeException(targetException);
+            }
+        }
     }
 
     protected File findPluginRoot()

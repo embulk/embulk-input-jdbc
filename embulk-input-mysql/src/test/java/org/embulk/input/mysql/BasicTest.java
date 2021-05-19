@@ -4,8 +4,16 @@ import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.exec.PartialExecutionException;
+import org.embulk.formatter.csv.CsvFormatterPlugin;
 import org.embulk.input.MySQLInputPlugin;
+import org.embulk.input.file.LocalFileInputPlugin;
+import org.embulk.output.file.LocalFileOutputPlugin;
+import org.embulk.parser.csv.CsvParserPlugin;
+import org.embulk.spi.FileInputPlugin;
+import org.embulk.spi.FileOutputPlugin;
+import org.embulk.spi.FormatterPlugin;
 import org.embulk.spi.InputPlugin;
+import org.embulk.spi.ParserPlugin;
 import org.embulk.test.EmbulkTests;
 import org.embulk.test.TestingEmbulk;
 import org.junit.Before;
@@ -37,6 +45,10 @@ public class BasicTest
 
     @Rule
     public TestingEmbulk embulk = TestingEmbulk.builder()
+            .registerPlugin(FileInputPlugin.class, "file", LocalFileInputPlugin.class)
+            .registerPlugin(ParserPlugin.class, "csv", CsvParserPlugin.class)
+            .registerPlugin(FormatterPlugin.class, "csv", CsvFormatterPlugin.class)
+            .registerPlugin(FileOutputPlugin.class, "file", LocalFileOutputPlugin.class)
             .registerPlugin(InputPlugin.class, "mysql", MySQLInputPlugin.class)
             .build();
 

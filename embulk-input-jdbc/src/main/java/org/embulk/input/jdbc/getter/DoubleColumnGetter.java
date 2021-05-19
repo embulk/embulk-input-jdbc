@@ -7,7 +7,6 @@ import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
-import com.google.common.math.DoubleMath;
 
 public class DoubleColumnGetter
         extends AbstractColumnGetter
@@ -43,7 +42,15 @@ public class DoubleColumnGetter
         long l;
         try {
             // TODO configurable rounding mode
-            l = DoubleMath.roundToLong(value, RoundingMode.HALF_UP);
+            if (Math.getExponent(value) > Double.MAX_EXPONENT) {
+                throw new ArithmeticException("input is infinite or NaN");
+            }
+            final double z = Math.rint(value);
+            if (Math.abs(value - z) == 0.5) {
+                l = (long) (value + Math.copySign(0.5, value));
+            } else {
+                l = (long) z;
+            }
         } catch (ArithmeticException e) {
             // NaN / Infinite / -Infinite
             super.longColumn(column);
