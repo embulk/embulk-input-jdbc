@@ -1,5 +1,6 @@
 package org.embulk.input.sqlserver.getter;
 
+import java.time.ZoneId;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
@@ -9,7 +10,7 @@ import org.embulk.spi.PageBuilder;
 
 public class SQLServerColumnGetterFactory extends ColumnGetterFactory {
 
-    public SQLServerColumnGetterFactory(final PageBuilder to, final String defaultTimeZone)
+    public SQLServerColumnGetterFactory(final PageBuilder to, final ZoneId defaultTimeZone)
     {
         super(to, defaultTimeZone);
     }

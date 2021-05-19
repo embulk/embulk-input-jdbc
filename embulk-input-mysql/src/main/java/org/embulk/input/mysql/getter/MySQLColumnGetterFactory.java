@@ -18,7 +18,7 @@ import java.util.TimeZone;
 public class MySQLColumnGetterFactory
         extends ColumnGetterFactory
 {
-    public MySQLColumnGetterFactory(final PageBuilder to, final String defaultTimeZone)
+    public MySQLColumnGetterFactory(final PageBuilder to, final ZoneId defaultTimeZone)
     {
         super(to, defaultTimeZone);
     }
