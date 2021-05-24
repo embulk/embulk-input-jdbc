@@ -41,16 +41,7 @@ public class DoubleColumnGetter
     {
         long l;
         try {
-            // TODO configurable rounding mode
-            if (Math.getExponent(value) > Double.MAX_EXPONENT) {
-                throw new ArithmeticException("input is infinite or NaN");
-            }
-            final double z = Math.rint(value);
-            if (Math.abs(value - z) == 0.5) {
-                l = (long) (value + Math.copySign(0.5, value));
-            } else {
-                l = (long) z;
-            }
+            l = roundDoubleToLong(this.value);
         } catch (ArithmeticException e) {
             // NaN / Infinite / -Infinite
             super.longColumn(column);

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Properties;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-// TODO copied from embulk-output-jdbc. Move this class to embulk-core spi.unit.
 public class ToStringMap
         extends HashMap<String, String>
 {
@@ -27,7 +26,7 @@ public class ToStringMap
         for (final Map.Entry<String, ToString> entry : mapOfToString.entrySet()) {
             final ToString value = entry.getValue();
             if (value == null) {
-                result.put(entry.getKey(), null);
+                result.put(entry.getKey(), "null");
             } else {
                 result.put(entry.getKey(), value.toString());
             }

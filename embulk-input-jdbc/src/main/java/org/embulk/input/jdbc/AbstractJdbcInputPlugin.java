@@ -697,8 +697,8 @@ public abstract class AbstractJdbcInputPlugin
         if (!(loader instanceof URLClassLoader)) {
             throw new RuntimeException("Plugin is not loaded by URLClassLoader unexpectedly.");
         }
-        if (loader.getClass().getCanonicalName().equals("org.embulk.plugin.PluginClassLoader")) {
-            throw new RuntimeException("Plugin is not loaded by URLClassLoader unexpectedly.");
+        if (!loader.getClass().getCanonicalName().equals("org.embulk.plugin.PluginClassLoader")) {
+            throw new RuntimeException("Plugin is not loaded by PluginClassLoader unexpectedly.");
         }
         Path path = Paths.get(glob);
         if (!path.toFile().exists()) {
@@ -708,7 +708,7 @@ public abstract class AbstractJdbcInputPlugin
         try {
             addPathMethod = loader.getClass().getMethod("addPath", Path.class);
         } catch (final NoSuchMethodException ex) {
-            throw new RuntimeException("Plugin is not loaded a ClassLoader, which does not have addPath(Path) unexpectedly.");
+            throw new RuntimeException("Plugin is not loaded a ClassLoader which has addPath(Path), unexpectedly.");
         }
         try {
             addPathMethod.invoke(loader, Paths.get(glob));

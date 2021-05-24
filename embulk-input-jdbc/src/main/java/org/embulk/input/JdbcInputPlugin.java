@@ -80,7 +80,7 @@ public class JdbcInputPlugin
             // TODO check Class.forName(driverClass) is a Driver before newInstance
             //      for security
             driver = (Driver) Class.forName(t.getDriverClass()).newInstance();
-        } catch (final RuntimeException | Error ex) {
+        } catch (final RuntimeException ex) {
             throw ex;
         } catch (final Exception ex) {
             throw new RuntimeException(ex);
