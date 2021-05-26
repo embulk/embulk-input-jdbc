@@ -10,3 +10,34 @@ embulkPlugin {
     category = "input"
     type = "oracle"
 }
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {  // https://central.sonatype.org/pages/requirements.html
+                developers {
+                    developer {
+                        name = "Hitoshi Tanaka"
+                        email = "thitoshi@cac.co.jp"
+                    }
+                    developer {
+                        name = "Sadayuki Furuhashi"
+                        email = "frsyuki@gmail.com"
+                    }
+                    developer {
+                        name = "Pengfei Zhang"
+                        email = "pfzhang1987@gmail.com"
+                    }
+                    developer {
+                        name = "Karri Niemelä"
+                        email = "kakoni@gmail.com"
+                    }
+                    developer {
+                        name = "Dai MIKURUBE"
+                        email = "dmikurube@treasure-data.com"
+                    }
+                }
+            }
+        }
+    }
+}
