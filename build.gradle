@@ -169,6 +169,8 @@ subprojects {
                         }
                     }
 
+                    // "developers" section is written in each subproject.
+
                     scm {
                         connection = "scm:git:git://github.com/embulk/embulk-input-jdbc.git"
                         developerConnection = "scm:git:git@github.com:embulk/embulk-input-jdbc.git"
