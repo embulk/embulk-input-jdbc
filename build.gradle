@@ -10,7 +10,7 @@ plugins {
 }
 
 allprojects {
-    group = 'org.embulk.input.jdbc'
+    group = "org.embulk"
     version = "0.12.0"
     description = "Selects records from a table."
 }
