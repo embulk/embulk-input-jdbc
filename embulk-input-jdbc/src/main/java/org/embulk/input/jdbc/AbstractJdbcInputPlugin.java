@@ -697,7 +697,7 @@ public abstract class AbstractJdbcInputPlugin
         if (!(loader instanceof URLClassLoader)) {
             throw new RuntimeException("Plugin is not loaded by URLClassLoader unexpectedly.");
         }
-        if (!loader.getClass().getCanonicalName().equals("org.embulk.plugin.PluginClassLoader")) {
+        if (!"org.embulk.plugin.PluginClassLoader".equals(loader.getClass().getName())) {
             throw new RuntimeException("Plugin is not loaded by PluginClassLoader unexpectedly.");
         }
         Path path = Paths.get(glob);
