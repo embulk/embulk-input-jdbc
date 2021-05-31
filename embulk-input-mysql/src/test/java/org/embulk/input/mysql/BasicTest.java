@@ -19,7 +19,6 @@ import org.embulk.test.TestingEmbulk;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
 import java.nio.file.Path;
 
 import static org.embulk.input.mysql.MySQLTests.execute;
@@ -140,12 +139,16 @@ public class BasicTest
         try {
             embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_invalid_zone_config.yml")), out1);
         } catch (final PartialExecutionException ex) {
-            final Throwable cause = ex.getCause();
-            assertThat(cause, instanceOf(ConfigException.class));
-            assertThat(cause.getMessage(), is("Time zone 'Somewhere/Some_City' is not recognised."));
-            return;
+            Throwable cause = ex.getCause();
+            while (cause != null) {
+                if (cause.getMessage() != null
+                            && cause.getMessage().contains("\"Somewhere/Some_City\" is not recognized as a timezone name.")) {
+                    return;
+                }
+                cause = cause.getCause();
+            }
         }
-        fail();
+        fail("It did not throw an expected Exception.");
     }
 
     @Test

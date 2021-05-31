@@ -3,6 +3,7 @@ package org.embulk.input;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.Properties;
 import java.util.Optional;
 import javax.validation.constraints.Size;
@@ -167,7 +168,7 @@ public class SQLServerInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final ZoneId dateTimeZone)
     {
         return new SQLServerColumnGetterFactory(pageBuilder, dateTimeZone);
     }

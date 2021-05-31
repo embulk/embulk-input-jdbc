@@ -50,6 +50,7 @@ import org.embulk.util.config.ConfigMapper;
 import org.embulk.util.config.ConfigMapperFactory;
 import org.embulk.util.config.Task;
 import org.embulk.util.config.TaskMapper;
+import org.embulk.util.config.modules.ZoneIdModule;
 
 import static java.util.Locale.ENGLISH;
 
@@ -58,7 +59,8 @@ public abstract class AbstractJdbcInputPlugin
 {
     private static final Logger logger = LoggerFactory.getLogger(AbstractJdbcInputPlugin.class);
 
-    protected static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory.builder().addDefaultModules().build();
+    protected static final ConfigMapperFactory CONFIG_MAPPER_FACTORY =
+            ConfigMapperFactory.builder().addDefaultModules().addModule(ZoneIdModule.withLegacyNames()).build();
 
     protected static final ConfigMapper CONFIG_MAPPER = CONFIG_MAPPER_FACTORY.createConfigMapper();
     protected static final TaskMapper TASK_MAPPER = CONFIG_MAPPER_FACTORY.createTaskMapper();
@@ -154,7 +156,7 @@ public abstract class AbstractJdbcInputPlugin
 
         @Config("default_timezone")
         @ConfigDefault("\"UTC\"")
-        public String getDefaultTimeZone();
+        public ZoneId getDefaultTimeZone();
 
         @Config("default_column_options")
         @ConfigDefault("{}")
@@ -195,15 +197,6 @@ public abstract class AbstractJdbcInputPlugin
             InputPlugin.Control control)
     {
         final PluginTask task = CONFIG_MAPPER.map(config, this.getTaskClass());
-
-        // Invalid timezones should fail immediately when configuring.
-        throwAgainstInvalidTimeZone(task.getDefaultTimeZone());
-        for (final JdbcColumnOption option : task.getColumnOptions().values()) {
-            throwAgainstInvalidTimeZone(option.getTimeZone().orElse(null));
-        }
-        for (final JdbcColumnOption option : task.getDefaultColumnOptions().values()) {
-            throwAgainstInvalidTimeZone(option.getTimeZone().orElse(null));
-        }
 
         if (task.getIncremental()) {
             if (task.getOrderBy().isPresent()) {
@@ -545,7 +538,7 @@ public abstract class AbstractJdbcInputPlugin
         return report;
     }
 
-    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, String dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(PageBuilder pageBuilder, ZoneId dateTimeZone)
     {
         return new ColumnGetterFactory(pageBuilder, dateTimeZone);
     }
@@ -760,16 +753,5 @@ public abstract class AbstractJdbcInputPlugin
             }
         }
         logger.info("Connecting to {} options {}", url, maskedProps);
-    }
-
-    private static void throwAgainstInvalidTimeZone(final String timezone) {
-        if (timezone == null) {
-            return;
-        }
-        try {
-            ZoneId.of(timezone);
-        } catch (final DateTimeException ex) {
-            throw new ConfigException("Time zone '" + timezone + "' is not recognised.", ex);
-        }
     }
 }

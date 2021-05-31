@@ -13,6 +13,7 @@ import org.embulk.util.config.ConfigDefault;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.Properties;
 
 public class OracleInputPlugin
@@ -134,7 +135,7 @@ public class OracleInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone) {
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final ZoneId dateTimeZone) {
         return new OracleColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 

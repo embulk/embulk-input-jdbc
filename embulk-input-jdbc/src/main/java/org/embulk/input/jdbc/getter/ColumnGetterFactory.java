@@ -2,6 +2,7 @@ package org.embulk.input.jdbc.getter;
 
 import java.lang.reflect.Field;
 import java.sql.Types;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -24,10 +25,10 @@ import static java.util.Locale.ENGLISH;
 public class ColumnGetterFactory
 {
     protected final PageBuilder to;
-    private final String defaultTimeZone;
+    private final ZoneId defaultTimeZone;
     private final Map<Integer, String> jdbcTypes = getAllJDBCTypes();
 
-    public ColumnGetterFactory(PageBuilder to, String defaultTimeZone)
+    public ColumnGetterFactory(PageBuilder to, ZoneId defaultTimeZone)
     {
         this.to = to;
         this.defaultTimeZone = defaultTimeZone;
@@ -182,8 +183,8 @@ public class ColumnGetterFactory
     private TimestampFormatter newTimestampFormatter(JdbcColumnOption option, String defaultTimestampFormat)
     {
         final String format = option.getTimestampFormat().orElse(defaultTimestampFormat);
-        final String timezone = option.getTimeZone().orElse(this.defaultTimeZone);
-        return TimestampFormatter.builder(format, true).setDefaultZoneFromString(timezone).build();
+        final ZoneId timezone = option.getTimeZone().orElse(this.defaultTimeZone);
+        return TimestampFormatter.builder(format, true).setDefaultZoneId(timezone).build();
     }
 
     private static UnsupportedOperationException unsupportedOperationException(JdbcColumn column)

@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
@@ -137,7 +138,7 @@ public class MySQLInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final ZoneId dateTimeZone)
     {
         return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }

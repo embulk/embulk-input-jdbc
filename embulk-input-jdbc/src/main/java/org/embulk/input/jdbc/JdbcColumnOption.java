@@ -1,5 +1,6 @@
 package org.embulk.input.jdbc;
 
+import java.time.ZoneId;
 import java.util.Optional;
 import org.embulk.spi.type.Type;
 import org.embulk.util.config.Config;
@@ -23,5 +24,5 @@ public interface JdbcColumnOption
 
     @Config("timezone")
     @ConfigDefault("null")
-    public Optional<String> getTimeZone();
+    public Optional<ZoneId> getTimeZone();
 }
