@@ -11,7 +11,7 @@ plugins {
 
 allprojects {
     group = "org.embulk"
-    version = "0.12.0"
+    version = "0.12.1"
     description = "Selects records from a table."
 }
 
@@ -19,12 +19,11 @@ subprojects {
     apply plugin: 'java'
     apply plugin: "maven-publish"
     apply plugin: "signing"
+    apply plugin: "checkstyle"
     apply plugin: "org.embulk.embulk-plugins"
-    //apply plugin: 'jacoco'
 
     repositories {
         mavenCentral()
-        jcenter()
     }
 
     configurations {
@@ -33,6 +32,16 @@ subprojects {
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        options.encoding = "UTF-8"
+    }
+
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
 
     dependencies {
         compileOnly "org.embulk:embulk-api:0.10.31"
@@ -56,19 +65,12 @@ subprojects {
         compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.7"
         compile "javax.validation:validation-api:1.1.0.Final"
 
-        compile("org.embulk:embulk-util-json:0.1.0") {
-            exclude group: "org.msgpack", module: "msgpack-core"  // Included in embulk-api.
-        }
+        compile "org.embulk:embulk-util-json:0.1.1"
         compile "org.embulk:embulk-util-timestamp:0.2.1"
 
         testCompile "org.embulk:embulk-junit4:0.10.31"
         testCompile "org.embulk:embulk-core:0.10.31"
         testCompile "org.embulk:embulk-deps:0.10.31"
-    }
-
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-        options.encoding = 'UTF-8'
     }
 
     javadoc {
@@ -145,23 +147,6 @@ subprojects {
             locale = 'en_US'
             encoding = 'UTF-8'
         }
-    }
-
-    // add tests/javadoc/source jar tasks as artifacts to be released
-    task testsJar(type: Jar, dependsOn: classes) {
-        classifier = 'tests'
-        from sourceSets.test.output
-    }
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-    artifacts {
-        archives testsJar, sourcesJar, javadocJar
     }
 
     publishing {
