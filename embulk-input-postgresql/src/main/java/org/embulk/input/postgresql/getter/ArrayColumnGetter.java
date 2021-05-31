@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import org.embulk.input.jdbc.getter.AbstractColumnGetter;
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
-import org.embulk.spi.json.JsonParseException;
-import org.embulk.spi.json.JsonParser;
 import org.embulk.spi.type.Type;
+import org.embulk.util.json.JsonParseException;
+import org.embulk.util.json.JsonParser;
 import org.msgpack.value.Value;
 
 import java.math.BigDecimal;

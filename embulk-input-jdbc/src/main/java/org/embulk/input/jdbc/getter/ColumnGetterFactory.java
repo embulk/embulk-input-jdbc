@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
-import org.embulk.config.Task;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin.PluginTask;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
@@ -17,6 +16,7 @@ import org.embulk.spi.Exec;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.TimestampType;
 import org.embulk.spi.type.Type;
+import org.embulk.util.config.Task;
 import org.embulk.util.timestamp.TimestampFormatter;
 
 import static java.util.Locale.ENGLISH;

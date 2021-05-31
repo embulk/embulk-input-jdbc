@@ -1,5 +1,6 @@
 package org.embulk.input.mysql;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Optional;
 import org.embulk.config.TaskSource;
 import org.embulk.input.jdbc.JdbcColumn;
@@ -52,7 +53,20 @@ public class MySQLColumnGetterFactoryTest
             }
 
             @Override
+            @SuppressWarnings("deprecation")
             public TaskSource dump()
+            {
+                return null;
+            }
+
+            @Override
+            public TaskSource toTaskSource()
+            {
+                return null;
+            }
+
+            @Override
+            public ObjectNode toObjectNode()
             {
                 return null;
             }

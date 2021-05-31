@@ -6,10 +6,10 @@ import java.sql.SQLException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
-import org.embulk.spi.json.JsonParseException;
-import org.embulk.spi.json.JsonParser;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
+import org.embulk.util.json.JsonParseException;
+import org.embulk.util.json.JsonParser;
 import org.msgpack.value.Value;
 
 public class StringColumnGetter

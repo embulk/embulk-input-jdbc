@@ -35,13 +35,35 @@ subprojects {
     targetCompatibility = 1.8
 
     dependencies {
-        compileOnly "org.embulk:embulk-core:0.9.23"
+        compileOnly "org.embulk:embulk-api:0.10.31"
+        compileOnly "org.embulk:embulk-spi:0.10.31"
+
+        compile("org.embulk:embulk-util-config:0.3.0") {
+            // They conflict with embulk-core. They are once excluded here,
+            // and added explicitly with versions exactly the same with embulk-core:0.10.19.
+            exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+            exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+            exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+            exclude group: "com.fasterxml.jackson.datatype", module: "jackson-datatype-jdk8"
+            exclude group: "javax.validation", module: "validation-api"
+        }
+
+        // They are once excluded from transitive dependencies of other dependencies,
+        // and added explicitly with versions exactly the same with embulk-core:0.10.19.
+        compile "com.fasterxml.jackson.core:jackson-annotations:2.6.7"
+        compile "com.fasterxml.jackson.core:jackson-core:2.6.7"
+        compile "com.fasterxml.jackson.core:jackson-databind:2.6.7"
+        compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.7"
+        compile "javax.validation:validation-api:1.1.0.Final"
+
+        compile("org.embulk:embulk-util-json:0.1.0") {
+            exclude group: "org.msgpack", module: "msgpack-core"  // Included in embulk-api.
+        }
         compile "org.embulk:embulk-util-timestamp:0.2.1"
 
-        testCompile "org.embulk:embulk-core:0.9.23"
-        testCompile "org.embulk:embulk-test:0.9.23"
-        testCompile "org.embulk:embulk-deps-buffer:0.9.23"
-        testCompile "org.embulk:embulk-deps-config:0.9.23"
+        testCompile "org.embulk:embulk-junit4:0.10.31"
+        testCompile "org.embulk:embulk-core:0.10.31"
+        testCompile "org.embulk:embulk-deps:0.10.31"
     }
 
     tasks.withType(JavaCompile) {
