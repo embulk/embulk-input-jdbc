@@ -2,9 +2,9 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    id 'com.jfrog.bintray' version '1.8.4' apply false
     id 'java'
     id "maven-publish"
+    id "signing"
     id 'checkstyle'
     id "org.embulk.embulk-plugins" version "0.4.2" apply false
 }
@@ -18,7 +18,7 @@ allprojects {
 subprojects {
     apply plugin: 'java'
     apply plugin: "maven-publish"
-    apply plugin: "com.jfrog.bintray"
+    apply plugin: "signing"
     apply plugin: "org.embulk.embulk-plugins"
     //apply plugin: 'jacoco'
 
@@ -144,45 +144,58 @@ subprojects {
 
     publishing {
         publications {
-            embulkPluginMaven(MavenPublication) {  // Publish it with "publishEmbulkPluginMavenPublicationTo???Repository".
-                from components.java  // Must be "components.java". The dependency modification works only for it.
-                artifact testsJar
-                artifact sourcesJar
-                artifact javadocJar
+            maven(MavenPublication) {
+                afterEvaluate { project ->
+                    groupId = "${project.group}"
+                    artifactId = "${project.name}"
+                }
+
+                from components.java
+
+                pom {  // https://central.sonatype.org/pages/requirements.html
+                    packaging "jar"
+
+                    afterEvaluate { project ->
+                        name = "${project.name}"
+                        description = "${project.description}"
+                    }
+                    url = "https://www.embulk.org/"
+
+                    licenses {
+                        license {
+                            // http://central.sonatype.org/pages/requirements.html#license-information
+                            name = "The Apache License, Version 2.0"
+                            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+
+                    scm {
+                        connection = "scm:git:git://github.com/embulk/embulk-input-jdbc.git"
+                        developerConnection = "scm:git:git@github.com:embulk/embulk-input-jdbc.git"
+                        url = "https://github.com/embulk/embulk-input-jdbc"
+                    }
+                }
             }
         }
+
         repositories {
-            // TODO: Configure some public Maven repo(s).
+            maven {  // publishMavenPublicationToMavenCentralRepository
+                name = "mavenCentral"
+                if (project.version.endsWith("-SNAPSHOT")) {
+                    url "https://oss.sonatype.org/content/repositories/snapshots"
+                } else {
+                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                }
+
+                credentials {
+                    username = project.hasProperty("ossrhUsername") ? ossrhUsername : ""
+                    password = project.hasProperty("ossrhPassword") ? ossrhPassword : ""
+                }
+            }
         }
     }
 
-    bintray {
-        // write at your bintray user name and api key to ~/.gradle/gradle.properties file:
-        // bintray_user=frsyuki
-        // bintray_api_key=xxxxxxxxxxx
-        user = project.hasProperty('bintray_user') ? bintray_user : ''
-        key = project.hasProperty('bintray_api_key') ? bintray_api_key : ''
-
-        publications = [ "embulkPluginMaven" ]
-
-        dryRun = false
-        publish = true
-
-        pkg {
-            userOrg = 'embulk-input-jdbc'
-            repo = 'maven'
-            name = project.name
-            desc = 'MySQL, PostgreSQL, Redshift and generic JDBC input plugins for Embulk'
-            websiteUrl = 'https://github.com/embulk/embulk-input-jdbc'
-            issueTrackerUrl = 'https://github.com/embulk/embulk-input-jdbc/issues'
-            vcsUrl = 'https://github.com/embulk/embulk-input-jdbc.git'
-            licenses = ['Apache-2.0']
-            labels = ['embulk', 'java']
-            publicDownloadNumbers = true
-
-            version {
-                name = project.version
-            }
-        }
+    signing {
+        sign publishing.publications.maven
     }
 }
