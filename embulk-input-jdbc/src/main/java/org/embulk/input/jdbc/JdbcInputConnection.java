@@ -70,15 +70,15 @@ public class JdbcInputConnection
     public List<String> getPrimaryKeys(String tableName) throws SQLException
     {
         ResultSet rs = databaseMetaData.getPrimaryKeys(null, schemaName, tableName);
-        final ArrayList<String> builder = new ArrayList<>();
+        final ArrayList<String> primaryKeys = new ArrayList<>();
         try {
             while(rs.next()) {
-                builder.add(rs.getString("COLUMN_NAME"));
+                primaryKeys.add(rs.getString("COLUMN_NAME"));
             }
         } finally {
             rs.close();
         }
-        return Collections.unmodifiableList(builder);
+        return Collections.unmodifiableList(primaryKeys);
     }
 
     protected JdbcSchema getSchemaOfResultMetadata(ResultSetMetaData metadata) throws SQLException
@@ -481,12 +481,12 @@ public class JdbcInputConnection
 
     private Set<String> getColumnNames(String tableName) throws SQLException
     {
-        final HashSet<String> columnNamesBuilder = new HashSet<>();
+        final HashSet<String> columnNames = new HashSet<>();
         try (ResultSet rs = connection.getMetaData().getColumns(null, schemaName, tableName, null)) {
             while (rs.next()) {
-                columnNamesBuilder.add(rs.getString("COLUMN_NAME"));
+                columnNames.add(rs.getString("COLUMN_NAME"));
             }
-            return Collections.unmodifiableSet(columnNamesBuilder);
+            return Collections.unmodifiableSet(columnNames);
         }
     }
 

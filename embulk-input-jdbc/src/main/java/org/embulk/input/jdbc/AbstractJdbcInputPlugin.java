@@ -353,11 +353,11 @@ public abstract class AbstractJdbcInputPlugin
     private List<Integer> findIncrementalColumnIndexes(JdbcSchema schema, List<String> incrementalColumns)
         throws SQLException
     {
-        final ArrayList<Integer> builder = new ArrayList<>();
+        final ArrayList<Integer> indices = new ArrayList<>();
         for (String name : incrementalColumns) {
             Optional<Integer> index = schema.findColumn(name);
             if (index.isPresent()) {
-                builder.add(index.get());
+                indices.add(index.get());
             }
             else {
                 throw new ConfigException(String.format(ENGLISH,
@@ -365,7 +365,7 @@ public abstract class AbstractJdbcInputPlugin
                         name));
             }
         }
-        return Collections.unmodifiableList(builder);
+        return Collections.unmodifiableList(indices);
     }
 
     private String getRawQuery(PluginTask task, JdbcInputConnection con) throws SQLException
@@ -460,16 +460,16 @@ public abstract class AbstractJdbcInputPlugin
 
         public List<JsonNode> getList()
         {
-            final ArrayList<JsonNode> builder = new ArrayList<>();
+            final ArrayList<JsonNode> values = new ArrayList<>();
             for (int i = 0; i < lastValues.length; i++) {
                 if (lastValues[i] == null || lastValues[i].isNull()) {
                     throw new DataException(String.format(ENGLISH,
                             "incremental_columns can't include null values but the last row is null at column '%s'",
                             columnNames.get(i)));
                 }
-                builder.add(lastValues[i]);
+                values.add(lastValues[i]);
             }
-            return Collections.unmodifiableList(builder);
+            return Collections.unmodifiableList(values);
         }
     }
 
