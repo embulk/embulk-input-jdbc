@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -221,6 +222,9 @@ public abstract class AbstractJdbcInputPlugin
             // TODO incremental_columns is not set => get primary key
             schema = setupTask(con, task);
         } catch (SQLException ex) {
+            if (ex.getCause() instanceof UnknownHostException) {
+                throw new ConfigException(ex);
+            }
             throw new RuntimeException(ex);
         }
 
