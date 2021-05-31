@@ -1,3 +1,13 @@
+Release 0.12.1 - 2021-05-31
+
+* Release the JAR artifacts to Maven Central, instead of Bintray
+
+Release 0.12.0 - 2021-05-31
+
+* Catch up with Embulk API/SPI v0.10.
+* Map an Embulk config directly to ZoneId with embulk-util-config's ZoneIdModule
+* Wrap UnknownHostException to ConfigException
+
 Release 0.11.1 - 2020-09-04
 
 * Updated embulk-util-timestamp to 0.2.1 .
