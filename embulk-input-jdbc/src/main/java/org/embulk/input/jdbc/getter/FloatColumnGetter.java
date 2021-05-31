@@ -7,7 +7,6 @@ import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Type;
 import org.embulk.spi.type.Types;
-import com.google.common.math.DoubleMath;
 
 public class FloatColumnGetter
         extends AbstractColumnGetter
@@ -42,8 +41,7 @@ public class FloatColumnGetter
     {
         long l;
         try {
-            // TODO configurable rounding mode
-            l = DoubleMath.roundToLong(value, RoundingMode.HALF_UP);
+            l = roundFloatToLong(this.value);
         } catch (ArithmeticException e) {
             // NaN / Infinite / -Infinite
             super.longColumn(column);

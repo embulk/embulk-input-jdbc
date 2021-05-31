@@ -9,8 +9,6 @@ import org.embulk.test.EmbulkTests;
 
 import java.io.IOException;
 
-import jnr.ffi.Platform;
-import jnr.ffi.Platform.OS;
 import static java.util.Locale.ENGLISH;
 
 public class MySQLTests
@@ -58,7 +56,7 @@ public class MySQLTests
 
     private static String convert(String sql)
     {
-        if (Platform.getNativePlatform().getOS().equals(OS.WINDOWS)) {
+        if (System.getProperty("os.name").contains("Windows")) {
             // '"' should be '\"' and '\' should be '\\' in Windows
             return sql.replace("\\\\", "\\").replace("\\", "\\\\").replace("\"", "\\\"");
         }

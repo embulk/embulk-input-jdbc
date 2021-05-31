@@ -15,12 +15,10 @@ import org.embulk.spi.type.Types;
 import java.time.ZoneId;
 import java.util.TimeZone;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class MySQLColumnGetterFactory
         extends ColumnGetterFactory
 {
-    public MySQLColumnGetterFactory(final PageBuilder to, final String defaultTimeZone)
+    public MySQLColumnGetterFactory(final PageBuilder to, final ZoneId defaultTimeZone)
     {
         super(to, defaultTimeZone);
     }

@@ -3,20 +3,20 @@ package org.embulk.input;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.Properties;
 import java.util.Optional;
 import javax.validation.constraints.Size;
 
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.sqlserver.SQLServerInputConnection;
-
 import org.embulk.input.sqlserver.getter.SQLServerColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,7 +168,7 @@ public class SQLServerInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final ZoneId dateTimeZone)
     {
         return new SQLServerColumnGetterFactory(pageBuilder, dateTimeZone);
     }

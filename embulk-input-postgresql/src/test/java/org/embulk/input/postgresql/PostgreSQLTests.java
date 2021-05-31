@@ -4,8 +4,6 @@ import org.embulk.test.EmbulkTests;
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 import java.io.IOException;
-import jnr.ffi.Platform;
-import jnr.ffi.Platform.OS;
 import org.embulk.config.ConfigSource;
 import static java.util.Locale.ENGLISH;
 
@@ -44,7 +42,7 @@ public class PostgreSQLTests
 
     private static String convert(String sql)
     {
-        if (Platform.getNativePlatform().getOS().equals(OS.WINDOWS)) {
+        if (System.getProperty("os.name").contains("Windows")) {
             // '"' should be '\"' and '\' should be '\\' in Windows
             return sql.replace("\\\\", "\\").replace("\\", "\\\\").replace("\"", "\\\"");
         }

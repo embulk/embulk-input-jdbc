@@ -2,23 +2,23 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    id 'com.jfrog.bintray' version '1.8.4' apply false
     id 'java'
     id "maven-publish"
+    id "signing"
     id 'checkstyle'
     id "org.embulk.embulk-plugins" version "0.4.2" apply false
 }
 
 allprojects {
-    group = 'org.embulk.input.jdbc'
-    version = "0.11.1"
+    group = "org.embulk"
+    version = "0.12.0"
     description = "Selects records from a table."
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: "maven-publish"
-    apply plugin: "com.jfrog.bintray"
+    apply plugin: "signing"
     apply plugin: "org.embulk.embulk-plugins"
     //apply plugin: 'jacoco'
 
@@ -35,13 +35,35 @@ subprojects {
     targetCompatibility = 1.8
 
     dependencies {
-        compileOnly "org.embulk:embulk-core:0.9.23"
+        compileOnly "org.embulk:embulk-api:0.10.31"
+        compileOnly "org.embulk:embulk-spi:0.10.31"
+
+        compile("org.embulk:embulk-util-config:0.3.0") {
+            // They conflict with embulk-core. They are once excluded here,
+            // and added explicitly with versions exactly the same with embulk-core:0.10.19.
+            exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
+            exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
+            exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+            exclude group: "com.fasterxml.jackson.datatype", module: "jackson-datatype-jdk8"
+            exclude group: "javax.validation", module: "validation-api"
+        }
+
+        // They are once excluded from transitive dependencies of other dependencies,
+        // and added explicitly with versions exactly the same with embulk-core:0.10.19.
+        compile "com.fasterxml.jackson.core:jackson-annotations:2.6.7"
+        compile "com.fasterxml.jackson.core:jackson-core:2.6.7"
+        compile "com.fasterxml.jackson.core:jackson-databind:2.6.7"
+        compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.7"
+        compile "javax.validation:validation-api:1.1.0.Final"
+
+        compile("org.embulk:embulk-util-json:0.1.0") {
+            exclude group: "org.msgpack", module: "msgpack-core"  // Included in embulk-api.
+        }
         compile "org.embulk:embulk-util-timestamp:0.2.1"
 
-        testCompile "org.embulk:embulk-core:0.9.23"
-        testCompile "org.embulk:embulk-test:0.9.23"
-        testCompile "org.embulk:embulk-deps-buffer:0.9.23"
-        testCompile "org.embulk:embulk-deps-config:0.9.23"
+        testCompile "org.embulk:embulk-junit4:0.10.31"
+        testCompile "org.embulk:embulk-core:0.10.31"
+        testCompile "org.embulk:embulk-deps:0.10.31"
     }
 
     tasks.withType(JavaCompile) {
@@ -144,45 +166,60 @@ subprojects {
 
     publishing {
         publications {
-            embulkPluginMaven(MavenPublication) {  // Publish it with "publishEmbulkPluginMavenPublicationTo???Repository".
-                from components.java  // Must be "components.java". The dependency modification works only for it.
-                artifact testsJar
-                artifact sourcesJar
-                artifact javadocJar
+            maven(MavenPublication) {
+                afterEvaluate { project ->
+                    groupId = "${project.group}"
+                    artifactId = "${project.name}"
+                }
+
+                from components.java
+
+                pom {  // https://central.sonatype.org/pages/requirements.html
+                    packaging "jar"
+
+                    afterEvaluate { project ->
+                        name = "${project.name}"
+                        description = "${project.description}"
+                    }
+                    url = "https://www.embulk.org/"
+
+                    licenses {
+                        license {
+                            // http://central.sonatype.org/pages/requirements.html#license-information
+                            name = "The Apache License, Version 2.0"
+                            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+
+                    // "developers" section is written in each subproject.
+
+                    scm {
+                        connection = "scm:git:git://github.com/embulk/embulk-input-jdbc.git"
+                        developerConnection = "scm:git:git@github.com:embulk/embulk-input-jdbc.git"
+                        url = "https://github.com/embulk/embulk-input-jdbc"
+                    }
+                }
             }
         }
+
         repositories {
-            // TODO: Configure some public Maven repo(s).
+            maven {  // publishMavenPublicationToMavenCentralRepository
+                name = "mavenCentral"
+                if (project.version.endsWith("-SNAPSHOT")) {
+                    url "https://oss.sonatype.org/content/repositories/snapshots"
+                } else {
+                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                }
+
+                credentials {
+                    username = project.hasProperty("ossrhUsername") ? ossrhUsername : ""
+                    password = project.hasProperty("ossrhPassword") ? ossrhPassword : ""
+                }
+            }
         }
     }
 
-    bintray {
-        // write at your bintray user name and api key to ~/.gradle/gradle.properties file:
-        // bintray_user=frsyuki
-        // bintray_api_key=xxxxxxxxxxx
-        user = project.hasProperty('bintray_user') ? bintray_user : ''
-        key = project.hasProperty('bintray_api_key') ? bintray_api_key : ''
-
-        publications = [ "embulkPluginMaven" ]
-
-        dryRun = false
-        publish = true
-
-        pkg {
-            userOrg = 'embulk-input-jdbc'
-            repo = 'maven'
-            name = project.name
-            desc = 'MySQL, PostgreSQL, Redshift and generic JDBC input plugins for Embulk'
-            websiteUrl = 'https://github.com/embulk/embulk-input-jdbc'
-            issueTrackerUrl = 'https://github.com/embulk/embulk-input-jdbc/issues'
-            vcsUrl = 'https://github.com/embulk/embulk-input-jdbc.git'
-            licenses = ['Apache-2.0']
-            labels = ['embulk', 'java']
-            publicDownloadNumbers = true
-
-            version {
-                name = project.version
-            }
-        }
+    signing {
+        sign publishing.publications.maven
     }
 }

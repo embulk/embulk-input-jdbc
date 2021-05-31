@@ -1,5 +1,6 @@
 package org.embulk.input.redshift.getter;
 
+import java.time.ZoneId;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin.PluginTask;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
@@ -12,7 +13,7 @@ import org.embulk.spi.PageBuilder;
 
 public class RedshiftColumnGetterFactory extends ColumnGetterFactory
 {
-    public RedshiftColumnGetterFactory(final PageBuilder to, final String defaultTimeZone)
+    public RedshiftColumnGetterFactory(final PageBuilder to, final ZoneId defaultTimeZone)
     {
         super(to, defaultTimeZone);
     }

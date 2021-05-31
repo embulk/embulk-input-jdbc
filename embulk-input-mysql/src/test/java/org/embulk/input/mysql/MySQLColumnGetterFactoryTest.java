@@ -1,6 +1,8 @@
 package org.embulk.input.mysql;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Optional;
+import java.time.ZoneId;
 import org.embulk.config.TaskSource;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
@@ -40,7 +42,7 @@ public class MySQLColumnGetterFactoryTest
             }
 
             @Override
-            public Optional<String> getTimeZone()
+            public Optional<ZoneId> getTimeZone()
             {
                 return Optional.empty();
             }
@@ -52,7 +54,20 @@ public class MySQLColumnGetterFactoryTest
             }
 
             @Override
+            @SuppressWarnings("deprecation")
             public TaskSource dump()
+            {
+                return null;
+            }
+
+            @Override
+            public TaskSource toTaskSource()
+            {
+                return null;
+            }
+
+            @Override
+            public ObjectNode toObjectNode()
             {
                 return null;
             }

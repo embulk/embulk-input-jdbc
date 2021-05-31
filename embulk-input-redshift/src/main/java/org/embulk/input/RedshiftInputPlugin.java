@@ -4,15 +4,15 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.time.ZoneId;
 
-
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.postgresql.PostgreSQLInputConnection;
 import org.embulk.input.redshift.getter.RedshiftColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
 
 public class RedshiftInputPlugin
         extends AbstractJdbcInputPlugin
@@ -96,7 +96,7 @@ public class RedshiftInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final ZoneId dateTimeZone)
     {
         return new RedshiftColumnGetterFactory(pageBuilder, dateTimeZone);
     }

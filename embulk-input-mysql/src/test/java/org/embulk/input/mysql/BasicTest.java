@@ -4,14 +4,21 @@ import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.exec.PartialExecutionException;
+import org.embulk.formatter.csv.CsvFormatterPlugin;
 import org.embulk.input.MySQLInputPlugin;
+import org.embulk.input.file.LocalFileInputPlugin;
+import org.embulk.output.file.LocalFileOutputPlugin;
+import org.embulk.parser.csv.CsvParserPlugin;
+import org.embulk.spi.FileInputPlugin;
+import org.embulk.spi.FileOutputPlugin;
+import org.embulk.spi.FormatterPlugin;
 import org.embulk.spi.InputPlugin;
+import org.embulk.spi.ParserPlugin;
 import org.embulk.test.EmbulkTests;
 import org.embulk.test.TestingEmbulk;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
 import java.nio.file.Path;
 
 import static org.embulk.input.mysql.MySQLTests.execute;
@@ -37,6 +44,10 @@ public class BasicTest
 
     @Rule
     public TestingEmbulk embulk = TestingEmbulk.builder()
+            .registerPlugin(FileInputPlugin.class, "file", LocalFileInputPlugin.class)
+            .registerPlugin(ParserPlugin.class, "csv", CsvParserPlugin.class)
+            .registerPlugin(FormatterPlugin.class, "csv", CsvFormatterPlugin.class)
+            .registerPlugin(FileOutputPlugin.class, "file", LocalFileOutputPlugin.class)
             .registerPlugin(InputPlugin.class, "mysql", MySQLInputPlugin.class)
             .build();
 
@@ -128,12 +139,16 @@ public class BasicTest
         try {
             embulk.runInput(baseConfig.merge(loadYamlResource(embulk, "test_invalid_zone_config.yml")), out1);
         } catch (final PartialExecutionException ex) {
-            final Throwable cause = ex.getCause();
-            assertThat(cause, instanceOf(ConfigException.class));
-            assertThat(cause.getMessage(), is("Time zone 'Somewhere/Some_City' is not recognised."));
-            return;
+            Throwable cause = ex.getCause();
+            while (cause != null) {
+                if (cause.getMessage() != null
+                            && cause.getMessage().contains("\"Somewhere/Some_City\" is not recognized as a timezone name.")) {
+                    return;
+                }
+                cause = cause.getCause();
+            }
         }
-        fail();
+        fail("It did not throw an expected Exception.");
     }
 
     @Test

@@ -6,18 +6,17 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.Optional;
 
-import com.google.common.base.Throwables;
-
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.Ssl;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.mysql.MySQLInputConnection;
 import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,7 +138,7 @@ public class MySQLInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final ZoneId dateTimeZone)
     {
         return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }
@@ -172,7 +171,7 @@ public class MySQLInputPlugin
             }
         }
         catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         finally {
             if (f != null) {

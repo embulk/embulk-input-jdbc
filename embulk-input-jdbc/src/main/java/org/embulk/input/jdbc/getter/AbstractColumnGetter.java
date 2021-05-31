@@ -102,4 +102,30 @@ public abstract class AbstractColumnGetter implements ColumnGetter, ColumnVisito
                             "Converting last_record value %s to column index %d is not supported",
                             fromValue.toString(), toIndex));
     }
+
+    final long roundDoubleToLong(final double value) {
+        // TODO configurable rounding mode
+        if (Math.getExponent(value) > Double.MAX_EXPONENT) {
+            throw new ArithmeticException("input is infinite or NaN");
+        }
+        final double z = Math.rint(value);
+        if (Math.abs(value - z) == 0.5) {
+            return (long) (value + Math.copySign(0.5, value));
+        } else {
+            return (long) z;
+        }
+    }
+
+    final long roundFloatToLong(final float value) {
+        // TODO configurable rounding mode
+        if (Math.getExponent(value) > Double.MAX_EXPONENT) {
+            throw new ArithmeticException("input is infinite or NaN");
+        }
+        final double z = Math.rint(value);
+        if (Math.abs(value - z) == 0.5) {
+            return (long) (value + Math.copySign(0.5, value));
+        } else {
+            return (long) z;
+        }
+    }
 }

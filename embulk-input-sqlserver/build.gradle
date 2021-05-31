@@ -3,11 +3,50 @@ dependencies {
     compile 'com.microsoft.sqlserver:mssql-jdbc:7.2.2.jre8'
     compile 'net.sourceforge.jtds:jtds:1.3.1'
 
-    testCompile 'org.embulk:embulk-standards:0.9.23'
+    testCompile "com.google.guava:guava:18.0"
+    testCompile "org.embulk:embulk-formatter-csv:0.10.31"
+    testCompile "org.embulk:embulk-input-file:0.10.31"
+    testCompile "org.embulk:embulk-output-file:0.10.31"
+    testCompile "org.embulk:embulk-parser-csv:0.10.31"
 }
 
 embulkPlugin {
     mainClass = "org.embulk.input.SQLServerInputPlugin"
     category = "input"
     type = "sqlserver"
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {  // https://central.sonatype.org/pages/requirements.html
+                developers {
+                    developer {
+                        name = "Hitoshi Tanaka"
+                        email = "thitoshi@cac.co.jp"
+                    }
+                    developer {
+                        name = "Sadayuki Furuhashi"
+                        email = "frsyuki@gmail.com"
+                    }
+                    developer {
+                        name = "Muga Nishizawa"
+                        email = "muga.nishizawa@gmail.com"
+                    }
+                    developer {
+                        name = "Shintaro Kimura"
+                        email = "kmrshntr@gmail.com"
+                    }
+                    developer {
+                        name = "Hieu Duong"
+                        email = "duongminhhieu89@gmail.com"
+                    }
+                    developer {
+                        name = "Dai MIKURUBE"
+                        email = "dmikurube@treasure-data.com"
+                    }
+                }
+            }
+        }
+    }
 }

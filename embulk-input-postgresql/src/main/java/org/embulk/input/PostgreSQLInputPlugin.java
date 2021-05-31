@@ -4,15 +4,16 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.Optional;
 
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
 import org.embulk.input.postgresql.PostgreSQLInputConnection;
 import org.embulk.input.postgresql.getter.PostgreSQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
 
 public class PostgreSQLInputPlugin
         extends AbstractJdbcInputPlugin
@@ -106,7 +107,7 @@ public class PostgreSQLInputPlugin
     }
 
     @Override
-    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final String dateTimeZone)
+    protected ColumnGetterFactory newColumnGetterFactory(final PageBuilder pageBuilder, final ZoneId dateTimeZone)
     {
         return new PostgreSQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }
