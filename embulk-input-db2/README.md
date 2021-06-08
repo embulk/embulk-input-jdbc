@@ -91,14 +91,17 @@ Normally, you can't write your own query for incremental loading.
 
 Prepared statement starts with `:` is available instead of fixed value.
 `last_record` value is necessary when you use this option.
-Please use prepared statement that is well distinguishable in SQL statement. Using too simple prepared statement like `:a` might cause SQL parse failure.
+Please use prepared statement that is well distinguishable in SQL statement
+* `select * from ...` statement causes `java.lang.IndexOutOfBoundsException` error.
+* Using too simple prepared statement like `:a` might cause SQL parse failure.
 
 In the following example, prepared statement `:foo_id` will be replaced with value "1" which is specified in `last_record`.
 
 ```yaml
 in:
   type: jdbc
-  query:
+  query: |
+    -- Specify the columns to be used in the incremental column at the beginning of the select clause
     SELECT
       foo.id as foo_id, bar.name
     FROM
