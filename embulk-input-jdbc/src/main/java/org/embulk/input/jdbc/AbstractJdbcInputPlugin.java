@@ -419,12 +419,12 @@ public abstract class AbstractJdbcInputPlugin
 
     public ConfigDiff guess(ConfigSource config)
     {
-        return Exec.newConfigDiff();
+        return CONFIG_MAPPER_FACTORY.newConfigDiff();
     }
 
     protected ConfigDiff buildNextConfigDiff(PluginTask task, List<TaskReport> reports)
     {
-        ConfigDiff next = Exec.newConfigDiff();
+        final ConfigDiff next = CONFIG_MAPPER_FACTORY.newConfigDiff();
         if (reports.size() > 0 && reports.get(0).has("last_record")) {
             next.set("last_record", reports.get(0).get(JsonNode.class, "last_record"));
         } else if (task.getLastRecord().isPresent()) {
@@ -534,7 +534,7 @@ public abstract class AbstractJdbcInputPlugin
             throw new RuntimeException(ex);
         }
 
-        TaskReport report = Exec.newTaskReport();
+        final TaskReport report = CONFIG_MAPPER_FACTORY.newTaskReport();
         if (lastRecordStore != null) {
             report.set("last_record", lastRecordStore.getList());
         }
