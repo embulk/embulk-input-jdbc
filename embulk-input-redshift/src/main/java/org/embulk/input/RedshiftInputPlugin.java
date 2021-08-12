@@ -46,6 +46,10 @@ public class RedshiftInputPlugin
         @Config("ssl")
         @ConfigDefault("false")
         public boolean getSsl();
+
+        @Config("statement_timeout")
+        @ConfigDefault("-1")
+        public int getStatementTimeout();
     }
 
     @Override
@@ -85,7 +89,7 @@ public class RedshiftInputPlugin
 
         Connection con = driver.connect(url, props);
         try {
-            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema());
+            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema(), t.getStatementTimeout());
             con = null;
             return c;
         } finally {

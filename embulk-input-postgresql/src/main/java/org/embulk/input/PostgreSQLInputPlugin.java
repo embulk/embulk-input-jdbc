@@ -53,6 +53,10 @@ public class PostgreSQLInputPlugin
         @Config("application_name")
         @ConfigDefault("\"embulk-input-postgresql\"")
         public String getApplicationName();
+
+        @Config("statement_timeout")
+        @ConfigDefault("-1")
+        public int getStatementTimeout();
     }
 
     @Override
@@ -96,7 +100,7 @@ public class PostgreSQLInputPlugin
 
         Connection con = DriverManager.getConnection(url, props);
         try {
-            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema());
+            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema(), t.getStatementTimeout());
             con = null;
             return c;
         } finally {
