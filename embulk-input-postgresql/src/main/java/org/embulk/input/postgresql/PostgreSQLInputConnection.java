@@ -23,7 +23,7 @@ public class PostgreSQLInputConnection
             throws SQLException
     {
         super(connection, schemaName);
-        setStatementTimeout(statementTimeoutMillis);
+        setStatementTimeoutIfSpecified(statementTimeoutMillis);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class PostgreSQLInputConnection
         }
     }
 
-    private void setStatementTimeout(Optional<Integer> statementTimeoutMillis)
+    private void setStatementTimeoutIfSpecified(Optional<Integer> statementTimeoutMillis)
         throws SQLException
     {
         if (statementTimeoutMillis.isPresent() && statementTimeoutMillis.get() > 0) {
