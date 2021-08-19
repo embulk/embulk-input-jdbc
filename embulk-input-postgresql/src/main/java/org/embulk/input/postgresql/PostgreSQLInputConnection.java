@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.embulk.input.jdbc.JdbcInputConnection;
@@ -17,11 +19,11 @@ public class PostgreSQLInputConnection
 {
     private static final Logger logger = LoggerFactory.getLogger(PostgreSQLInputConnection.class);
 
-    public PostgreSQLInputConnection(Connection connection, String schemaName, int statementTimeout)
+    public PostgreSQLInputConnection(Connection connection, String schemaName, Optional<Integer> statementTimeoutMillis)
             throws SQLException
     {
         super(connection, schemaName);
-        setStatementTimeout(statementTimeout);
+        setStatementTimeout(statementTimeoutMillis);
     }
 
     @Override
@@ -79,13 +81,13 @@ public class PostgreSQLInputConnection
         }
     }
 
-    private void setStatementTimeout(int statementTimeout)
+    private void setStatementTimeout(Optional<Integer> statementTimeoutMillis)
         throws SQLException
     {
-        if (statementTimeout > -1) {
+        if (statementTimeoutMillis.isPresent() && statementTimeoutMillis.get() > 0) {
             Statement stmt = connection.createStatement();
             try {
-                String sql = "SET statement_timeout TO " + quoteIdentifierString(String.valueOf(statementTimeout));
+                String sql = "SET statement_timeout TO " + quoteIdentifierString(String.valueOf(statementTimeoutMillis.get()));
                 executeUpdate(sql);
             }
             finally {

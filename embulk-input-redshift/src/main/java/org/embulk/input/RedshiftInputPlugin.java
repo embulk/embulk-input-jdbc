@@ -90,7 +90,7 @@ public class RedshiftInputPlugin
 
         Connection con = driver.connect(url, props);
         try {
-            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema(), t.getStatementTimeoutMillis().orElse(-1));
+            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema(), t.getStatementTimeoutMillis());
             con = null;
             return c;
         } finally {
