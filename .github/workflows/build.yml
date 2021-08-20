@@ -181,7 +181,7 @@ jobs:
         name: redshift
         path: embulk-input-redshift/build/reports/tests/test
   sqlserver:  # https://hub.docker.com/_/microsoft-mssql-server
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     services:
       sqlserver:
         # To run locallly:
@@ -195,6 +195,10 @@ jobs:
           SA_PASSWORD: "P@ssw0rd"
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-java@v2
+      with:
+        java-version: 8
+        distribution: 'zulu'
     # TODO: Find a better way to wait for completing setup.
     - name: Sleep for 30 seconds to complete all the SQL Server setup process
       run: sleep 30
