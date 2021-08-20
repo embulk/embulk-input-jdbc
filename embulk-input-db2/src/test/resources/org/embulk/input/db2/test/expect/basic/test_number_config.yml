@@ -1,3 +1,0 @@
-table: TEST_NUMBER
-select: "*"
-order_by: "id"

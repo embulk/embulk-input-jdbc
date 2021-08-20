@@ -1,3 +1,0 @@
-table: TEST_DATETIME
-select: "*"
-order_by: "id"
