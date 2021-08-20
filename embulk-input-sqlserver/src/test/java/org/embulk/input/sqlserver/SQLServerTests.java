@@ -21,6 +21,11 @@ import com.google.common.io.ByteStreams;
 
 public class SQLServerTests
 {
+    private SQLServerTests()
+    {
+        // No instantiation.
+    }
+
     public static ConfigSource baseConfig()
     {
         return EmbulkTests.config("EMBULK_INPUT_SQLSERVER_TEST_CONFIG");
@@ -35,7 +40,8 @@ public class SQLServerTests
         final String sqlcmdCommand = System.getenv("EMBULK_INPUT_SQLSERVER_TEST_SQLCMD_COMMAND");
         if (sqlcmdCommand == null || sqlcmdCommand.isEmpty()) {
             args.add("sqlcmd");
-        } else {
+        }
+        else {
             args.addAll(Arrays.asList(sqlcmdCommand.split(" ")));
         }
 
@@ -60,7 +66,8 @@ public class SQLServerTests
             Process process = pb.start();
             ByteStreams.copy(process.getInputStream(), System.out);
             code = process.waitFor();
-        } catch (IOException | InterruptedException ex) {
+        }
+        catch (IOException | InterruptedException ex) {
             throw Throwables.propagate(ex);
         }
         if (code != 0) {

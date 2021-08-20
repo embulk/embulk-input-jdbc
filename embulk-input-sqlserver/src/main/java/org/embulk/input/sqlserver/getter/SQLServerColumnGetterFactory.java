@@ -8,8 +8,8 @@ import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.getter.*;
 import org.embulk.spi.PageBuilder;
 
-public class SQLServerColumnGetterFactory extends ColumnGetterFactory {
-
+public class SQLServerColumnGetterFactory extends ColumnGetterFactory
+{
     public SQLServerColumnGetterFactory(final PageBuilder to, final ZoneId defaultTimeZone)
     {
         super(to, defaultTimeZone);
@@ -36,5 +36,4 @@ public class SQLServerColumnGetterFactory extends ColumnGetterFactory {
             return super.newColumnGetter(con, task, column, option);
         }
     }
-
 }
