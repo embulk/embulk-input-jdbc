@@ -26,7 +26,7 @@ public class SQLServerInputPlugin
     extends AbstractJdbcInputPlugin
 {
     private static final Logger logger = LoggerFactory.getLogger(SQLServerInputPlugin.class);
-    private static int DEFAULT_PORT = 1433;
+    private static final int DEFAULT_PORT = 1433;
 
     public interface SQLServerPluginTask
         extends PluginTask
@@ -81,7 +81,7 @@ public class SQLServerInputPlugin
 
         @Config("application_name")
         @ConfigDefault("\"embulk-input-sqlserver\"")
-        @Size(max=128)
+        @Size(max = 128)
         public String getApplicationName();
     }
 
@@ -132,7 +132,8 @@ public class SQLServerInputPlugin
             catch (Exception e) {
                 throw new ConfigException("Can't load Microsoft SQLServerDriver from classpath", e);
             }
-        } else if (sqlServerTask.getDriverType().equalsIgnoreCase("jtds")) {
+        }
+        else if (sqlServerTask.getDriverType().equalsIgnoreCase("jtds")) {
             useJtdsDriver = true;
             try {
                 driver = (Driver) Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
@@ -140,7 +141,8 @@ public class SQLServerInputPlugin
             catch (Exception e) {
                 throw new ConfigException("Can't load jTDS Driver from classpath", e);
             }
-        } else {
+        }
+        else {
             throw new ConfigException("Unknown driver_type : " + sqlServerTask.getDriverType());
         }
 
