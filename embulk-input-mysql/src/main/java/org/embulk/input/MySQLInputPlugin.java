@@ -83,7 +83,7 @@ public class MySQLInputPlugin
         props.setProperty("zeroDateTimeBehavior", "convertToNull");
 
         props.setProperty("useCompression", "true");
-
+        props.setProperty("queryTimeout", String.valueOf(t.getQueryTimeout()  * 1000)); // milliseconds
         props.setProperty("connectTimeout", String.valueOf(t.getConnectTimeout() * 1000)); // milliseconds
         props.setProperty("socketTimeout", String.valueOf(t.getSocketTimeout() * 1000)); // milliseconds
 

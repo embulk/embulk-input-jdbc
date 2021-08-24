@@ -135,6 +135,9 @@ public abstract class AbstractJdbcInputPlugin
         //@Config("limit_rows")
         //@ConfigDefault("null")
         //public Optional<Integer> getLimitRows();
+        @Config("query_timeout")
+        @ConfigDefault("-1")
+        public int getQueryTimeout();
 
         @Config("connect_timeout")
         @ConfigDefault("300")
