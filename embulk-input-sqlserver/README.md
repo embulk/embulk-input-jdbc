@@ -34,7 +34,7 @@ embulk "-J-Djava.library.path=C:\drivers" run input-sqlserver.yml
   - **where**: WHERE condition to filter the rows (string, default: no-condition)
   - **order_by**: expression of ORDER BY to sort rows (e.g. `created_at DESC, id ASC`) (string, default: not sorted)
 - **fetch_rows**: number of rows to fetch one time (used for java.sql.Statement#setFetchSize) (integer, default: 10000)
-- **query_timeout**: timeout for query connect. -1 means no timeout. (integer (seconds), default: -1)
+- **query_timeout**: timeout for query connect. -1 means no timeout. (integer (seconds), default: -1) this option is not supported in jTDS properties
 - **connect_timeout**: timeout for the driver to connect. 0 means the default of SQL Server (15 by default). (integer (seconds), default: 300)
 - **application_name**: application name used to identify a connection in profiling and logging tools. (string, default: "embulk-input-sqlserver")
 - **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)

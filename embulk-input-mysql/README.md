@@ -37,7 +37,6 @@ MySQL input plugin for Embulk loads records from MySQL.
   - If this value is set to -1:
     - It uses a client-side built statement and fetches all rows at once. This may cause OutOfMemoryError.
     - Internally, `useCursorFetch=false` is used and `java.sql.Statement.setFetchSize` is not set.
-- **query_timeout**: timeout for query connect. -1 means no timeout. (integer (seconds), default: -1)
 - **connect_timeout**: timeout for socket connect. 0 means no timeout. (integer (seconds), default: 300)
 - **socket_timeout**: timeout on network socket operations. 0 means no timeout. (integer (seconds), default: 1800)
 - **ssl**: use SSL to connect to the database (string, default: `disable`. `enable` uses SSL without server-side validation nor verify checks the certificate. For compatibility reasons, `true` behaves as `enable` and `false` behaves as `disable`.)

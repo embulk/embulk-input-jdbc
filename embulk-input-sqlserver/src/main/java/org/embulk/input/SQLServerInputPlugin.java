@@ -187,7 +187,6 @@ public class SQLServerInputPlugin
 
         if (useJtdsDriver) {
             // jTDS properties
-            props.setProperty("queryTimeout", String.valueOf(sqlServerTask.getQueryTimeout())); // seconds
             props.setProperty("loginTimeout", String.valueOf(sqlServerTask.getConnectTimeout())); // seconds
             props.setProperty("socketTimeout", String.valueOf(sqlServerTask.getSocketTimeout())); // seconds
 

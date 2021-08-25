@@ -74,7 +74,6 @@ public class PostgreSQLInputPlugin
         Properties props = new Properties();
         props.setProperty("user", t.getUser());
         props.setProperty("password", t.getPassword());
-        props.setProperty("queryTimeout", String.valueOf(t.getQueryTimeout())); // seconds
         props.setProperty("loginTimeout", String.valueOf(t.getConnectTimeout())); // seconds
         props.setProperty("socketTimeout", String.valueOf(t.getSocketTimeout())); // seconds
 
