@@ -1,10 +1,13 @@
 package org.embulk.input.postgresql;
 
+import java.sql.Statement;
 import java.util.List;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.embulk.input.jdbc.JdbcInputConnection;
@@ -16,10 +19,11 @@ public class PostgreSQLInputConnection
 {
     private static final Logger logger = LoggerFactory.getLogger(PostgreSQLInputConnection.class);
 
-    public PostgreSQLInputConnection(Connection connection, String schemaName)
+    public PostgreSQLInputConnection(Connection connection, String schemaName, Optional<Integer> statementTimeoutMillis)
             throws SQLException
     {
         super(connection, schemaName);
+        setStatementTimeoutIfSpecified(statementTimeoutMillis);
     }
 
     @Override
@@ -74,6 +78,21 @@ public class PostgreSQLInputConnection
         public void close() throws SQLException
         {
             // TODO close?
+        }
+    }
+
+    private void setStatementTimeoutIfSpecified(Optional<Integer> statementTimeoutMillis)
+        throws SQLException
+    {
+        if (statementTimeoutMillis.isPresent() && statementTimeoutMillis.get() > 0) {
+            Statement stmt = connection.createStatement();
+            try {
+                String sql = "SET statement_timeout TO " + quoteIdentifierString(String.valueOf(statementTimeoutMillis.get()));
+                executeUpdate(sql);
+            }
+            finally {
+                stmt.close();
+            }
         }
     }
 }

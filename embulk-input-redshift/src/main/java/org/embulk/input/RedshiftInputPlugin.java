@@ -1,5 +1,6 @@
 package org.embulk.input;
 
+import java.util.Optional;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -46,6 +47,10 @@ public class RedshiftInputPlugin
         @Config("ssl")
         @ConfigDefault("false")
         public boolean getSsl();
+
+        @Config("statement_timeout_millis")
+        @ConfigDefault("null")
+        public Optional<Integer> getStatementTimeoutMillis();
     }
 
     @Override
@@ -85,7 +90,7 @@ public class RedshiftInputPlugin
 
         Connection con = driver.connect(url, props);
         try {
-            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema());
+            PostgreSQLInputConnection c = new PostgreSQLInputConnection(con, t.getSchema(), t.getStatementTimeoutMillis());
             con = null;
             return c;
         } finally {
