@@ -1,76 +1,6 @@
 name: Build and test
 on: push
 jobs:
-  db2:  # https://hub.docker.com/r/ibmcom/db2
-    runs-on: ubuntu-latest
-    services:
-      db2:
-        # To run locallly:
-        # docker run -it --priviledged=true --name db2container -p 50000:50000 -p 55000:55000 -e LICENSE=accept -e DB2INSTANCE=db2inst1 -e DB2INST1_PASSWORD=password -e DBNAME=testdb -e SAMPLEDB=true ibmcom/db2:11.5.0.0a
-        image: docker://ibmcom/db2:11.5.0.0a
-        # "--priviledged=true" is required. "‑‑ipc=host ‑‑cap‑add=IPC_OWNER" may work instead, though.
-        #
-        # Considerations for building and deploying DB2 Docker containers
-        # https://www.ibm.com/developerworks/jp/library/dm-1602-db2-docker-trs/index.html
-        options: --name "db2container" --privileged=true --health-cmd "su - db2inst1 -c \"db2 GET DBM CFG\"" --health-interval 20s --health-timeout 30s --health-retries 128
-        ports:
-        - "50000:50000"
-        - "55000:55000"
-        env:
-          LICENSE: accept
-          DB2INSTANCE: db2inst1
-          DB2INST1_PASSWORD: password
-          DBNAME: testdb
-          SAMPLEDB: true
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v2
-      with:
-        java-version: 8
-        distribution: 'zulu'
-    # TODO: Find a better way to wait for completing setup.
-    - name: Sleep for 5 minutes to complete all the DB2 setup process
-      run: sleep 300
-    - name: List Docker containers
-      run: docker ps -a
-    - name: Show Docker logs
-      run: docker logs db2container
-    - name: Show DB2 configs
-      run: docker exec db2container su - db2inst1 -c "db2 \"GET DBM CFG\""
-    - name: Install ksh to run installDSDriver
-      run: sudo apt-get install ksh
-    - name: Make working directory
-      run: mkdir "${{ github.workspace }}/clpplus"
-    - name: Download clpplus
-      # https://github.com/rickdesantis/docker-files/tree/e3bbc10080be9e31635223c23091526bc5d9eff6/clpplus
-      run: curl "https://raw.githubusercontent.com/rickdesantis/docker-files/master/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz" -o "${{ github.workspace }}/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz"
-    - name: Extract clpplus
-      run: tar zxf "${{ github.workspace }}/clpplus/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz" -C "${{ github.workspace }}/clpplus"
-    - name: Make installDSDriver runnable
-      run: chmod +x installDSDriver
-      working-directory: "${{ github.workspace }}/clpplus/dsdriver"
-    - name: Run installDSDriver
-      run: ./installDSDriver
-      working-directory: "${{ github.workspace }}/clpplus/dsdriver"
-    - name: Dump installDSDriver.log
-      run: cat installDSDriver.log
-      working-directory: "${{ github.workspace }}/clpplus/dsdriver"
-    - name: List files
-      run: ls -C -R
-      working-directory: "${{ github.workspace }}"
-    - name: Run clpplus
-      run: "${{ github.workspace }}/clpplus/dsdriver/bin/clpplus -verbose 'db2inst1/password@127.0.0.1:50000/testdb' @${{ github.workspace }}/embulk-input-db2/src/test/resources/org/embulk/input/db2/test/expect/basic/setup.sql"
-    - name: Build with testing
-      run: ./gradlew --stacktrace :embulk-input-db2:check
-      env:
-        _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
-        EMBULK_INPUT_DB2_TEST_CONFIG: "${{ github.workspace }}/ci/db2.yml"
-        EMBULK_INPUT_DB2_TEST_CLPPLUS_COMMAND: "${{ github.workspace }}/clpplus/dsdriver/bin/clpplus"
-    - uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: db2
-        path: embulk-input-db2/build/reports/tests/test
   mysql:
     strategy:
       fail-fast: false
@@ -105,12 +35,6 @@ jobs:
       with:
         name: mysql
         path: embulk-input-mysql/build/reports/tests/test
-  oracle:  # https://hub.docker.com/_/oracle-database-enterprise-edition
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Test for Oracle Database does not run on GitHub Actions.
-      run: echo "Test for Oracle Database does not run on GitHub Actions."
   postgresql:
     runs-on: ubuntu-latest
     services:
