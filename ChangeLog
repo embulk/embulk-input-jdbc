@@ -1,6 +1,7 @@
-Release 0.12.3 - 2021-08-20
+Release 0.12.3 - 2021-08-25
 
 * Add statement timeout for PostgreSQL and Redshift
+* Remove embulk-input-db2 and embulk-input-oracle to be externalized in other repositories
 
 Release 0.12.2 - 2021-06-16
 
