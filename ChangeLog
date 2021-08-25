@@ -1,3 +1,12 @@
+Release 0.12.3 - 2021-08-25
+
+* Add statement timeout for PostgreSQL and Redshift
+* Remove embulk-input-db2 and embulk-input-oracle to be externalized in other repositories
+
+Release 0.12.2 - 2021-06-16
+
+* Fix Exec.newSomething() to CONFIG_MAPPER_FACTORY.newSomething()
+
 Release 0.12.1 - 2021-05-31
 
 * Release the JAR artifacts to Maven Central, instead of Bintray
