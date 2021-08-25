@@ -135,6 +135,8 @@ public abstract class AbstractJdbcInputPlugin
         //@Config("limit_rows")
         //@ConfigDefault("null")
         //public Optional<Integer> getLimitRows();
+
+        // query_timeout option is only supported in SQL Server JDBC
         @Config("query_timeout")
         @ConfigDefault("-1")
         public int getQueryTimeout();
