@@ -1,3 +1,7 @@
+Release 0.12.4 - 2022-05-31
+
+* Add adal4j library for sqlserver
+
 Release 0.12.3 - 2021-08-25
 
 * Add statement timeout for PostgreSQL and Redshift
