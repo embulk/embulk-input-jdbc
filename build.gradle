@@ -11,7 +11,7 @@ plugins {
 
 allprojects {
     group = "org.embulk"
-    version = "0.12.3"
+    version = "0.12.4.alpha.2"
     description = "Selects records from a table."
 }
 
