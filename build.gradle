@@ -44,12 +44,12 @@ subprojects {
     }
 
     dependencies {
-        compileOnly "org.embulk:embulk-api:0.10.31"
-        compileOnly "org.embulk:embulk-spi:0.10.31"
+        compileOnly "org.embulk:embulk-api:0.10.36"
+        compileOnly "org.embulk:embulk-spi:0.10.36"
 
-        compile("org.embulk:embulk-util-config:0.3.0") {
+        compile("org.embulk:embulk-util-config:0.3.1") {
             // They conflict with embulk-core. They are once excluded here,
-            // and added explicitly with versions exactly the same with embulk-core:0.10.19.
+            // and added explicitly with versions exactly the same with older embulk-core (until v0.10.31).
             exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
             exclude group: "com.fasterxml.jackson.core", module: "jackson-core"
             exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
@@ -58,7 +58,7 @@ subprojects {
         }
 
         // They are once excluded from transitive dependencies of other dependencies,
-        // and added explicitly with versions exactly the same with embulk-core:0.10.19.
+        // and added explicitly with versions exactly the same with older embulk-core (until 0.10.31).
         compile "com.fasterxml.jackson.core:jackson-annotations:2.6.7"
         compile "com.fasterxml.jackson.core:jackson-core:2.6.7"
         compile "com.fasterxml.jackson.core:jackson-databind:2.6.7"
@@ -68,9 +68,9 @@ subprojects {
         compile "org.embulk:embulk-util-json:0.1.1"
         compile "org.embulk:embulk-util-timestamp:0.2.1"
 
-        testCompile "org.embulk:embulk-junit4:0.10.31"
-        testCompile "org.embulk:embulk-core:0.10.31"
-        testCompile "org.embulk:embulk-deps:0.10.31"
+        testCompile "org.embulk:embulk-junit4:0.10.36"
+        testCompile "org.embulk:embulk-core:0.10.36"
+        testCompile "org.embulk:embulk-deps:0.10.36"
     }
 
     javadoc {
