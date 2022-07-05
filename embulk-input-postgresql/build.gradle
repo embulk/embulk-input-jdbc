@@ -17,6 +17,9 @@ embulkPlugin {
     mainClass = "org.embulk.input.PostgreSQLInputPlugin"
     category = "input"
     type = "postgresql"
+    additionalDependencyDeclarations = [
+        [ groupId: "org.postgresql", artifactId: "postgresql", version: "9.4-1205-jdbc41", scope: "compile", optional: true ],
+    ]
 }
 
 publishing {

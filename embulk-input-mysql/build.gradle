@@ -17,6 +17,9 @@ embulkPlugin {
     mainClass = "org.embulk.input.MySQLInputPlugin"
     category = "input"
     type = "mysql"
+    additionalDependencyDeclarations = [
+        [ groupId: "mysql", artifactId: "mysql-connector-java", version: "5.1.44", scope: "compile", optional: true ],
+    ]
 }
 
 publishing {

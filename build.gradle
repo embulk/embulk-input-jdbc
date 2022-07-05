@@ -6,7 +6,7 @@ plugins {
     id "maven-publish"
     id "signing"
     id 'checkstyle'
-    id "org.embulk.embulk-plugins" version "0.4.2" apply false
+    id "org.embulk.embulk-plugins" version "0.5.2" apply false
 }
 
 allprojects {
