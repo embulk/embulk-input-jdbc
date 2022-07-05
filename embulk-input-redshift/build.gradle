@@ -13,7 +13,7 @@ dependencies {
 }
 
 embulkPlugin {
-    mainClass = "org.embulk.input.RedshiftInputPlugin"
+    mainClass = "org.embulk.input.redshift.RedshiftInputPlugin"
     category = "input"
     type = "redshift"
 }

@@ -16,7 +16,7 @@ dependencies {
 }
 
 embulkPlugin {
-    mainClass = "org.embulk.input.SQLServerInputPlugin"
+    mainClass = "org.embulk.input.sqlserver.SQLServerInputPlugin"
     category = "input"
     type = "sqlserver"
 }

@@ -5,7 +5,6 @@ import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.exec.PartialExecutionException;
 import org.embulk.formatter.csv.CsvFormatterPlugin;
-import org.embulk.input.MySQLInputPlugin;
 import org.embulk.input.file.LocalFileInputPlugin;
 import org.embulk.output.file.LocalFileOutputPlugin;
 import org.embulk.parser.csv.CsvParserPlugin;

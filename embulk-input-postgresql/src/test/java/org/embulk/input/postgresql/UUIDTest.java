@@ -9,7 +9,6 @@ import java.nio.file.Path;
 
 import org.embulk.config.ConfigSource;
 import org.embulk.formatter.csv.CsvFormatterPlugin;
-import org.embulk.input.PostgreSQLInputPlugin;
 import org.embulk.input.file.LocalFileInputPlugin;
 import org.embulk.output.file.LocalFileOutputPlugin;
 import org.embulk.parser.csv.CsvParserPlugin;
