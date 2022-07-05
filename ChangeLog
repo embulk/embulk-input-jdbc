@@ -3,6 +3,7 @@ Release 0.13.0 - 2022-07-05
 * Update embulk-util-config to 0.3.1
 * Use the MySQL/PostgreSQL JDBC driver found in the class loader in the highest priority
 * Include the MySQL/PostgreSQL JDBC driver in pom.xml non-transitive dependencies so that the plugins can run in the Maven form
+* Move packages of plugin classes from org.embulk.input
 
 Release 0.12.4 - 2022-05-31
 
