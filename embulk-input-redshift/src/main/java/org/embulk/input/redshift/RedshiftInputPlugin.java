@@ -1,4 +1,4 @@
-package org.embulk.input;
+package org.embulk.input.redshift;
 
 import java.util.Optional;
 import java.util.Properties;

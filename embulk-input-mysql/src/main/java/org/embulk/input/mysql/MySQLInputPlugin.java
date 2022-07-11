@@ -1,4 +1,4 @@
-package org.embulk.input;
+package org.embulk.input.mysql;
 
 import java.io.File;
 import java.io.FileFilter;

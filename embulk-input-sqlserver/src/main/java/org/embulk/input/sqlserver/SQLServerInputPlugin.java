@@ -1,4 +1,4 @@
-package org.embulk.input;
+package org.embulk.input.sqlserver;
 
 import java.sql.Connection;
 import java.sql.Driver;

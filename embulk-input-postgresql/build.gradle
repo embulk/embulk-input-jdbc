@@ -14,7 +14,7 @@ dependencies {
 }
 
 embulkPlugin {
-    mainClass = "org.embulk.input.PostgreSQLInputPlugin"
+    mainClass = "org.embulk.input.postgresql.PostgreSQLInputPlugin"
     category = "input"
     type = "postgresql"
     additionalDependencyDeclarations = [

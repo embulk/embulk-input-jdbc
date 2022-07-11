@@ -14,7 +14,7 @@ dependencies {
 }
 
 embulkPlugin {
-    mainClass = "org.embulk.input.MySQLInputPlugin"
+    mainClass = "org.embulk.input.mysql.MySQLInputPlugin"
     category = "input"
     type = "mysql"
     additionalDependencyDeclarations = [

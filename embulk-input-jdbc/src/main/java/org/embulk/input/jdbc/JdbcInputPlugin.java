@@ -1,4 +1,4 @@
-package org.embulk.input;
+package org.embulk.input.jdbc;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -7,8 +7,6 @@ import java.util.Properties;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
-import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.util.config.Config;
 import org.embulk.util.config.ConfigDefault;
 

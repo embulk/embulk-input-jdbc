@@ -2,7 +2,6 @@ package org.embulk.input.sqlserver;
 
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
-import org.embulk.input.SQLServerInputPlugin;
 import org.embulk.formatter.csv.CsvFormatterPlugin;
 import org.embulk.input.file.LocalFileInputPlugin;
 import org.embulk.output.file.LocalFileOutputPlugin;

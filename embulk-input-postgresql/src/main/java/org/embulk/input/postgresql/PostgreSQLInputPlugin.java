@@ -1,4 +1,4 @@
-package org.embulk.input;
+package org.embulk.input.postgresql;
 
 import java.io.File;
 import java.io.FileFilter;
