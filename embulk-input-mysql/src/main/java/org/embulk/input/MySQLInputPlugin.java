@@ -1,14 +1,18 @@
 package org.embulk.input;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.Ssl;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
@@ -23,8 +27,6 @@ import org.slf4j.LoggerFactory;
 public class MySQLInputPlugin
         extends AbstractJdbcInputPlugin
 {
-    private static final Logger logger = LoggerFactory.getLogger(MySQLInputPlugin.class);
-
     public interface MySQLPluginTask
             extends PluginTask
     {
@@ -69,7 +71,7 @@ public class MySQLInputPlugin
     {
         MySQLPluginTask t = (MySQLPluginTask) task;
 
-        loadDriver("com.mysql.jdbc.Driver", t.getDriverPath());
+        this.loadMySqlJdbcDriver("com.mysql.jdbc.Driver", t.getDriverPath());
 
         String url = String.format("jdbc:mysql://%s:%d/%s",
                 t.getHost(), t.getPort(), t.getDatabase());
@@ -180,4 +182,78 @@ public class MySQLInputPlugin
         }
     }
 
+    private Class<? extends java.sql.Driver> loadMySqlJdbcDriver(
+            final String className,
+            final Optional<String> driverPath)
+    {
+        synchronized (mysqlJdbcDriver) {
+            if (mysqlJdbcDriver.get() != null) {
+                return mysqlJdbcDriver.get();
+            }
+
+            try {
+                // If the class is found from the ClassLoader of the plugin, that is prioritized the highest.
+                final Class<? extends java.sql.Driver> found = loadJdbcDriverClassForName(className);
+                mysqlJdbcDriver.compareAndSet(null, found);
+
+                if (driverPath.isPresent()) {
+                    logger.warn(
+                            "\"driver_path\" is set while the MySQL JDBC driver class \"{}\" is found from the PluginClassLoader."
+                                    + " \"driver_path\" is ignored.", className);
+                }
+                return found;
+            }
+            catch (final ClassNotFoundException ex) {
+                // Pass-through once.
+            }
+
+            if (driverPath.isPresent()) {
+                logger.info(
+                        "\"driver_path\" is set to load the MySQL JDBC driver class \"{}\". Adding it to classpath.", className);
+                this.addDriverJarToClasspath(driverPath.get());
+            }
+            else {
+                final File root = this.findPluginRoot();
+                final File driverLib = new File(root, "default_jdbc_driver");
+                final File[] files = driverLib.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(final File file)
+                    {
+                        return file.isFile() && file.getName().endsWith(".jar");
+                    }
+                });
+                if (files == null || files.length == 0) {
+                    throw new ConfigException(new ClassNotFoundException(
+                            "The MySQL JDBC driver for the class \"" + className + "\" is not found"
+                                    + " in \"default_jdbc_driver\" (" + root.getAbsolutePath() + ")."));
+                }
+                for (final File file : files) {
+                    logger.info(
+                            "The MySQL JDBC driver for the class \"{}\" is expected to be found"
+                                    + " in \"default_jdbc_driver\" at {}.", className, file.getAbsolutePath());
+                    this.addDriverJarToClasspath(file.getAbsolutePath());
+                }
+            }
+
+            try {
+                // Retrying to find the class from the ClassLoader of the plugin.
+                final Class<? extends java.sql.Driver> found = loadJdbcDriverClassForName(className);
+                mysqlJdbcDriver.compareAndSet(null, found);
+                return found;
+            }
+            catch (final ClassNotFoundException ex) {
+                throw new ConfigException("The MySQL JDBC driver for the class \"" + className + "\" is not found.", ex);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Class<? extends java.sql.Driver> loadJdbcDriverClassForName(final String className) throws ClassNotFoundException
+    {
+        return (Class<? extends java.sql.Driver>) Class.forName(className);
+    }
+
+    private static final AtomicReference<Class<? extends java.sql.Driver>> mysqlJdbcDriver = new AtomicReference<>();
+
+    private static final Logger logger = LoggerFactory.getLogger(MySQLInputPlugin.class);
 }
