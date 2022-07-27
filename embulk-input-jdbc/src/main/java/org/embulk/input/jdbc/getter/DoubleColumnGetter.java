@@ -1,6 +1,5 @@
 package org.embulk.input.jdbc.getter;
 
-import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.embulk.spi.Column;

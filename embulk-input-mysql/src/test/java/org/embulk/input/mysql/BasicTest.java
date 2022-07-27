@@ -1,7 +1,6 @@
 package org.embulk.input.mysql;
 
 import org.embulk.config.ConfigDiff;
-import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.exec.PartialExecutionException;
 import org.embulk.formatter.csv.CsvFormatterPlugin;
@@ -23,7 +22,6 @@ import java.nio.file.Path;
 import static org.embulk.input.mysql.MySQLTests.execute;
 import static org.embulk.test.EmbulkTests.readSortedFile;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 

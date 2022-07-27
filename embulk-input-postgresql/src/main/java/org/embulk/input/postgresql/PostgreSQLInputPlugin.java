@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
-import org.embulk.input.postgresql.PostgreSQLInputConnection;
 import org.embulk.input.postgresql.getter.PostgreSQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.embulk.util.config.Config;

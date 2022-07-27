@@ -2,7 +2,6 @@ package org.embulk.input.postgresql;
 
 import java.nio.file.Path;
 
-import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
 import org.embulk.formatter.csv.CsvFormatterPlugin;
 import org.embulk.input.file.LocalFileInputPlugin;

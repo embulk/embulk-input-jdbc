@@ -6,11 +6,7 @@ import java.sql.SQLException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.embulk.spi.Column;
-import org.embulk.spi.ColumnVisitor;
-import org.embulk.spi.PageBuilder;
 import org.embulk.spi.type.Type;
-import org.embulk.spi.DataException;
-import static java.util.Locale.ENGLISH;
 
 public abstract class AbstractIncrementalHandler implements ColumnGetter
 {

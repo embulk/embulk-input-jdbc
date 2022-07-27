@@ -8,13 +8,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.Optional;
 
 import org.embulk.config.ConfigException;
-import org.embulk.config.ConfigSource;
 import org.embulk.spi.Column;
-import org.embulk.spi.Exec;
-import org.embulk.util.config.Task;
 import org.embulk.util.timestamp.TimestampFormatter;
 
 public class TimestampWithTimeZoneIncrementalHandler

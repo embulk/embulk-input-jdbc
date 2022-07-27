@@ -1,12 +1,10 @@
 package org.embulk.input.mysql.getter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.embulk.config.ConfigSource;
+
 import org.embulk.input.jdbc.getter.AbstractIncrementalHandler;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.embulk.spi.Column;
-import org.embulk.spi.Exec;
-import org.embulk.util.config.Task;
 import org.embulk.util.timestamp.TimestampFormatter;
 
 import java.sql.PreparedStatement;
@@ -15,7 +13,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Optional;
 
 public abstract class AbstractMySQLTimestampIncrementalHandler
         extends AbstractIncrementalHandler

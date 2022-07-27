@@ -16,7 +16,6 @@ import org.embulk.config.ConfigException;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
 import org.embulk.input.jdbc.Ssl;
 import org.embulk.input.jdbc.getter.ColumnGetterFactory;
-import org.embulk.input.mysql.MySQLInputConnection;
 import org.embulk.input.mysql.getter.MySQLColumnGetterFactory;
 import org.embulk.spi.PageBuilder;
 import org.embulk.util.config.Config;

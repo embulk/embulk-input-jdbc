@@ -16,7 +16,6 @@ import org.embulk.test.EmbulkTests;
 import org.embulk.test.TestingEmbulk;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 
 public class SQLServerTests
