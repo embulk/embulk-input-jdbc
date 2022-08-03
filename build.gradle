@@ -15,7 +15,7 @@ allprojects {
     description = "Selects records from a table."
 }
 
-subprojects {
+configure(subprojects.findAll { it.name.startsWith("embulk-input-") }) {
     apply plugin: 'java'
     apply plugin: "maven-publish"
     apply plugin: "signing"
