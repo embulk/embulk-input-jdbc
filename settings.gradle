@@ -1,6 +1,6 @@
 rootProject.name = 'embulk-input-jdbc-root'
 include 'embulk-input-jdbc'
 include 'embulk-input-mysql'
-include 'embulk-input-postgresql'
+include 'embulk-input-postgresql-secure'
 include 'embulk-input-redshift'
 include 'embulk-input-sqlserver'

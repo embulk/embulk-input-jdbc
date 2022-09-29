@@ -1,0 +1,74 @@
+dependencies {
+    compile(project(path: ":embulk-input-jdbc", configuration: "runtimeElements"))
+
+    compileOnly "org.postgresql:postgresql:9.4-1205-jdbc41"
+    defaultJdbcDriver 'org.postgresql:postgresql:9.4-1205-jdbc41'
+
+    testCompile "com.google.guava:guava:18.0"
+    testCompile "org.embulk:embulk-formatter-csv:0.10.36"
+    testCompile "org.embulk:embulk-input-file:0.10.36"
+    testCompile "org.embulk:embulk-output-file:0.10.36"
+    testCompile "org.embulk:embulk-parser-csv:0.10.36"
+
+    testCompile "org.postgresql:postgresql:9.4-1205-jdbc41"
+}
+
+embulkPlugin {
+    mainClass = "org.embulk.input.postgresql.PostgreSQLInputPlugin"
+    category = "input"
+    type = "postgresql"
+    additionalDependencyDeclarations = [
+        [ groupId: "org.postgresql", artifactId: "postgresql", version: "9.4-1205-jdbc41", scope: "compile", optional: true ],
+    ]
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {  // https://central.sonatype.org/pages/requirements.html
+                developers {
+                    developer {
+                        name = "Sadayuki Furuhashi"
+                        email = "frsyuki@gmail.com"
+                    }
+                    developer {
+                        name = "Hitoshi Tanaka"
+                        email = "thitoshi@cac.co.jp"
+                    }
+                    developer {
+                        name = "Tomohiro Hashidate"
+                        email = "kakyoin.hierophant@gmail.com"
+                    }
+                    developer {
+                        name = "You Yamagata"
+                        email = "youy.bg8@gmail.com"
+                    }
+                    developer {
+                        name = "Shinichi Ishimura"
+                        email = "shiketaudonko41@gmail.com"
+                    }
+                    developer {
+                        name = "Muga Nishizawa"
+                        email = "muga.nishizawa@gmail.com"
+                    }
+                    developer {
+                        name = "Khoa Nguyen"
+                        email = "instcode@gmail.com"
+                    }
+                    developer {
+                        name = "Trung Huynh"
+                        email = "httrung90@gmail.com"
+                    }
+                    developer {
+                        name = "Satoshi Akama"
+                        email = "satoshiakama@gmail.com"
+                    }
+                    developer {
+                        name = "Dai MIKURUBE"
+                        email = "dmikurube@treasure-data.com"
+                    }
+                }
+            }
+        }
+    }
+}
