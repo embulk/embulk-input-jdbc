@@ -6,12 +6,12 @@ plugins {
     id "maven-publish"
     id "signing"
     id 'checkstyle'
-    id "org.embulk.embulk-plugins" version "0.5.2" apply false
+    id "org.embulk.embulk-plugins" version "0.5.5" apply false
 }
 
 allprojects {
     group = "org.embulk"
-    version = "0.13.0"
+    version = "0.13.1"
     description = "Selects records from a table."
 }
 
