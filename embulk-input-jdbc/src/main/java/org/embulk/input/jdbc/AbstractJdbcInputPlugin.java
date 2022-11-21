@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
+import org.embulk.config.DataSource;
 import org.embulk.config.TaskReport;
 import org.embulk.config.TaskSource;
 import org.embulk.spi.BufferAllocator;
@@ -425,7 +426,17 @@ public abstract class AbstractJdbcInputPlugin
     {
         final ConfigDiff next = CONFIG_MAPPER_FACTORY.newConfigDiff();
         if (reports.size() > 0 && reports.get(0).has("last_record")) {
-            next.set("last_record", reports.get(0).get(JsonNode.class, "last_record"));
+            final List<?> lastRecords = reports.get(0).get(List.class, "last_record");
+            for (final Object item : lastRecords) {
+                if (item instanceof DataSource) {  // Embulk's common DataSource.
+                    logger.info("last_record consists of DataSource: {}", item.getClass().getName());
+                } else if (item instanceof JsonNode) {  // This plugin's Jackson.
+                    logger.info("last_record consists of (plugin's) JsonNode: {}", item.getClass().getName());
+                } else {  // Core's Jackson...?
+                    logger.info("last_record consists of: {}", item.getClass().getName());
+                }
+            }
+            next.set("last_record", lastRecords);
         } else if (task.getLastRecord().isPresent()) {
             next.set("last_record", task.getLastRecord().get());
         }
