@@ -9,7 +9,7 @@ javax.validation:validation-api:1.1.0.Final
 mysql:mysql-connector-java:5.1.44
 org.embulk:embulk-api:0.10.36
 org.embulk:embulk-spi:0.10.36
-org.embulk:embulk-util-config:0.3.1
+org.embulk:embulk-util-config:0.3.2
 org.embulk:embulk-util-json:0.1.1
 org.embulk:embulk-util-timestamp:0.2.1
 org.msgpack:msgpack-core:0.8.11

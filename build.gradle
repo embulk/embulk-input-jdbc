@@ -47,7 +47,7 @@ subprojects {
         compileOnly "org.embulk:embulk-api:0.10.36"
         compileOnly "org.embulk:embulk-spi:0.10.36"
 
-        compile("org.embulk:embulk-util-config:0.3.1") {
+        compile("org.embulk:embulk-util-config:0.3.2") {
             // They conflict with embulk-core. They are once excluded here,
             // and added explicitly with versions exactly the same with older embulk-core (until v0.10.31).
             exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
