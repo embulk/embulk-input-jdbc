@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigSource;
-import org.embulk.config.DataSource;
 import org.embulk.config.TaskReport;
 import org.embulk.config.TaskSource;
 import org.embulk.spi.BufferAllocator;
@@ -426,17 +425,10 @@ public abstract class AbstractJdbcInputPlugin
     {
         final ConfigDiff next = CONFIG_MAPPER_FACTORY.newConfigDiff();
         if (reports.size() > 0 && reports.get(0).has("last_record")) {
-            final List<?> lastRecords = reports.get(0).get(List.class, "last_record");
-            for (final Object item : lastRecords) {
-                if (item instanceof DataSource) {  // Embulk's common DataSource.
-                    logger.info("last_record consists of DataSource: {}", item.getClass().getName());
-                } else if (item instanceof JsonNode) {  // This plugin's Jackson.
-                    logger.info("last_record consists of (plugin's) JsonNode: {}", item.getClass().getName());
-                } else {  // Core's Jackson...?
-                    logger.info("last_record consists of: {}", item.getClass().getName());
-                }
-            }
-            next.set("last_record", lastRecords);
+            // |reports| are from embulk-core, then their backend is Jackson on the embulk-core side.
+            // To render |JsonNode| (that is on the plugin side) from |reports|, they need to be rebuilt.
+            final TaskReport report = CONFIG_MAPPER_FACTORY.rebuildTaskReport(reports.get(0));
+            next.set("last_record", report.get(JsonNode.class, "last_record"));
         } else if (task.getLastRecord().isPresent()) {
             next.set("last_record", task.getLastRecord().get());
         }
