@@ -123,18 +123,19 @@ public class JdbcInputConnection
         }
     }
 
-    public BatchSelect newSelectCursor(PreparedQuery preparedQuery,
-            List<ColumnGetter> getters,
-            int fetchRows, int queryTimeout) throws SQLException
+    public BatchSelect newSelectCursor(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
+                                       int queryTimeout, boolean isPreview) throws SQLException
     {
-        return newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout);
+        return newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout, isPreview);
     }
 
-    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
-            List<ColumnGetter> getters,
-            int fetchRows, int queryTimeout) throws SQLException
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
+                                         int queryTimeout, boolean isPreview) throws SQLException
     {
-        String query = preparedQuery.getQuery();
+        String query = isPreview
+            ? new PreviewQueryBuilder(preparedQuery.getQuery(), connection).build()
+            : preparedQuery.getQuery();
+
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
         PreparedStatement stmt = connection.prepareStatement(query);

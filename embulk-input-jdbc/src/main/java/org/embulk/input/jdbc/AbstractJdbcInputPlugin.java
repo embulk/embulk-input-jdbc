@@ -17,7 +17,6 @@ import java.util.Properties;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -501,7 +500,8 @@ public abstract class AbstractJdbcInputPlugin
             }
 
             List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
-            try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(), task.getSocketTimeout())) {
+            try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(),
+                task.getSocketTimeout(), Exec.isPreview())) {
                 while (true) {
                     long rows = fetch(cursor, getters, pageBuilder);
                     if (rows <= 0L) {

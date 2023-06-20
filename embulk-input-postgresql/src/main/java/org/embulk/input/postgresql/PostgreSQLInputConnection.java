@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import org.embulk.input.jdbc.PreviewQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.embulk.input.jdbc.JdbcInputConnection;
@@ -27,11 +28,15 @@ public class PostgreSQLInputConnection
     }
 
     @Override
-    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
-            List<ColumnGetter> getters,
-            int fetchRows, int queryTimeout) throws SQLException
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
+                                         int queryTimeout, boolean isPreview) throws SQLException
     {
-        String query = "DECLARE cur NO SCROLL CURSOR FOR " + preparedQuery.getQuery();
+        String query = isPreview
+            ? new PreviewQueryBuilder(preparedQuery.getQuery(), connection).build()
+            : preparedQuery.getQuery();
+
+        query = "DECLARE cur NO SCROLL CURSOR FOR " + query;
+
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
         logger.info("SQL: " + query);

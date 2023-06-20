@@ -10,6 +10,7 @@ import java.util.TimeZone;
 
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
+import org.embulk.input.jdbc.PreviewQueryBuilder;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +27,13 @@ public class MySQLInputConnection
     }
 
     @Override
-    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
-            List<ColumnGetter> getters,
-            int fetchRows, int queryTimeout) throws SQLException
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
+                                         int queryTimeout, boolean isPreview) throws SQLException
     {
-        String query = preparedQuery.getQuery();
+        String query = isPreview
+            ? new PreviewQueryBuilder(preparedQuery.getQuery(), connection).build()
+            : preparedQuery.getQuery();
+
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
         logger.info("SQL: " + query);
