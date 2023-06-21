@@ -10,7 +10,6 @@ import java.util.TimeZone;
 
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
-import org.embulk.input.jdbc.PreviewQueryBuilder;
 import org.embulk.input.jdbc.getter.ColumnGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,7 @@ public class MySQLInputConnection
                                          int queryTimeout, boolean isPreview) throws SQLException
     {
         String query = isPreview
-            ? new PreviewQueryBuilder(preparedQuery.getQuery(), connection).build()
+            ? new MySQLPreviewQueryBuilder(preparedQuery.getQuery()).build()
             : preparedQuery.getQuery();
 
         List<JdbcLiteral> params = preparedQuery.getParameters();

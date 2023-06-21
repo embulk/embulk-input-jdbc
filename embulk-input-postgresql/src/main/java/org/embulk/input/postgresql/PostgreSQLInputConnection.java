@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import org.embulk.input.jdbc.PreviewQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.embulk.input.jdbc.JdbcInputConnection;
@@ -32,7 +31,7 @@ public class PostgreSQLInputConnection
                                          int queryTimeout, boolean isPreview) throws SQLException
     {
         String query = isPreview
-            ? new PreviewQueryBuilder(preparedQuery.getQuery(), connection).build()
+            ? new PostgreSQLPreviewQueryBuilder(preparedQuery.getQuery()).build()
             : preparedQuery.getQuery();
 
         query = "DECLARE cur NO SCROLL CURSOR FOR " + query;
