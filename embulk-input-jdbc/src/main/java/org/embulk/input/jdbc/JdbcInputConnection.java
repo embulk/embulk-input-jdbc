@@ -132,10 +132,7 @@ public class JdbcInputConnection
     protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
                                          int queryTimeout, boolean isPreview) throws SQLException
     {
-        String query = isPreview
-            ? new PreviewQueryBuilder(preparedQuery.getQuery(), connection).build()
-            : preparedQuery.getQuery();
-
+        String query = preparedQuery.getQuery();
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
         PreparedStatement stmt = connection.prepareStatement(query);
