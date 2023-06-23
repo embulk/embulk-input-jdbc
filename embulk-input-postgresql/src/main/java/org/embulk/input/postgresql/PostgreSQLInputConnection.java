@@ -30,9 +30,7 @@ public class PostgreSQLInputConnection
     protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
                                          int queryTimeout, boolean isPreview) throws SQLException
     {
-        String query = isPreview
-            ? new PostgreSQLPreviewQueryBuilder(preparedQuery.getQuery()).build()
-            : preparedQuery.getQuery();
+        String query = preparedQuery.getQuery();
 
         query = "DECLARE cur NO SCROLL CURSOR FOR " + query;
 
@@ -40,6 +38,14 @@ public class PostgreSQLInputConnection
 
         logger.info("SQL: " + query);
         PreparedStatement stmt = connection.prepareStatement(query);
+
+        String fetchSql = "FETCH FORWARD "+fetchRows+" FROM cur";
+
+        if (isPreview) {
+            stmt.setMaxRows(MAX_PREVIEW_RECORDS);
+            fetchSql = "FETCH FORWARD "+MAX_PREVIEW_RECORDS+" FROM cur";
+        }
+
         try {
             if (!params.isEmpty()) {
                 logger.info("Parameters: {}", params);
@@ -50,7 +56,6 @@ public class PostgreSQLInputConnection
             stmt.close();
         }
 
-        String fetchSql = "FETCH FORWARD "+fetchRows+" FROM cur";
         // Because socketTimeout is set in Connection, don't need to set quertyTimeout.
         return new CursorSelect(fetchSql, connection.prepareStatement(fetchSql));
     }

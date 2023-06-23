@@ -33,6 +33,8 @@ public class JdbcInputConnection
 {
     private static final Logger logger = LoggerFactory.getLogger(JdbcInputConnection.class);
 
+    protected static final int MAX_PREVIEW_RECORDS = 100;
+
     protected final Connection connection;
     protected final String schemaName;
     protected final DatabaseMetaData databaseMetaData;
@@ -136,7 +138,14 @@ public class JdbcInputConnection
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
         PreparedStatement stmt = connection.prepareStatement(query);
-        stmt.setFetchSize(fetchRows);
+
+        if (isPreview) {
+            stmt.setMaxRows(MAX_PREVIEW_RECORDS);
+            stmt.setFetchSize(MAX_PREVIEW_RECORDS);
+        }
+        else {
+            stmt.setFetchSize(fetchRows);
+        }
         stmt.setQueryTimeout(queryTimeout);
         logger.info("SQL: " + query);
         if (!params.isEmpty()) {
