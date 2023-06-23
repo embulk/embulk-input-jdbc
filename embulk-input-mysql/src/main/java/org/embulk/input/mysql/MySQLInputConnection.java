@@ -30,7 +30,6 @@ public class MySQLInputConnection
                                          int queryTimeout, boolean isPreview) throws SQLException
     {
         String query = preparedQuery.getQuery();
-
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
         logger.info("SQL: " + query);

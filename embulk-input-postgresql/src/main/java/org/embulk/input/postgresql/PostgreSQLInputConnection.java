@@ -30,9 +30,7 @@ public class PostgreSQLInputConnection
     protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
                                          int queryTimeout, boolean isPreview) throws SQLException
     {
-        String query = preparedQuery.getQuery();
-
-        query = "DECLARE cur NO SCROLL CURSOR FOR " + query;
+        String query = "DECLARE cur NO SCROLL CURSOR FOR " + preparedQuery.getQuery();
 
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
