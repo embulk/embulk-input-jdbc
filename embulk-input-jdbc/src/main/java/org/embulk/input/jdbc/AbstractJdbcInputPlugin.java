@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Properties;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
@@ -172,6 +173,10 @@ public abstract class AbstractJdbcInputPlugin
         @Config("after_select")
         @ConfigDefault("null")
         public Optional<String> getAfterSelect();
+
+        @Config("preview_sample_rows")
+        @ConfigDefault("null")
+        public OptionalInt getPreviewSampleRows();
 
         public PreparedQuery getBuiltQuery();
         public void setBuiltQuery(PreparedQuery query);
@@ -501,7 +506,7 @@ public abstract class AbstractJdbcInputPlugin
 
             List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
             try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(),
-                task.getSocketTimeout(), Exec.isPreview())) {
+                task.getSocketTimeout(), task.getPreviewSampleRows())) {
                 while (true) {
                     long rows = fetch(cursor, getters, pageBuilder);
                     if (rows <= 0L) {

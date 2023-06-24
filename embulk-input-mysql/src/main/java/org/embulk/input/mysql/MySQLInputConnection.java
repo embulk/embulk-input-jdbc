@@ -6,11 +6,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.OptionalInt;
 import java.util.TimeZone;
 
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
 import org.embulk.input.jdbc.getter.ColumnGetter;
+import org.embulk.spi.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +29,7 @@ public class MySQLInputConnection
 
     @Override
     protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
-                                         int queryTimeout, boolean isPreview) throws SQLException
+                                         int queryTimeout, OptionalInt previewSampleRows) throws SQLException
     {
         String query = preparedQuery.getQuery();
         List<JdbcLiteral> params = preparedQuery.getParameters();
@@ -40,9 +42,13 @@ public class MySQLInputConnection
             prepareParameters(stmt, getters, params);
         }
 
-        if (isPreview) {
-            stmt.setMaxRows(MAX_PREVIEW_RECORDS);
-            stmt.setFetchSize(MAX_PREVIEW_RECORDS);
+        if (Exec.isPreview() && !previewSampleRows.isPresent()) {
+            logger.warn("The preview can be slow due to fetch all records from database");
+        }
+
+        if (Exec.isPreview() && previewSampleRows.isPresent()) {
+            stmt.setMaxRows(previewSampleRows.getAsInt());
+            stmt.setFetchSize(previewSampleRows.getAsInt());
         }
         else {
             if (fetchRows == 1) {

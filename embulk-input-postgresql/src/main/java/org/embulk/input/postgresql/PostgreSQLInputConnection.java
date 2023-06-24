@@ -7,7 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.OptionalInt;
 
+import org.embulk.spi.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.embulk.input.jdbc.JdbcInputConnection;
@@ -28,7 +30,7 @@ public class PostgreSQLInputConnection
 
     @Override
     protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
-                                         int queryTimeout, boolean isPreview) throws SQLException
+                                         int queryTimeout, OptionalInt previewSampleRows) throws SQLException
     {
         String query = "DECLARE cur NO SCROLL CURSOR FOR " + preparedQuery.getQuery();
 
@@ -39,9 +41,13 @@ public class PostgreSQLInputConnection
 
         String fetchSql = "FETCH FORWARD "+fetchRows+" FROM cur";
 
-        if (isPreview) {
-            stmt.setMaxRows(MAX_PREVIEW_RECORDS);
-            fetchSql = "FETCH FORWARD "+MAX_PREVIEW_RECORDS+" FROM cur";
+        if (Exec.isPreview() && !previewSampleRows.isPresent()) {
+            logger.warn("The preview can be slow due to fetch all records from database");
+        }
+
+        if (Exec.isPreview() && previewSampleRows.isPresent()) {
+            stmt.setMaxRows(previewSampleRows.getAsInt());
+            fetchSql = "FETCH FORWARD "+previewSampleRows.getAsInt()+" FROM cur";
         }
 
         try {
