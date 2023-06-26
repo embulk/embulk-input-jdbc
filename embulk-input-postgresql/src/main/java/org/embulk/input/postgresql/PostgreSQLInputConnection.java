@@ -38,11 +38,12 @@ public class PostgreSQLInputConnection
         logger.info("SQL: " + query);
         PreparedStatement stmt = connection.prepareStatement(query);
 
-        String fetchSql = "FETCH FORWARD "+fetchRows+" FROM cur";
+        String fetchSql = String.format("FETCH FORWARD %s FROM cur", limit.isPresent()
+            ? limit.getAsInt()
+            : fetchRows);
 
         if (limit.isPresent()) {
             stmt.setMaxRows(limit.getAsInt());
-            fetchSql = "FETCH FORWARD "+limit.getAsInt()+" FROM cur";
         }
 
         try {
