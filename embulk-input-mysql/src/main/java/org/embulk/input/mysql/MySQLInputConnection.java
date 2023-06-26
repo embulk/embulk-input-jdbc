@@ -12,7 +12,6 @@ import java.util.TimeZone;
 import org.embulk.input.jdbc.JdbcInputConnection;
 import org.embulk.input.jdbc.JdbcLiteral;
 import org.embulk.input.jdbc.getter.ColumnGetter;
-import org.embulk.spi.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +28,7 @@ public class MySQLInputConnection
 
     @Override
     protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
-                                         int queryTimeout, OptionalInt previewSampleRows) throws SQLException
+                                         int queryTimeout, OptionalInt limit) throws SQLException
     {
         String query = preparedQuery.getQuery();
         List<JdbcLiteral> params = preparedQuery.getParameters();
@@ -42,13 +41,9 @@ public class MySQLInputConnection
             prepareParameters(stmt, getters, params);
         }
 
-        if (Exec.isPreview() && !previewSampleRows.isPresent()) {
-            logger.warn("The preview can be slow due to fetch all records from database");
-        }
-
-        if (Exec.isPreview() && previewSampleRows.isPresent()) {
-            stmt.setMaxRows(previewSampleRows.getAsInt());
-            stmt.setFetchSize(previewSampleRows.getAsInt());
+        if (limit.isPresent()) {
+            stmt.setMaxRows(limit.getAsInt());
+            stmt.setFetchSize(limit.getAsInt());
         }
         else {
             if (fetchRows == 1) {

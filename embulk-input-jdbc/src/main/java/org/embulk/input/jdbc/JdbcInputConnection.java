@@ -125,26 +125,22 @@ public class JdbcInputConnection
     }
 
     public BatchSelect newSelectCursor(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
-                                       int queryTimeout, OptionalInt previewSampleRows) throws SQLException
+                                       int queryTimeout, OptionalInt limit) throws SQLException
     {
-        return newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout, previewSampleRows);
+        return newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout, limit);
     }
 
     protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
-                                         int queryTimeout, OptionalInt previewSampleRows) throws SQLException
+                                         int queryTimeout, OptionalInt limit) throws SQLException
     {
         String query = preparedQuery.getQuery();
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
         PreparedStatement stmt = connection.prepareStatement(query);
 
-        if (Exec.isPreview() && !previewSampleRows.isPresent()) {
-            logger.warn("The preview can be slow due to fetch all records from database");
-        }
-
-        if (Exec.isPreview() && previewSampleRows.isPresent()) {
-            stmt.setMaxRows(previewSampleRows.getAsInt());
-            stmt.setFetchSize(previewSampleRows.getAsInt());
+        if (limit.isPresent()) {
+            stmt.setMaxRows(limit.getAsInt());
+            stmt.setFetchSize(limit.getAsInt());
         }
         else {
             stmt.setFetchSize(fetchRows);

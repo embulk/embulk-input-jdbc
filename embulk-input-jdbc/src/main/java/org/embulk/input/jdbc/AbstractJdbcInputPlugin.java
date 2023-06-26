@@ -499,6 +499,14 @@ public abstract class AbstractJdbcInputPlugin
 
         LastRecordStore lastRecordStore = null;
 
+        OptionalInt limit = Exec.isPreview()
+            ? task.getPreviewSampleRows()
+            : OptionalInt.empty();
+
+        if (Exec.isPreview() && !task.getPreviewSampleRows().isPresent()) {
+            logger.warn("The preview can be slow due to fetch all records from database");
+        }
+
         try (JdbcInputConnection con = newConnection(task)) {
             if (task.getBeforeSelect().isPresent()) {
                 con.executeUpdate(task.getBeforeSelect().get());
@@ -506,7 +514,7 @@ public abstract class AbstractJdbcInputPlugin
 
             List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
             try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(),
-                task.getSocketTimeout(), task.getPreviewSampleRows())) {
+                task.getSocketTimeout(), limit)) {
                 while (true) {
                     long rows = fetch(cursor, getters, pageBuilder);
                     if (rows <= 0L) {
