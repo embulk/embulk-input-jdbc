@@ -34,9 +34,6 @@ public class JdbcInputConnection
         implements AutoCloseable
 {
     private static final Logger logger = LoggerFactory.getLogger(JdbcInputConnection.class);
-
-    protected static final int MAX_PREVIEW_RECORDS = 100;
-
     protected final Connection connection;
     protected final String schemaName;
     protected final DatabaseMetaData databaseMetaData;
