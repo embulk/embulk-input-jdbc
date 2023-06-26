@@ -31,33 +31,35 @@ public class PostgreSQLInputConnection
     protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
                                          int queryTimeout, OptionalInt limit) throws SQLException
     {
-        String query = "DECLARE cur NO SCROLL CURSOR FOR " + preparedQuery.getQuery();
-
-        List<JdbcLiteral> params = preparedQuery.getParameters();
+        String query = limit.isPresent()
+            ? preparedQuery.getQuery()
+            : "DECLARE cur NO SCROLL CURSOR FOR " + preparedQuery.getQuery();
 
         logger.info("SQL: " + query);
         PreparedStatement stmt = connection.prepareStatement(query);
 
-        String fetchSql = String.format("FETCH FORWARD %s FROM cur", limit.isPresent()
-            ? limit.getAsInt()
-            : fetchRows);
+        List<JdbcLiteral> params = preparedQuery.getParameters();
+        if (!params.isEmpty()) {
+            logger.info("Parameters: {}", params);
+            prepareParameters(stmt, getters, params);
+        }
 
         if (limit.isPresent()) {
             stmt.setMaxRows(limit.getAsInt());
+            stmt.setFetchSize(limit.getAsInt());
+            return new SingleSelect(stmt);
         }
-
-        try {
-            if (!params.isEmpty()) {
-                logger.info("Parameters: {}", params);
-                prepareParameters(stmt, getters, params);
+        else {
+            try {
+                stmt.executeUpdate();
+            } finally {
+                stmt.close();
             }
-            stmt.executeUpdate();
-        } finally {
-            stmt.close();
-        }
 
-        // Because socketTimeout is set in Connection, don't need to set quertyTimeout.
-        return new CursorSelect(fetchSql, connection.prepareStatement(fetchSql));
+            String fetchSql = "FETCH FORWARD " + fetchRows + " FROM cur";
+            // Because socketTimeout is set in Connection, don't need to set quertyTimeout.
+            return new CursorSelect(fetchSql, connection.prepareStatement(fetchSql));
+        }
     }
 
     public class CursorSelect
