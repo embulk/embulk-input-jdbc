@@ -1,15 +1,15 @@
 dependencies {
-    compile(project(path: ":embulk-input-jdbc", configuration: "runtimeElements"))
-    compile(project(path: ":embulk-input-postgresql", configuration: "runtimeElements"))
-    compile "org.postgresql:postgresql:9.4-1205-jdbc41"
+    implementation(project(path: ":embulk-input-jdbc", configuration: "runtimeElements"))
+    implementation(project(path: ":embulk-input-postgresql", configuration: "runtimeElements"))
+    implementation "org.postgresql:postgresql:9.4-1205-jdbc41"
 
-    testCompile project(':embulk-input-jdbc').sourceSets.test.output
+    testImplementation project(":embulk-input-jdbc").sourceSets.test.output
 
-    testCompile "com.google.guava:guava:18.0"
-    testCompile "org.embulk:embulk-formatter-csv:0.10.36"
-    testCompile "org.embulk:embulk-input-file:0.10.36"
-    testCompile "org.embulk:embulk-output-file:0.10.36"
-    testCompile "org.embulk:embulk-parser-csv:0.10.36"
+    testImplementation "com.google.guava:guava:18.0"
+    testImplementation "org.embulk:embulk-formatter-csv:0.10.36"
+    testImplementation "org.embulk:embulk-input-file:0.10.36"
+    testImplementation "org.embulk:embulk-output-file:0.10.36"
+    testImplementation "org.embulk:embulk-parser-csv:0.10.36"
 }
 
 embulkPlugin {

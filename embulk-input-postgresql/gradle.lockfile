@@ -1,0 +1,18 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+com.fasterxml.jackson.core:jackson-annotations:2.6.7=compileClasspath,runtimeClasspath
+com.fasterxml.jackson.core:jackson-core:2.6.7=compileClasspath,runtimeClasspath
+com.fasterxml.jackson.core:jackson-databind:2.6.7=compileClasspath,runtimeClasspath
+com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.7=compileClasspath,runtimeClasspath
+javax.validation:validation-api:1.1.0.Final=compileClasspath,runtimeClasspath
+org.embulk:embulk-api:0.10.36=compileClasspath
+org.embulk:embulk-spi:0.10.36=compileClasspath
+org.embulk:embulk-util-config:0.3.2=compileClasspath,runtimeClasspath
+org.embulk:embulk-util-json:0.1.1=compileClasspath,runtimeClasspath
+org.embulk:embulk-util-rubytime:0.3.2=runtimeClasspath
+org.embulk:embulk-util-timestamp:0.2.1=compileClasspath,runtimeClasspath
+org.msgpack:msgpack-core:0.8.11=compileClasspath
+org.postgresql:postgresql:9.4-1205-jdbc41=compileClasspath
+org.slf4j:slf4j-api:1.7.30=compileClasspath
+empty=
