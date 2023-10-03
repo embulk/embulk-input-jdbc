@@ -26,7 +26,7 @@ import static org.junit.Assert.assertThat;
 
 public class OptionTest
 {
-    private static final String BASIC_RESOURCE_PATH = "org/embulk/input/mysql/test/expect/option/";
+    private static final String BASIC_RESOURCE_PATH = "/org/embulk/input/mysql/test/expect/option/";
 
     private static ConfigSource loadYamlResource(TestingEmbulk embulk, String fileName)
     {

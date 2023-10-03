@@ -5,10 +5,10 @@ dependencies {
     defaultJdbcDriver 'org.postgresql:postgresql:9.4-1205-jdbc41'
 
     testImplementation "com.google.guava:guava:18.0"
-    testImplementation "org.embulk:embulk-formatter-csv:0.10.36"
-    testImplementation "org.embulk:embulk-input-file:0.10.36"
-    testImplementation "org.embulk:embulk-output-file:0.10.36"
-    testImplementation "org.embulk:embulk-parser-csv:0.10.36"
+    testImplementation "org.embulk:embulk-formatter-csv:0.11.1"
+    testImplementation "org.embulk:embulk-input-file:0.11.0"
+    testImplementation "org.embulk:embulk-output-file:0.11.0"
+    testImplementation "org.embulk:embulk-parser-csv:0.11.3"
 
     testImplementation "org.postgresql:postgresql:9.4-1205-jdbc41"
 }

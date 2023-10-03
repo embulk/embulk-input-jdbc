@@ -26,7 +26,7 @@ import org.junit.Test;
 
 public class UUIDTest
 {
-    private static final String BASIC_RESOURCE_PATH = "org/embulk/input/postgresql/test/expect/uuid/";
+    private static final String BASIC_RESOURCE_PATH = "/org/embulk/input/postgresql/test/expect/uuid/";
 
     private static ConfigSource loadYamlResource(TestingEmbulk embulk, String fileName)
     {

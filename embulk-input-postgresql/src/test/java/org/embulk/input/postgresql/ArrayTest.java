@@ -25,7 +25,7 @@ import static org.junit.Assert.assertThat;
 
 public class ArrayTest
 {
-    private static final String BASIC_RESOURCE_PATH = "org/embulk/input/postgresql/test/expect/array/";
+    private static final String BASIC_RESOURCE_PATH = "/org/embulk/input/postgresql/test/expect/array/";
 
     private static ConfigSource loadYamlResource(TestingEmbulk embulk, String fileName)
     {
