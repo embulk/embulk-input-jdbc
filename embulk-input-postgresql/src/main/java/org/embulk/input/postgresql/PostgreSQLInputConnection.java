@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,28 +28,38 @@ public class PostgreSQLInputConnection
     }
 
     @Override
-    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
-            List<ColumnGetter> getters,
-            int fetchRows, int queryTimeout) throws SQLException
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
+                                         int queryTimeout, OptionalInt limit) throws SQLException
     {
-        String query = "DECLARE cur NO SCROLL CURSOR FOR " + preparedQuery.getQuery();
-        List<JdbcLiteral> params = preparedQuery.getParameters();
+        String query = limit.isPresent()
+            ? preparedQuery.getQuery()
+            : "DECLARE cur NO SCROLL CURSOR FOR " + preparedQuery.getQuery();
 
         logger.info("SQL: " + query);
         PreparedStatement stmt = connection.prepareStatement(query);
-        try {
-            if (!params.isEmpty()) {
-                logger.info("Parameters: {}", params);
-                prepareParameters(stmt, getters, params);
-            }
-            stmt.executeUpdate();
-        } finally {
-            stmt.close();
+
+        List<JdbcLiteral> params = preparedQuery.getParameters();
+        if (!params.isEmpty()) {
+            logger.info("Parameters: {}", params);
+            prepareParameters(stmt, getters, params);
         }
 
-        String fetchSql = "FETCH FORWARD "+fetchRows+" FROM cur";
-        // Because socketTimeout is set in Connection, don't need to set quertyTimeout.
-        return new CursorSelect(fetchSql, connection.prepareStatement(fetchSql));
+        if (limit.isPresent()) {
+            stmt.setMaxRows(limit.getAsInt());
+            stmt.setFetchSize(limit.getAsInt());
+            return new SingleSelect(stmt);
+        }
+        else {
+            try {
+                stmt.executeUpdate();
+            } finally {
+                stmt.close();
+            }
+
+            String fetchSql = "FETCH FORWARD " + fetchRows + " FROM cur";
+            // Because socketTimeout is set in Connection, don't need to set quertyTimeout.
+            return new CursorSelect(fetchSql, connection.prepareStatement(fetchSql));
+        }
     }
 
     public class CursorSelect

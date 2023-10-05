@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Properties;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -173,6 +173,10 @@ public abstract class AbstractJdbcInputPlugin
         @Config("after_select")
         @ConfigDefault("null")
         public Optional<String> getAfterSelect();
+
+        @Config("preview_sample_rows")
+        @ConfigDefault("null")
+        public OptionalInt getPreviewSampleRows();
 
         public PreparedQuery getBuiltQuery();
         public void setBuiltQuery(PreparedQuery query);
@@ -495,13 +499,22 @@ public abstract class AbstractJdbcInputPlugin
 
         LastRecordStore lastRecordStore = null;
 
+        OptionalInt limit = Exec.isPreview()
+            ? task.getPreviewSampleRows()
+            : OptionalInt.empty();
+
+        if (Exec.isPreview() && !task.getPreviewSampleRows().isPresent()) {
+            logger.warn("The preview can be slow due to fetch all records from database");
+        }
+
         try (JdbcInputConnection con = newConnection(task)) {
             if (task.getBeforeSelect().isPresent()) {
                 con.executeUpdate(task.getBeforeSelect().get());
             }
 
             List<ColumnGetter> getters = newColumnGetters(con, task, querySchema, pageBuilder);
-            try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(), task.getSocketTimeout())) {
+            try (BatchSelect cursor = con.newSelectCursor(builtQuery, getters, task.getFetchRows(),
+                task.getSocketTimeout(), limit)) {
                 while (true) {
                     long rows = fetch(cursor, getters, pageBuilder);
                     if (rows <= 0L) {

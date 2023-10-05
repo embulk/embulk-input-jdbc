@@ -19,7 +19,6 @@ public class SQLServerInputConnection extends JdbcInputConnection
         super(connection, schemaName);
         this.transactionIsolationLevel = transactionIsolationLevel;
     }
-
     @Override
     protected void setSearchPath(String schema) throws SQLException
     {

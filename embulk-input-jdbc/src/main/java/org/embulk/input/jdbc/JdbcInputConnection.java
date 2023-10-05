@@ -11,9 +11,11 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.OptionalInt;
 import java.util.Set;
 
 import org.embulk.input.jdbc.getter.ColumnGetter;
+import org.embulk.spi.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,6 @@ public class JdbcInputConnection
         implements AutoCloseable
 {
     private static final Logger logger = LoggerFactory.getLogger(JdbcInputConnection.class);
-
     protected final Connection connection;
     protected final String schemaName;
     protected final DatabaseMetaData databaseMetaData;
@@ -123,22 +124,27 @@ public class JdbcInputConnection
         }
     }
 
-    public BatchSelect newSelectCursor(PreparedQuery preparedQuery,
-            List<ColumnGetter> getters,
-            int fetchRows, int queryTimeout) throws SQLException
+    public BatchSelect newSelectCursor(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
+                                       int queryTimeout, OptionalInt limit) throws SQLException
     {
-        return newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout);
+        return newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout, limit);
     }
 
-    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery,
-            List<ColumnGetter> getters,
-            int fetchRows, int queryTimeout) throws SQLException
+    protected BatchSelect newBatchSelect(PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows,
+                                         int queryTimeout, OptionalInt limit) throws SQLException
     {
         String query = preparedQuery.getQuery();
         List<JdbcLiteral> params = preparedQuery.getParameters();
 
         PreparedStatement stmt = connection.prepareStatement(query);
-        stmt.setFetchSize(fetchRows);
+
+        if (limit.isPresent()) {
+            stmt.setMaxRows(limit.getAsInt());
+            stmt.setFetchSize(limit.getAsInt());
+        }
+        else {
+            stmt.setFetchSize(fetchRows);
+        }
         stmt.setQueryTimeout(queryTimeout);
         logger.info("SQL: " + query);
         if (!params.isEmpty()) {
