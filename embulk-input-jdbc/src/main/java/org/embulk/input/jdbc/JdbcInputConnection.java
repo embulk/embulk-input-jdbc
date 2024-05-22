@@ -48,6 +48,7 @@ public class JdbcInputConnection
         if (schemaName != null) {
             setSearchPath(schemaName);
         }
+        connection.setAutoCommit(false);
     }
 
     protected void setSearchPath(String schema) throws SQLException
@@ -204,6 +205,9 @@ public class JdbcInputConnection
     @Override
     public void close() throws SQLException
     {
+        // This is for the JDBC driver that requires an explicit commit or rollback before closing the connection (e.g., DB2).
+        connection.rollback();
+
         connection.close();
     }
 
