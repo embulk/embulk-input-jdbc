@@ -124,8 +124,15 @@ public class MySQLInputPlugin
         props.putAll(t.getOptions());
         logConnectionProperties(url, props);
 
-        // load timezone mappings
-        loadTimeZoneMappings();
+        // loadTimeZoneMappings initializes com.mysql.jdbc.TimeUtil.timeZoneMappings static field by calling
+        // static timeZoneMappings method using reflection.
+        // It may need Connector/J 5.x (com.mysql.jdbc.TimeUtil) only.
+        try {
+            Class<?> timeUtilClass = Class.forName("com.mysql.jdbc.TimeUtil");
+            loadTimeZoneMappings(timeUtilClass);
+        } catch (ClassNotFoundException e) {
+            // do nothing
+        }
 
         Connection con = DriverManager.getConnection(url, props);
         try {
@@ -145,7 +152,7 @@ public class MySQLInputPlugin
         return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
-    private void loadTimeZoneMappings()
+    private void loadTimeZoneMappings(Class<?> timeUtilClass)
     {
         // Here initializes com.mysql.jdbc.TimeUtil.timeZoneMappings static field by calling
         // static timeZoneMappings method using reflection.
@@ -159,7 +166,6 @@ public class MySQLInputPlugin
         // Here implements a workaround as as workaround.
         Field f = null;
         try {
-            Class<?> timeUtilClass = Class.forName("com.mysql.jdbc.TimeUtil");
             f = timeUtilClass.getDeclaredField("timeZoneMappings");
             f.setAccessible(true);
 
@@ -172,7 +178,7 @@ public class MySQLInputPlugin
                 f.set(null, timeZoneMappings);
             }
         }
-        catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | IOException e) {
+        catch (IllegalAccessException | NoSuchFieldException | IOException e) {
             throw new RuntimeException(e);
         }
         finally {
