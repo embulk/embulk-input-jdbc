@@ -33,7 +33,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: mysql
+        name: mysql5_7
         path: embulk-input-mysql/build/reports/tests/test
   mysql8:
     strategy:
@@ -89,7 +89,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: mysql
+        name: mysql8_3
         path: embulk-input-mysql/build/reports/tests/test
   postgresql9_4:
     runs-on: ubuntu-latest
