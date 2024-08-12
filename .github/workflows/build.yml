@@ -125,11 +125,11 @@ jobs:
       with:
         name: postgresql9_4
         path: embulk-input-postgresql/build/reports/tests/test
-  postgresql13:
+  postgresql15:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:13
+        image: postgres:16
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
         - "5432:5432"
@@ -161,7 +161,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: postgresql13
+        name: postgresql16
         path: embulk-input-postgresql/build/reports/tests/test
   redshift:
     runs-on: ubuntu-latest
