@@ -125,11 +125,13 @@ jobs:
       with:
         name: postgresql9_4
         path: embulk-input-postgresql/build/reports/tests/test
-  postgresql14:
+  # PostgreSQL 14 and later, raise the exception "The authentication type 10 is not supported."
+  # Use PostgreSQL 13 at this time.
+  postgresql13:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:14
+        image: postgres:13
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
         - "5432:5432"
@@ -161,7 +163,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: postgresql14
+        name: postgresql13
         path: embulk-input-postgresql/build/reports/tests/test
   redshift:
     runs-on: ubuntu-latest
