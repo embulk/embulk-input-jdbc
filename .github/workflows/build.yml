@@ -1,5 +1,5 @@
 name: Build and test
-on: push
+on: [push, pull_request]
 jobs:
   mysql5_7:
     strategy:
@@ -16,8 +16,8 @@ jobs:
           MYSQL_USER: ci
           MYSQL_PASSWORD: password
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
@@ -30,7 +30,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_MYSQL_TEST_CONFIG: "${{ github.workspace }}/ci/mysql.yml"
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: mysql
@@ -50,8 +50,8 @@ jobs:
           MYSQL_USER: ci
           MYSQL_PASSWORD: password
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
@@ -86,7 +86,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_MYSQL_TEST_CONFIG: "${{ github.workspace }}/ci/mysql.yml"
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: mysql
@@ -102,8 +102,8 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
@@ -120,7 +120,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ github.workspace }}/ci/postgresql.yml"
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: postgresql
@@ -136,8 +136,8 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
@@ -158,7 +158,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ github.workspace }}/ci/postgresql.yml"
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: postgresql
@@ -175,8 +175,8 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
@@ -193,7 +193,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_REDSHIFT_TEST_CONFIG: "${{ github.workspace }}/ci/redshift.yml"
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: redshift
@@ -212,8 +212,8 @@ jobs:
           ACCEPT_EULA: Y
           SA_PASSWORD: "P@ssw0rd"
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
@@ -240,7 +240,7 @@ jobs:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_SQLSERVER_TEST_CONFIG: "${{ github.workspace }}/ci/sqlserver.yml"
         EMBULK_INPUT_SQLSERVER_TEST_SQLCMD_COMMAND: "docker exec mssqlcontainer /opt/mssql-tools/bin/sqlcmd"
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: sqlserver
