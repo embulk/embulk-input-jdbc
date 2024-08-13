@@ -1,12 +1,9 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-
 plugins {
     id 'java'
     id "maven-publish"
     id "signing"
     id 'checkstyle'
-    id "org.embulk.embulk-plugins" version "0.5.5" apply false
+    id "org.embulk.embulk-plugins" version "0.6.1" apply false
 }
 
 allprojects {
@@ -28,17 +25,20 @@ subprojects {
 
     configurations {
         defaultJdbcDriver
+        compileClasspath.resolutionStrategy.activateDependencyLocking()
+        runtimeClasspath.resolutionStrategy.activateDependencyLocking()
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
     tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
         options.encoding = "UTF-8"
     }
 
     java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(8)
+        }
+
         withJavadocJar()
         withSourcesJar()
     }
@@ -47,7 +47,7 @@ subprojects {
         compileOnly "org.embulk:embulk-api:0.10.36"
         compileOnly "org.embulk:embulk-spi:0.10.36"
 
-        compile("org.embulk:embulk-util-config:0.3.2") {
+        implementation("org.embulk:embulk-util-config:0.3.2") {
             // They conflict with embulk-core. They are once excluded here,
             // and added explicitly with versions exactly the same with older embulk-core (until v0.10.31).
             exclude group: "com.fasterxml.jackson.core", module: "jackson-annotations"
@@ -59,18 +59,18 @@ subprojects {
 
         // They are once excluded from transitive dependencies of other dependencies,
         // and added explicitly with versions exactly the same with older embulk-core (until 0.10.31).
-        compile "com.fasterxml.jackson.core:jackson-annotations:2.6.7"
-        compile "com.fasterxml.jackson.core:jackson-core:2.6.7"
-        compile "com.fasterxml.jackson.core:jackson-databind:2.6.7"
-        compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.7"
-        compile "javax.validation:validation-api:1.1.0.Final"
+        implementation "com.fasterxml.jackson.core:jackson-annotations:2.6.7"
+        implementation "com.fasterxml.jackson.core:jackson-core:2.6.7"
+        implementation "com.fasterxml.jackson.core:jackson-databind:2.6.7"
+        implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.7"
+        implementation "javax.validation:validation-api:1.1.0.Final"
 
-        compile "org.embulk:embulk-util-json:0.1.1"
-        compile "org.embulk:embulk-util-timestamp:0.2.1"
+        implementation "org.embulk:embulk-util-json:0.1.1"
+        implementation "org.embulk:embulk-util-timestamp:0.2.1"
 
-        testCompile "org.embulk:embulk-junit4:0.10.36"
-        testCompile "org.embulk:embulk-core:0.10.36"
-        testCompile "org.embulk:embulk-deps:0.10.36"
+        testImplementation "org.embulk:embulk-junit4:0.10.36"
+        testImplementation "org.embulk:embulk-core:0.10.36"
+        testImplementation "org.embulk:embulk-deps:0.10.36"
     }
 
     javadoc {
@@ -80,73 +80,23 @@ subprojects {
         }
     }
 
-    test {
-        // JDBC input plugins depend on local time zone to parse timestamp without time stamp and datetime types.
-        jvmArgs "-Duser.country=FI", "-Duser.timezone=Europe/Helsinki"
-        environment "TZ", "Europe/Helsinki"
-    }
-
-    tasks.withType(Test) {
-        testLogging {
-            // set options for log level LIFECYCLE
-            events TestLogEvent.FAILED,
-                    TestLogEvent.PASSED,
-                    TestLogEvent.SKIPPED,
-                    TestLogEvent.STANDARD_OUT
-            exceptionFormat TestExceptionFormat.FULL
-            showExceptions true
-            showCauses true
-            showStackTraces true
-
-            afterSuite { desc, result ->
-                if (!desc.parent) { // will match the outermost suite
-                    def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)"
-                    def startItem = '|  ', endItem = '  |'
-                    def repeatLength = startItem.length() + output.length() + endItem.length()
-                    println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
-                }
-            }
+    // A safer and strict alternative to: "dependencies" (and "dependencies --write-locks")
+    //
+    // This task fails explicitly when the specified dependency is not available.
+    // In contrast, "dependencies (--write-locks)" does not fail even when a part the dependencies are unavailable.
+    //
+    // https://docs.gradle.org/7.6.1/userguide/dependency_locking.html#generating_and_updating_dependency_locks
+    task checkDependencies {
+        notCompatibleWithConfigurationCache("The task \"checkDependencies\" filters configurations at execution time.")
+        doLast {
+            configurations.findAll { it.canBeResolved }.each { it.resolve() }
         }
     }
 
-    checkstyle {
-        configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
-        toolVersion = '6.14.1'
-    }
-    checkstyleMain {
-        configFile = file("${project.rootDir}/config/checkstyle/default.xml")
-        ignoreFailures = true
-    }
-    checkstyleTest {
-        configFile = file("${project.rootDir}/config/checkstyle/default.xml")
-        ignoreFailures = true
-    }
-    task checkstyle(type: Checkstyle) {
-        classpath = sourceSets.main.output + sourceSets.test.output
-        source = sourceSets.main.allJava + sourceSets.test.allJava
-    }
-
-    gem {
-        authors = [ "Sadayuki Furuhashi" ]
-        email = [ "frsyuki@gmail.com" ]
-        summary = "JDBC input plugin for Embulk"
-        homepage = "https://github.com/embulk/embulk-input-jdbc"
-        licenses = [ "Apache-2.0" ]
-
-        into("default_jdbc_driver") {
-            from configurations.defaultJdbcDriver
-        }
-    }
-
-    gemPush {
-        host = "https://rubygems.org"
-    }
-
-    javadoc {
-        options {
-            locale = 'en_US'
-            encoding = 'UTF-8'
-        }
+    // It should not publish a `.module` file in Maven Central.
+    // https://docs.gradle.org/current/userguide/publishing_gradle_module_metadata.html#sub:disabling-gmm-publication
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
     }
 
     publishing {
@@ -173,6 +123,7 @@ subprojects {
                             // http://central.sonatype.org/pages/requirements.html#license-information
                             name = "The Apache License, Version 2.0"
                             url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                            distribution = "repo"
                         }
                     }
 
@@ -205,6 +156,72 @@ subprojects {
     }
 
     signing {
+        if (project.hasProperty("signingKey") && project.hasProperty("signingPassword")) {
+            logger.lifecycle("Signing with an in-memory key.")
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        }
         sign publishing.publications.maven
+    }
+
+    gem {
+        authors = [ "Sadayuki Furuhashi" ]
+        email = [ "frsyuki@gmail.com" ]
+        summary = "JDBC input plugin for Embulk"
+        homepage = "https://github.com/embulk/embulk-input-jdbc"
+        licenses = [ "Apache-2.0" ]
+
+        into("default_jdbc_driver") {
+            from configurations.defaultJdbcDriver
+        }
+    }
+
+    gemPush {
+        host = "https://rubygems.org"
+    }
+
+    test {
+        // JDBC input plugins depend on local time zone to parse timestamp without time stamp and datetime types.
+        jvmArgs "-Duser.country=FI", "-Duser.timezone=Europe/Helsinki"
+        environment "TZ", "Europe/Helsinki"
+    }
+
+    tasks.withType(Test) {
+        testLogging {
+            // set options for log level LIFECYCLE
+            events "passed", "skipped", "failed", "standardOut", "standardError"
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            showCauses = true
+            showExceptions = true
+            showStackTraces = true
+            showStandardStreams = true
+
+            outputs.upToDateWhen { false }
+
+            afterSuite { desc, result ->
+                if (!desc.parent) { // will match the outermost suite
+                    def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)"
+                    def startItem = '|  ', endItem = '  |'
+                    def repeatLength = startItem.length() + output.length() + endItem.length()
+                    println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+                }
+            }
+        }
+    }
+
+    checkstyle {
+        configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+        toolVersion = '6.14.1'
+    }
+    checkstyleMain {
+        configFile = file("${project.rootDir}/config/checkstyle/default.xml")
+        ignoreFailures = true
+    }
+    checkstyleTest {
+        configFile = file("${project.rootDir}/config/checkstyle/default.xml")
+        ignoreFailures = true
+    }
+    task checkstyle(type: Checkstyle) {
+        classpath = sourceSets.main.output + sourceSets.test.output
+        source = sourceSets.main.allJava + sourceSets.test.allJava
     }
 }
