@@ -1,10 +1,13 @@
-name: Build and test
-on: [push, pull_request]
+name: Check
+on: [ pull_request, push ]
 jobs:
   mysql5_7:
+    runs-on: ubuntu-latest
+    # push: always run.
+    # pull_request: run only when the PR is submitted from a forked repository, not within this repository.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     strategy:
       fail-fast: false
-    runs-on: ubuntu-latest
     services:
       mysql:
         image: mysql:5.7
@@ -36,9 +39,12 @@ jobs:
         name: mysql5_7
         path: embulk-input-mysql/build/reports/tests/test
   mysql8_3:
+    runs-on: ubuntu-latest
+    # push: always run.
+    # pull_request: run only when the PR is submitted from a forked repository, not within this repository.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     strategy:
       fail-fast: false
-    runs-on: ubuntu-latest
     services:
       mysql:
         # Due to MySQL 8.4 disabled mysql_native_password by default,
@@ -96,6 +102,11 @@ jobs:
         path: embulk-input-mysql/build/reports/tests/test
   postgresql9_4:
     runs-on: ubuntu-latest
+    # push: always run.
+    # pull_request: run only when the PR is submitted from a forked repository, not within this repository.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    strategy:
+      fail-fast: false
     services:
       postgres:
         image: postgres:9.4
@@ -132,6 +143,11 @@ jobs:
   # Use PostgreSQL 13 at this time.
   postgresql13:
     runs-on: ubuntu-latest
+    # push: always run.
+    # pull_request: run only when the PR is submitted from a forked repository, not within this repository.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    strategy:
+      fail-fast: false
     services:
       postgres:
         image: postgres:13
@@ -170,6 +186,11 @@ jobs:
         path: embulk-input-postgresql/build/reports/tests/test
   redshift:
     runs-on: ubuntu-latest
+    # push: always run.
+    # pull_request: run only when the PR is submitted from a forked repository, not within this repository.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    strategy:
+      fail-fast: false
     # Testing embulk-input-redshift emulated with PostgreSQL.
     services:
       postgres:
@@ -205,6 +226,11 @@ jobs:
         path: embulk-input-redshift/build/reports/tests/test
   sqlserver:  # https://hub.docker.com/_/microsoft-mssql-server
     runs-on: ubuntu-latest
+    # push: always run.
+    # pull_request: run only when the PR is submitted from a forked repository, not within this repository.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    strategy:
+      fail-fast: false
     services:
       sqlserver:
         # To run locallly:
