@@ -158,8 +158,9 @@ public class MySQLInputPlugin
         // property file because the file should be in the same classpath with the class.
         // Here implements a workaround as a workaround.
         //
-        // It's not 100% sure, but this workaround is necessary for Connector/J 5.x (com.mysql.jdbc.TimeUtil)
-        // only.
+        // This workaround seems required only for Connector/J 5.x (com.mysql.jdbc.TimeUtil),
+        // not necessary for Connector/J 8.x (com.mysql.cj.util.TimeUtil).
+        // TODO: Clarify for Connector/J 8.x just in case.
         Field f = null;
         try {
             Class<?> timeUtilClass = Class.forName("com.mysql.jdbc.TimeUtil");
@@ -176,9 +177,14 @@ public class MySQLInputPlugin
             }
         }
         catch (ClassNotFoundException e) {
-            // It appears that the user uses the Connector/J 8.x driver.
-            // Do nothing;
+            try {
+                Class.forName("com.mysql.cj.util.TimeUtil");
+            } catch (final ClassNotFoundException ex2) {
+                // Throw if neither the Connector/J 5.x nor 8.x driver is found.
+                throw new RuntimeException(e);
+            }
         }
+        // Pass-through if the Connector/J 8.x driver is found.        }
         catch (IllegalAccessException | NoSuchFieldException | IOException e) {
             throw new RuntimeException(e);
         }
