@@ -124,15 +124,8 @@ public class MySQLInputPlugin
         props.putAll(t.getOptions());
         logConnectionProperties(url, props);
 
-        // loadTimeZoneMappings initializes com.mysql.jdbc.TimeUtil.timeZoneMappings static field by calling
-        // static timeZoneMappings method using reflection.
-        // It may need Connector/J 5.x (com.mysql.jdbc.TimeUtil) only.
-        try {
-            Class<?> timeUtilClass = Class.forName("com.mysql.jdbc.TimeUtil");
-            loadTimeZoneMappings(timeUtilClass);
-        } catch (ClassNotFoundException e) {
-            // do nothing
-        }
+        // load timezone mappings
+        loadTimeZoneMappingsIfNeeded();
 
         Connection con = DriverManager.getConnection(url, props);
         try {
@@ -152,7 +145,7 @@ public class MySQLInputPlugin
         return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
-    private void loadTimeZoneMappings(Class<?> timeUtilClass)
+    private void loadTimeZoneMappingsIfNeeded()
     {
         // Here initializes com.mysql.jdbc.TimeUtil.timeZoneMappings static field by calling
         // static timeZoneMappings method using reflection.
@@ -163,9 +156,13 @@ public class MySQLInputPlugin
         // from the classloader. It seems like a bug of JDBC Driver where it should use the class loader
         // that loaded com.mysql.jdbc.TimeUtil class rather than system class loader to read the
         // property file because the file should be in the same classpath with the class.
-        // Here implements a workaround as as workaround.
+        // Here implements a workaround as a workaround.
+        //
+        // It's not 100% sure, but this workaround is necessary for Connector/J 5.x (com.mysql.jdbc.TimeUtil)
+        // only.
         Field f = null;
         try {
+            Class<?> timeUtilClass = Class.forName("com.mysql.jdbc.TimeUtil");
             f = timeUtilClass.getDeclaredField("timeZoneMappings");
             f.setAccessible(true);
 
@@ -177,6 +174,10 @@ public class MySQLInputPlugin
                 }
                 f.set(null, timeZoneMappings);
             }
+        }
+        catch (ClassNotFoundException e) {
+            // It appears that the user uses the Connector/J 8.x driver.
+            // Do nothing;
         }
         catch (IllegalAccessException | NoSuchFieldException | IOException e) {
             throw new RuntimeException(e);
