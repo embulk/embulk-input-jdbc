@@ -125,7 +125,7 @@ public class MySQLInputPlugin
         logConnectionProperties(url, props);
 
         // load timezone mappings
-        loadTimeZoneMappings();
+        loadTimeZoneMappingsIfNeeded();
 
         Connection con = DriverManager.getConnection(url, props);
         try {
@@ -145,7 +145,7 @@ public class MySQLInputPlugin
         return new MySQLColumnGetterFactory(pageBuilder, dateTimeZone);
     }
 
-    private void loadTimeZoneMappings()
+    private void loadTimeZoneMappingsIfNeeded()
     {
         // Here initializes com.mysql.jdbc.TimeUtil.timeZoneMappings static field by calling
         // static timeZoneMappings method using reflection.
@@ -156,7 +156,11 @@ public class MySQLInputPlugin
         // from the classloader. It seems like a bug of JDBC Driver where it should use the class loader
         // that loaded com.mysql.jdbc.TimeUtil class rather than system class loader to read the
         // property file because the file should be in the same classpath with the class.
-        // Here implements a workaround as as workaround.
+        // Here implements a workaround as a workaround.
+        //
+        // This workaround seems required only for Connector/J 5.x (com.mysql.jdbc.TimeUtil),
+        // not necessary for Connector/J 8.x (com.mysql.cj.util.TimeUtil).
+        // TODO: Clarify for Connector/J 8.x just in case.
         Field f = null;
         try {
             Class<?> timeUtilClass = Class.forName("com.mysql.jdbc.TimeUtil");
@@ -172,7 +176,16 @@ public class MySQLInputPlugin
                 f.set(null, timeZoneMappings);
             }
         }
-        catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | IOException e) {
+        catch (ClassNotFoundException e) {
+            try {
+                Class.forName("com.mysql.cj.util.TimeUtil");
+            } catch (final ClassNotFoundException ex2) {
+                // Throw if neither the Connector/J 5.x nor 8.x driver is found.
+                throw new RuntimeException(e);
+            }
+        }
+        // Pass-through if the Connector/J 8.x driver is found.        }
+        catch (IllegalAccessException | NoSuchFieldException | IOException e) {
             throw new RuntimeException(e);
         }
         finally {
