@@ -20,10 +20,12 @@ jobs:
           MYSQL_PASSWORD: password
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
+        cache: "gradle"
     - name: Connect
       run: mysql -h 127.0.0.1 --port 3306 -uroot -proot -e "show databases;"
     - name: Create database
@@ -60,10 +62,12 @@ jobs:
           MYSQL_PASSWORD: password
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
+        cache: "gradle"
     - name: Connect
       run: mysql -h 127.0.0.1 --port 3306 -uroot -proot -e "show databases;"
     - name: show version
@@ -117,10 +121,12 @@ jobs:
           POSTGRES_PASSWORD: postgres
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
+        cache: "gradle"
     - name: Connect
       run: psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "\l"
       env:
@@ -158,10 +164,12 @@ jobs:
           POSTGRES_PASSWORD: postgres
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
+        cache: "gradle"
     - name: Connect
       run: psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "\l"
       env:
@@ -202,10 +210,12 @@ jobs:
           POSTGRES_PASSWORD: postgres
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
+        cache: "gradle"
     - name: Connect
       run: psql -h 127.0.0.1 -p 5439 -U postgres -d postgres -c "\l"
       env:
@@ -244,10 +254,12 @@ jobs:
           SA_PASSWORD: "P@ssw0rd"
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
       with:
         java-version: 8
         distribution: 'zulu'
+        cache: "gradle"
     # TODO: Find a better way to wait for completing setup.
     - name: Sleep for 30 seconds to complete all the SQL Server setup process
       run: sleep 30
