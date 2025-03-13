@@ -1,9 +1,9 @@
 plugins {
-    id 'java'
+    id "java"
     id "maven-publish"
     id "signing"
-    id 'checkstyle'
-    id "org.embulk.embulk-plugins" version "0.6.1" apply false
+    id "checkstyle"
+    id "org.embulk.embulk-plugins" version "0.7.0" apply false
 }
 
 allprojects {
@@ -13,7 +13,7 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'java'
+    apply plugin: "java"
     apply plugin: "maven-publish"
     apply plugin: "signing"
     apply plugin: "checkstyle"
@@ -84,7 +84,7 @@ subprojects {
     // This task fails explicitly when the specified dependency is not available.
     // In contrast, "dependencies (--write-locks)" does not fail even when a part the dependencies are unavailable.
     //
-    // https://docs.gradle.org/7.6.1/userguide/dependency_locking.html#generating_and_updating_dependency_locks
+    // https://docs.gradle.org/8.13/userguide/dependency_locking.html#generating_and_updating_dependency_locks
     task checkDependencies {
         notCompatibleWithConfigurationCache("The task \"checkDependencies\" filters configurations at execution time.")
         doLast {
