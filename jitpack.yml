@@ -1,0 +1,15 @@
+jdk:
+  - openjdk8
+before_install:
+  - echo "Setting up Java 8 environment"
+  - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  - export PATH=$JAVA_HOME/bin:$PATH
+  - java -version
+install:
+  - echo "Building gems with Gradle"
+  - ./gradlew clean
+  - ./gradlew gem -xsignMavenPublication -xtest
+  - ./gradlew publishToMavenLocal -xsignMavenPublication -xtest
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=false"
+  JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"

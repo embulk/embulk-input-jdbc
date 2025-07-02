@@ -178,6 +178,16 @@ subprojects {
         host = "https://rubygems.org"
     }
 
+    // JitPack support for gem installation
+    task installGem(type: Exec, dependsOn: gem) {
+        description = "Install gem locally for JitPack"
+        group = "gem"
+        commandLine "gem", "install", "--local", "${gem.outputs.files.singleFile}"
+        doFirst {
+            println "Installing gem: ${gem.outputs.files.singleFile}"
+        }
+    }
+
     test {
         // JDBC input plugins depend on local time zone to parse timestamp without time stamp and datetime types.
         jvmArgs "-Duser.country=FI", "-Duser.timezone=Europe/Helsinki"
