@@ -57,11 +57,11 @@ subprojects {
         }
 
         // They are once excluded from transitive dependencies of other dependencies,
-        // and added explicitly with versions exactly the same with older embulk-core (until 0.10.31).
-        implementation "com.fasterxml.jackson.core:jackson-annotations:2.6.7"
-        implementation "com.fasterxml.jackson.core:jackson-core:2.6.7"
-        implementation "com.fasterxml.jackson.core:jackson-databind:2.6.7.5"
-        implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.7"
+        // Updated to secure versions to address CVE vulnerabilities in 2.6.7
+        implementation "com.fasterxml.jackson.core:jackson-annotations:2.13.5"
+        implementation "com.fasterxml.jackson.core:jackson-core:2.13.5"
+        implementation "com.fasterxml.jackson.core:jackson-databind:2.13.5"
+        implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.13.5"
         implementation "javax.validation:validation-api:1.1.0.Final"
 
         implementation "org.embulk:embulk-util-json:0.3.0"
