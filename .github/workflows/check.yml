@@ -19,7 +19,7 @@ jobs:
           MYSQL_USER: ci
           MYSQL_PASSWORD: password
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
@@ -61,7 +61,7 @@ jobs:
           MYSQL_USER: ci
           MYSQL_PASSWORD: password
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
@@ -120,7 +120,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
@@ -163,7 +163,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
@@ -209,7 +209,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
@@ -259,7 +259,7 @@ jobs:
           ACCEPT_EULA: Y
           SA_PASSWORD: "P@ssw0rd"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
