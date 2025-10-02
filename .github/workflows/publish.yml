@@ -1,0 +1,32 @@
+name: Publish
+on:
+  push:
+    tags:
+      - "v0.*"
+jobs:
+  publish:
+    environment:
+      name: maven-central-and-ruby-gems
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up OpenJDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: 8
+        distribution: "temurin"
+    - name: Publish
+      run: |
+        mkdir -p $HOME/.gem
+        touch $HOME/.gem/credentials
+        chmod 0600 $HOME/.gem/credentials
+        printf -- "---\n:rubygems_api_key: ${RUBYGEMS_API_KEY}\n" > $HOME/.gem/credentials
+        ./gradlew --stacktrace publishMavenPublicationToMavenCentralRepository gemPush
+      env:
+        ORG_GRADLE_PROJECT_ossrhUsername: ${{ vars.OSSRH_USERNAME }}
+        ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
+        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY_ARMOR }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
+        RUBYGEMS_API_KEY: "${{secrets.RUBYGEMS_API_KEY}}"
