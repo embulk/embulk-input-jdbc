@@ -35,7 +35,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_MYSQL_TEST_CONFIG: "${{ github.workspace }}/ci/mysql.yml"
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: always()
       with:
         name: mysql5_7
@@ -99,7 +99,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_MYSQL_TEST_CONFIG: "${{ github.workspace }}/ci/mysql.yml"
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: always()
       with:
         name: mysql8_3
@@ -140,7 +140,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ github.workspace }}/ci/postgresql.yml"
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: always()
       with:
         name: postgresql9_4
@@ -187,7 +187,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_POSTGRESQL_TEST_CONFIG: "${{ github.workspace }}/ci/postgresql.yml"
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: always()
       with:
         name: postgresql13
@@ -229,7 +229,7 @@ jobs:
       env:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_REDSHIFT_TEST_CONFIG: "${{ github.workspace }}/ci/redshift.yml"
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: always()
       with:
         name: redshift
@@ -289,7 +289,7 @@ jobs:
         _JAVA_OPTIONS: "-Xmx2048m -Xms512m"
         EMBULK_INPUT_SQLSERVER_TEST_CONFIG: "${{ github.workspace }}/ci/sqlserver.yml"
         EMBULK_INPUT_SQLSERVER_TEST_SQLCMD_COMMAND: "docker exec mssqlcontainer /opt/mssql-tools/bin/sqlcmd"
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       if: always()
       with:
         name: sqlserver
