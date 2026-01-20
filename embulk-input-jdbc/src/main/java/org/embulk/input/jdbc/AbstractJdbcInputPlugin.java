@@ -517,6 +517,7 @@ public abstract class AbstractJdbcInputPlugin
             }
 
             pageBuilder.finish();
+            pageBuilder.close();
 
             // after_select runs after pageBuilder.finish because pageBuilder.finish may fail.
             // TODO Output plugin's transaction might still fail. In that case, after_select is
