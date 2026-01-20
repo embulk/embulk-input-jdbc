@@ -225,6 +225,8 @@ public class SQLServerInputPlugin
         }
 
         if (useJtdsDriver) {
+            logger.warn("The jTDS built-in driver will be removed in an upcoming release.");
+            logger.warn("Please see https://github.com/embulk/embulk-input-jdbc/issues/267");
             // jTDS URL: host:port[/database] or host[/database][;instance=]
             // host:port;instance= is allowed but port will be ignored? in this case.
             if (sqlServerTask.getInstance().isPresent()) {
